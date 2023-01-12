@@ -1,0 +1,56 @@
+name: test when changes are applied to develop
+
+on:
+  push:
+    branches: [develop]
+
+  pull_request:
+    branches: [develop]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+
+    env:
+      MONGODB_USERNAME: root
+      MONGODB_PASSWORD: password
+      MONGODB_DATABASE: siithub_test
+
+    strategy:
+      matrix:
+        mongodb-version: [4.2.23]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.8.0
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
+          mongodb-username: ${{ env.MONGODB_USERNAME }}
+          mongodb-password: ${{ env.MONGODB_PASSWORD }}
+          mongodb-db: ${{ env.MONGODB_DATABASE }}
+
+      - name: Build test docker image
+        working-directory: siithub-backend
+        run: |
+          docker build -t siithub-backend-test -f Dockerfile.test .
+
+      - name: Run tests
+        run: |
+          docker run -e MONGODB_URL=mongodb://host.docker.internal:27017 siithub-backend-test
+
+  test-git-server:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build test docker image
+        working-directory: siithub-git-server
+        run: |
+          docker build -t siithub-git-server-test -f Dockerfile.test .
+
+      - name: Run tests
+        run: |
+          docker run siithub-git-server-test
