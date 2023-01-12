@@ -2,127 +2,35 @@ name: test when changes are applied to master
 
 on:
   push:
-    branches: [master]
+    branches: [develop]
 
   pull_request:
-    branches: [master]
+    branches: [develop]
 
 jobs:
   test-backend:
+    uses: ./.github/workflows/test-backend-app.yml
+
+  test-git-server:
+    uses: ./.github/workflows/test-project-in-docker.yml
+    with:
+      context: siithub-git-server
+
+  publish-images:
     runs-on: ubuntu-latest
 
-    env:
-      MONGODB_USERNAME: root
-      MONGODB_PASSWORD: password
-      MONGODB_DATABASE: siithub_test
+    needs: [test-backend, test-git-server]
 
     strategy:
       matrix:
-        mongodb-version: [4.2.23]
+        project: ["siithub-client", "siithub-backend", "siithub-git-server"]
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.8.0
-        with:
-          mongodb-version: ${{ matrix.mongodb-version }}
-          mongodb-username: ${{ env.MONGODB_USERNAME }}
-          mongodb-password: ${{ env.MONGODB_PASSWORD }}
-          mongodb-db: ${{ env.MONGODB_DATABASE }}
-
-      - name: Build test docker image
-        working-directory: siithub-backend
-        run: |
-          docker build -t siithub-backend-test -f Dockerfile.test .
-
-      - name: Run tests
-        run: |
-          docker run -e MONGODB_URL=mongodb://host.docker.internal:27017 siithub-backend-test
-
-  test-git-server:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Build test docker image
-        working-directory: siithub-git-server
-        run: |
-          docker build -t siithub-git-server-test -f Dockerfile.test .
-
-      - name: Run tests
-        run: |
-          docker run siithub-git-server-test
-
-  publish-client:
-    runs-on: ubuntu-latest
-
-    needs: [test-backend, test-git-server]
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
+      - uses: albertmakan/siithub/.github/actions/build-and-push@develop
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: siithub-client
-          push: true
-          tags: panicmilos/siithub-client:latest, panicmilos/siithub-client:${{ github.run_number }}
-
-  publish-backend:
-    runs-on: ubuntu-latest
-
-    needs: [test-backend, test-git-server]
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: siithub-backend
-          push: true
-          tags: panicmilos/siithub-backend:latest, panicmilos/siithub-backend:${{ github.run_number }}
-
-  publish-git-server:
-    runs-on: ubuntu-latest
-
-    needs: [test-backend, test-git-server]
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: siithub-git-server
-          push: true
-          tags: panicmilos/siithub-git-server:latest, panicmilos/siithub-git-server:${{ github.run_number }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+          context: ${{ }}
+          tags: panicmilos/${{ matrix.project }}:latest, panicmilos/${{ }}:${{ github.run_number }}
