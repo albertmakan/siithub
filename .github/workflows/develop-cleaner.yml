@@ -49,14 +49,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Build test docker image
-        working-directory: siithub-git-server
-        run: |
-          docker build -t siithub-git-server-test -f Dockerfile.test .
-
-      - name: Run tests
-        run: |
-          docker run siithub-git-server-test
+      - uses: albertmakan/siithub/.github/actions/build-and-run@develop
+        with:
+          context: siithub-git-server
+          dockerfile: Dockerfile.test
 
   publish-client:
     runs-on: ubuntu-latest
