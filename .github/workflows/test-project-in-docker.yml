@@ -1,0 +1,19 @@
+name: test any project from this repo inside docker
+
+on:
+  workflow_call:
+    inputs:
+      context:
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: albertmakan/siithub/.github/actions/build-and-run@develop
+        with:
+          context: ${{ inputs.context }}
+          dockerfile: Dockerfile.test
