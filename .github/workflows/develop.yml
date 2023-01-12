@@ -44,7 +44,7 @@ jobs:
           npm test
 
   test-git-server:
-    uses: ./.github/workflows/test-project-in-docker.yml@develop
+    uses: ./.github/workflows/test-project-in-docker.yml
     with:
       context: siithub-git-server
       dockerfile: Dockerfile.test
