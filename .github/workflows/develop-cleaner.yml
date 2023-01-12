@@ -112,9 +112,9 @@ jobs:
     needs: [test-backend, test-git-server]
 
     steps:
-      - uses: ./.github/actions/build-and-push@develop
+      - uses: actions/build-and-push@develop
         with:
-          tags: panicmilos/siithub-git-server:latest, panicmilos/siithub-git-server:${{ github.run_number }}
-          context: siithub-git-server
           username: panicmilos
           password: dckr_pat_fvWyNYdV8bsoY0932C0LSV2f0iE
+          context: siithub-git-server
+          tags: panicmilos/siithub-git-server:latest, panicmilos/siithub-git-server:${{ github.run_number }}
