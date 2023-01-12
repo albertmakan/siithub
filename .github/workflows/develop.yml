@@ -47,7 +47,6 @@ jobs:
     uses: ./.github/workflows/test-project-in-docker.yml
     with:
       context: siithub-git-server
-      dockerfile: Dockerfile.test
 
   publish-client:
     runs-on: ubuntu-latest
