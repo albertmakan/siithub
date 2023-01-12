@@ -69,8 +69,8 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: panicmilos
+          password: dckr_pat_fvWyNYdV8bsoY0932C0LSV2f0iE
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -93,8 +93,8 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: panicmilos
+          password: dckr_pat_fvWyNYdV8bsoY0932C0LSV2f0iE
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -112,20 +112,10 @@ jobs:
     needs: [test-backend, test-git-server]
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
+      - uses: ./.github/workflows/build-and-publish.yml
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: siithub-git-server
-          push: true
           tags: panicmilos/siithub-git-server:latest, panicmilos/siithub-git-server:${{ github.run_number }}
+          context: siithub-git-server
+        secrets:
+          username: panicmilos
+          password: dckr_pat_fvWyNYdV8bsoY0932C0LSV2f0iE
