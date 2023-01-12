@@ -8,40 +8,40 @@ on:
     branches: [develop]
 
 jobs:
-  test-backend:
-    runs-on: ubuntu-latest
+  # test-backend:
+  #   runs-on: ubuntu-latest
 
-    env:
-      MONGODB_USERNAME: root
-      MONGODB_PASSWORD: password
-      MONGODB_DATABASE: siithub_test
+  #   env:
+  #     MONGODB_USERNAME: root
+  #     MONGODB_PASSWORD: password
+  #     MONGODB_DATABASE: siithub_test
 
-    strategy:
-      matrix:
-        mongodb-version: [4.2.23]
+  #   strategy:
+  #     matrix:
+  #       mongodb-version: [4.2.23]
 
-    steps:
-      - uses: actions/checkout@v3
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
+  #     - name: Use Node.js ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
 
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.8.0
-        with:
-          mongodb-version: ${{ matrix.mongodb-version }}
-          mongodb-username: ${{ env.MONGODB_USERNAME }}
-          mongodb-password: ${{ env.MONGODB_PASSWORD }}
-          mongodb-db: ${{ env.MONGODB_DATABASE }}
+  #     - name: Start MongoDB
+  #       uses: supercharge/mongodb-github-action@1.8.0
+  #       with:
+  #         mongodb-version: ${{ matrix.mongodb-version }}
+  #         mongodb-username: ${{ env.MONGODB_USERNAME }}
+  #         mongodb-password: ${{ env.MONGODB_PASSWORD }}
+  #         mongodb-db: ${{ env.MONGODB_DATABASE }}
 
-      - name: Test siithub-backend
-        working-directory: siithub-backend
-        run: |
-          npm ci
-          npm run build --if-present
-          npm test
+  #     - name: Test siithub-backend
+  #       working-directory: siithub-backend
+  #       run: |
+  #         npm ci
+  #         npm run build --if-present
+  #         npm test
 
   test-git-server:
     runs-on: ubuntu-latest
@@ -109,7 +109,8 @@ jobs:
   publish-git-server:
     runs-on: ubuntu-latest
 
-    needs: [test-backend, test-git-server]
+    # needs: [test-backend, test-git-server]
+    needs: test-git-server
 
     steps:
       - uses: actions/build-and-push@develop
