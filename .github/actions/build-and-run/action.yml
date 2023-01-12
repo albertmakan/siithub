@@ -12,6 +12,7 @@ runs:
   steps:
     - name: Build test docker image
       working-directory: ${{ inputs.context }}
+      shell: bash
       run: |
         docker build -t ${{ inputs.context }}-test -f ${{ inputs.dockerfile }} .
 
