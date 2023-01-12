@@ -112,7 +112,7 @@ jobs:
     needs: [test-backend, test-git-server]
 
     steps:
-      - uses: ./.github/workflows/build-and-push.yml
+      - uses: albertmakan/siithub/.github/workflows/build-and-push.yml@develop
         with:
           tags: panicmilos/siithub-git-server:latest, panicmilos/siithub-git-server:${{ github.run_number }}
           context: siithub-git-server
