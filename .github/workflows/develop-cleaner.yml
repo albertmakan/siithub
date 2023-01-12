@@ -114,7 +114,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/build-and-push@develop
+      - uses: ./.github/actions/build-and-push@develop
         with:
           username: panicmilos
           password: dckr_pat_fvWyNYdV8bsoY0932C0LSV2f0iE
