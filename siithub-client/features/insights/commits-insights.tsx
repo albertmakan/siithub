@@ -1,14 +1,14 @@
 import { type FC } from "react";
 import { Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { useDefaultBranch } from "../branches/useBranches";
 import { useCommitsInsights } from "./useInsights";
+import { useRepositoryContext } from "../repository/RepositoryContext";
 
 export const CommitsInsights: FC<{ repo: string; username: string }> = ({ username, repo }) => {
-  const { defaultBranch, error } = useDefaultBranch(username, repo);
+  const defaultBranch = useRepositoryContext().repository?.defaultBranch;
 
-  const { insights, isLoading } = useCommitsInsights(username, repo, defaultBranch?.branch, [defaultBranch?.branch]);
+  const { insights, isLoading } = useCommitsInsights(username, repo, defaultBranch ?? "", [defaultBranch]);
 
-  if (error) return <>This repository is empty</>;
+  if (!defaultBranch) return <>This repository is empty</>;
   if (isLoading || !insights) return <>loading...</>;
 
   const { weekly, daily } = insights;

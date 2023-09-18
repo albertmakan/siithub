@@ -1,16 +1,14 @@
 import { type FC } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { useDefaultBranch } from "../branches/useBranches";
 import { useCodeFrequencyInsights } from "./useInsights";
+import { useRepositoryContext } from "../repository/RepositoryContext";
 
 export const CodeFrequencyInsights: FC<{ repo: string; username: string }> = ({ username, repo }) => {
-  const { defaultBranch, error } = useDefaultBranch(username, repo);
+  const defaultBranch = useRepositoryContext().repository?.defaultBranch;
 
-  const { insights, isLoading } = useCodeFrequencyInsights(username, repo, defaultBranch?.branch, [
-    defaultBranch?.branch,
-  ]);
+  const { insights, isLoading } = useCodeFrequencyInsights(username, repo, defaultBranch ?? "", [defaultBranch]);
 
-  if (error) return <>This repository is empty</>;
+  if (!defaultBranch) return <>This repository is empty</>;
   if (isLoading || !insights) return <>loading...</>;
 
   return (

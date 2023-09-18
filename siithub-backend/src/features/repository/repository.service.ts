@@ -5,6 +5,8 @@ import {
   MissingEntityException,
 } from "../../error-handling/errors";
 import { asyncFilter } from "../../utils/filter";
+import { Branch } from "../branches/branches.models";
+import { branchesService } from "../branches/branches.service";
 import { collaboratorsService } from "../collaborators/collaborators.service";
 import { gitServerClient } from "../gitserver/gitserver.client";
 import { labelSeeder } from "../label/label.seeder";
@@ -78,7 +80,9 @@ async function deleteRepository(owner: string, name: string): Promise<Repository
 }
 
 async function findByOwnerAndName(owner: string, name: string): Promise<Repository | null> {
-  return await repositoryRepo.findByOwnerAndName(owner, name);
+  const repo = await repositoryRepo.findByOwnerAndName(owner, name);
+  if (repo && !repo.defaultBranch) await tryCreateDefaultBranch(repo);
+  return repo;
 }
 
 async function search(owner: string, term: string): Promise<Repository[]> {
@@ -173,6 +177,20 @@ async function findAllByOwner(owner: string, myId: User["_id"]): Promise<Reposit
   });
 }
 
+async function tryCreateDefaultBranch(repository: Repository) {
+  const allBranches = await branchesService.findMany(repository.owner, repository.name);
+  if (allBranches.length === 0) return;
+  const branchName = ["main", "master", "develop"].find((b) => allBranches.includes(b));
+  const defaultBranch = branchName ?? allBranches[0];
+  await repositoryRepo.crud.update(repository._id, { defaultBranch });
+}
+
+async function changeDefaultBranch(id: Repository["_id"], defaultBranch: Branch) {
+  const repo = await findOneOrThrow(id);
+  await branchesService.findOneOrThrow(repo.owner, repo.name, defaultBranch);
+  return await repositoryRepo.crud.update(id, { defaultBranch });
+}
+
 export type RepositoryService = {
   findOneOrThrow(id: Repository["_id"]): Promise<Repository>;
   create(repository: RepositoryCreate): Promise<Repository>;
@@ -191,6 +209,7 @@ export type RepositoryService = {
   findFork(owner: string, forkedFrom: Repository["_id"]): Promise<Repository | null>;
   resolveForkedFrom(repository: Repository): Promise<any>;
   findAllByOwner(owner: string, myId: User["_id"]): Promise<Repository[]>;
+  changeDefaultBranch(id: Repository["_id"], defaultBranch: Branch): Promise<any>;
 };
 
 const repositoryService: RepositoryService = {
@@ -208,6 +227,7 @@ const repositoryService: RepositoryService = {
   findFork,
   resolveForkedFrom,
   findAllByOwner,
+  changeDefaultBranch,
 };
 
 export { repositoryService };

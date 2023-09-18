@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import { PullRequestWithRepository, type PullRequest } from "../pull-requests/pullRequestActions";
+import { type PullRequestWithRepository } from "../pull-requests/pullRequestActions";
 import { PRStatusPreview } from "../pull-requests/PullRequestHeader";
 import Link from "next/link";
 import { BookOpenIcon } from "@heroicons/react/24/outline";

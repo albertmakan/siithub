@@ -1,4 +1,5 @@
 import { type BaseEntity } from "../../db/base.repo.utils";
+import { type Branch } from "../branches/branches.models";
 
 export type Repository = {
   name: string;
@@ -9,6 +10,7 @@ export type Repository = {
     [thing: string]: number;
   };
   forkedFrom?: Repository["_id"];
+  defaultBranch?: Branch;
 } & BaseEntity;
 
 export type RepositoryCreate = Omit<Repository, "_id" | "counters">;

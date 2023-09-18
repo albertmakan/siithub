@@ -2,19 +2,17 @@ import { type FC, useState } from "react";
 import Select from "react-select";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ProfilePicture } from "../../core/components/ProfilePicture";
-import { useDefaultBranch } from "../branches/useBranches";
 import { useContributorInsights } from "./useInsights";
+import { useRepositoryContext } from "../repository/RepositoryContext";
 
 export const ContributorsInsights: FC<{ repo: string; username: string }> = ({ username, repo }) => {
-  const { defaultBranch, error } = useDefaultBranch(username, repo);
+  const defaultBranch = useRepositoryContext().repository?.defaultBranch;
 
-  const { insights, isLoading } = useContributorInsights(username, repo, defaultBranch?.branch, [
-    defaultBranch?.branch,
-  ]);
+  const { insights, isLoading } = useContributorInsights(username, repo, defaultBranch ?? "", [defaultBranch]);
 
   const [view, setView] = useState("commits");
 
-  if (error) return <>This repository is empty</>;
+  if (!defaultBranch) return <>This repository is empty</>;
   if (isLoading || !insights) return <>loading...</>;
 
   const { all, perAuthor, authorDataMax } = insights;

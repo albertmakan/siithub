@@ -7,29 +7,27 @@ import { ResultStatus, useResult } from "../../core/contexts/Result";
 import { useAction } from "../../core/hooks/useAction";
 import { useNotifications } from "../../core/hooks/useNotifications";
 import { extractErrorMessage } from "../../core/utils/errors";
-import { changeDefaultBranch, DefaultBranch, removeBranch, renameBranch, type Branch } from "./branchesActions";
+import { changeDefaultBranch, removeBranch, renameBranch, type Branch } from "./branchesActions";
 import { SelectBranchField } from "./SelectBranchField";
 
 type BranchesTableProps = {
   repo: string;
   username: string;
   branches: Branch[];
-  defaultBranch: DefaultBranch;
+  defaultBranch: Branch;
 };
 
 const RenameBranchForm = ({ onSubmit }: any) => {
   const [newName, setNewName] = useState("");
 
   return (
-    <>
-      <form onSubmit={() => onSubmit(newName)}>
-        <InputField label="Name" formElement={{ value: newName, onChange: (e: any) => setNewName(e.target.value) }} />
+    <form onSubmit={() => onSubmit(newName)}>
+      <InputField label="Name" formElement={{ value: newName, onChange: (e: any) => setNewName(e.target.value) }} />
 
-        <div className="py-3 text-right">
-          <Button>Submit</Button>
-        </div>
-      </form>
-    </>
+      <div className="py-3 text-right">
+        <Button>Submit</Button>
+      </div>
+    </form>
   );
 };
 
@@ -37,27 +35,25 @@ const ChangeDefaultBranchForm = ({ username, repo, onSubmit }: any) => {
   const [newDefaultBranch, setNewDefaultBranch] = useState("");
 
   return (
-    <>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit(newDefaultBranch);
-        }}
-      >
-        <SelectBranchField username={username} repo={repo} onChange={(branch) => setNewDefaultBranch(branch)} />
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit(newDefaultBranch);
+      }}
+    >
+      <SelectBranchField username={username} repo={repo} onChange={setNewDefaultBranch} />
 
-        <div className="py-3 text-right">
-          <Button>Submit</Button>
-        </div>
-      </form>
-    </>
+      <div className="py-3 text-right">
+        <Button>Submit</Button>
+      </div>
+    </form>
   );
 };
 
 export const BranchesTable: FC<BranchesTableProps> = ({ repo, username, branches, defaultBranch }) => {
   const notifications = useNotifications();
   const { setResult: setBranchesResult } = useResult("branches");
-  const { setResult: setDefaultBranchResult } = useResult("default_branch");
+  const { setResult: setDefaultBranchResult } = useResult("repositories");
 
   const [selectedBranch, setSelectedBranch] = useState("");
   const [isRenameOpen, setIsRenameOpen] = useState(false);
@@ -100,10 +96,6 @@ export const BranchesTable: FC<BranchesTableProps> = ({ repo, username, branches
     },
   });
 
-  const changeSelected = () => {
-    setIsChangeOpen(true);
-  };
-
   const changeDefaultBranchAction = useAction<string>(changeDefaultBranch(username, repo), {
     onSuccess: () => {
       notifications.success("You have successfully changed default branch for the repo the repo.");
@@ -140,13 +132,7 @@ export const BranchesTable: FC<BranchesTableProps> = ({ repo, username, branches
       </Modal>
 
       <Modal title="Change default branch" isOpen={isChangeOpen} onClose={() => setIsChangeOpen(false)}>
-        <ChangeDefaultBranchForm
-          username={username}
-          repo={repo}
-          onSubmit={(newBranchName: string) => {
-            changeDefaultBranchAction(newBranchName);
-          }}
-        />
+        <ChangeDefaultBranchForm username={username} repo={repo} onSubmit={changeDefaultBranchAction} />
       </Modal>
 
       <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
@@ -163,19 +149,17 @@ export const BranchesTable: FC<BranchesTableProps> = ({ repo, username, branches
             {branches?.map((branch: Branch, i: number) => (
               <tr key={i} className="bg-white border-b">
                 <th scope="row" className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">
-                  {branch} {defaultBranch?.branch === branch ? " (default)" : ""}
+                  {branch} {defaultBranch === branch ? " (default)" : ""}
                 </th>
                 <td className="py-4 px-6 text-right">
-                  {defaultBranch?.branch === branch ? (
+                  {defaultBranch === branch && (
                     <a
                       href="#"
-                      onClick={() => changeSelected()}
+                      onClick={() => setIsChangeOpen(true)}
                       className="ml-4 font-medium text-blue-600 hover:underline text right"
                     >
                       Change
                     </a>
-                  ) : (
-                    <></>
                   )}
                   <a
                     href="#"

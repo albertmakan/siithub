@@ -14,6 +14,7 @@ export type Repository = z.infer<typeof repositorySchema> & {
   owner: string;
   counters?: { stars?: number; forks?: number };
   forkedFromRepo?: Repository;
+  defaultBranch?: string;
 };
 
 export function createRepository(owner: string, repository: CreateRepository) {

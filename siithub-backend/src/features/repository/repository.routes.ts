@@ -92,4 +92,9 @@ router.get("/by-owner/:owner", async (req: Request, res: Response) => {
   res.send(await Promise.all(usersRepos.map(async (repo) => await repositoryService.resolveForkedFrom(repo))));
 });
 
+router.put("/default-branch/:username/:repository", async (req: Request, res: Response) => {
+  const { newBranchName } = req.body;
+  res.send(await repositoryService.changeDefaultBranch(await getRepoIdFromPath(req), newBranchName));
+});
+
 export { repositoryBodySchema, router as repositoryRoutes };

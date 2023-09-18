@@ -10,9 +10,9 @@ import { useAction } from "../../core/hooks/useAction";
 import { useNotifications } from "../../core/hooks/useNotifications";
 import { useZodValidatedFrom } from "../../core/hooks/useZodValidatedForm";
 import { extractErrorMessage } from "../../core/utils/errors";
-import { useDefaultBranch } from "../branches/useBranches";
 import { createFork, type CreateFork, forkSchema } from "./repository.service";
 import { useFork } from "./useRepositories";
+import { useRepositoryContext } from "./RepositoryContext";
 
 type CreateForkFormProps = {
   repo: string;
@@ -23,9 +23,9 @@ export const CreateForkForm: FC<CreateForkFormProps> = ({ username, repo }) => {
   const router = useRouter();
   const notifications = useNotifications();
   const myUsername = (useAuthContext()?.user as AuthUser)?.username;
-  const { defaultBranch, error } = useDefaultBranch(username, repo);
+  const defaultBranch = useRepositoryContext().repository?.defaultBranch;
   const { fork } = useFork(username, repo, myUsername);
-  const defaultBranchName = defaultBranch?.branch ?? "master";
+  const defaultBranchName = defaultBranch ?? "master";
   const { setResult } = useResult("create-fork");
   const [, setToggle] = useState(false);
   const [copying, setCopying] = useState(false);
@@ -61,7 +61,7 @@ export const CreateForkForm: FC<CreateForkFormProps> = ({ username, repo }) => {
     }
   );
 
-  if (error)
+  if (!defaultBranch)
     return (
       <div>
         <p className="text-xl">Create a new fork</p>

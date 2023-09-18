@@ -15,7 +15,7 @@ import { type TagCreate, createTag } from "./tagActions";
 import { notifications } from "../../core/hooks/useNotifications";
 import { extractErrorMessage } from "../../core/utils/errors";
 import { Checkbox } from "../../core/components/Checkbox";
-import { useBranches, useDefaultBranch } from "../branches/useBranches";
+import { useBranches } from "../branches/useBranches";
 import Select from "react-select";
 
 const tagSchema = z.object({
@@ -34,10 +34,9 @@ type TagSchemaType = z.infer<typeof tagSchema>;
 
 export const TagForm: FC = ({}) => {
   const { repository } = useRepositoryContext();
-  const { owner, name } = repository as Repository;
+  const { owner, name, defaultBranch } = repository as Repository;
   const { setResult } = useResult("tags");
   const { branches } = useBranches(owner, name);
-  const { defaultBranch } = useDefaultBranch(owner, name);
 
   const {
     register: createTagForm,
@@ -62,10 +61,10 @@ export const TagForm: FC = ({}) => {
 
   useEffect(() => {
     if (!defaultBranch) return;
-    setValue("branch", defaultBranch.branch);
-  }, [defaultBranch]);
+    setValue("branch", defaultBranch);
+  }, [defaultBranch, setValue]);
 
-  if (!Object.keys(defaultBranch) || !branches?.length) return <></>;
+  if (!defaultBranch || !branches?.length) return <></>;
 
   return (
     <>
@@ -86,7 +85,7 @@ export const TagForm: FC = ({}) => {
 
             <Select
               id="base"
-              defaultValue={[{ value: defaultBranch.branch, label: defaultBranch.branch }]}
+              defaultValue={[{ value: defaultBranch, label: defaultBranch }]}
               options={branches?.map((b: any) => ({ value: b, label: b }))}
               onChange={(val) => setValue("branch", val?.value ?? "")}
             />

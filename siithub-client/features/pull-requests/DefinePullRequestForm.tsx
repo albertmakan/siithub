@@ -1,7 +1,7 @@
 import { type FC, useEffect, useState } from "react";
 import { useRepositoryContext } from "../repository/RepositoryContext";
 import { type Repository } from "../repository/repository.service";
-import { useBranches, useDefaultBranch } from "../branches/useBranches";
+import { useBranches } from "../branches/useBranches";
 import Select from "react-select";
 import { ArrowLongLeftIcon } from "@heroicons/react/24/solid";
 import { z } from "zod";
@@ -37,8 +37,7 @@ export const DefinePullRequestForm: FC = () => {
   const { repository } = useRepositoryContext();
   const { owner, name } = repository as Repository;
   const { branches } = useBranches(owner, name);
-  const { defaultBranch } = useDefaultBranch(owner, name);
-
+  const defaultBranch = useRepositoryContext().repository?.defaultBranch;
   const { pullRequest, pullRequestDispatcher, isEdit } = usePullRequestContext();
 
   const router = useRouter();
@@ -60,13 +59,13 @@ export const DefinePullRequestForm: FC = () => {
 
   useEffect(() => {
     pullRequestDispatcher(updateData({ title, base, compare }));
-  }, [title, base, compare]);
+  }, [title, base, compare, pullRequestDispatcher]);
 
   useEffect(() => {
-    !isEdit && setValue("base", defaultBranch.branch);
-  }, [defaultBranch]);
+    !isEdit && defaultBranch && setValue("base", defaultBranch);
+  }, [defaultBranch, isEdit, setValue]);
 
-  if (!Object.keys(defaultBranch) || !branches?.length) return <></>;
+  if (!defaultBranch || !branches?.length) return <></>;
 
   const updatePullRequst = () => {
     pullRequestDispatcher(updateAnExistingPullRequest(pullRequest, executedBy));
@@ -83,7 +82,7 @@ export const DefinePullRequestForm: FC = () => {
             id="base"
             defaultValue={
               !isEdit
-                ? [{ value: defaultBranch.branch, label: defaultBranch.branch }]
+                ? [{ value: defaultBranch, label: defaultBranch }]
                 : [{ value: pullRequest.csm.base, label: pullRequest.csm.base }]
             }
             options={branches?.map((b: any) => ({ value: b, label: b }))}
@@ -112,21 +111,17 @@ export const DefinePullRequestForm: FC = () => {
           </div>
         ) : (
           <>
-            {pullRequest.csm.state === PullRequestState.Opened ? (
+            {pullRequest.csm.state === PullRequestState.Opened && (
               <div className="w-[55%] text-right space-x-2 mt-2">
-                {editableMode ? (
+                {editableMode && (
                   <Button type="button" onClick={() => router.reload()}>
                     Cancel
                   </Button>
-                ) : (
-                  <></>
                 )}
                 <Button type="button" onClick={() => (!editableMode ? setEditableMode(true) : updatePullRequst())}>
                   Edit
                 </Button>
               </div>
-            ) : (
-              <></>
             )}
           </>
         )}
@@ -139,16 +134,10 @@ export const DefinePullRequestForm: FC = () => {
         disabled={isEdit && !editableMode}
       />
 
-      {!isEdit ? (
+      {!isEdit && (
         <div className="col-span-6 mb-12 mt-4">
-          <ReactQuill
-            style={{ height: 150 }}
-            value={comment}
-            onChange={(comment) => setValue("comment", comment)}
-          ></ReactQuill>
+          <ReactQuill style={{ height: 150 }} value={comment} onChange={(comment) => setValue("comment", comment)} />
         </div>
-      ) : (
-        <></>
       )}
     </form>
   );

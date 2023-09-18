@@ -9,16 +9,12 @@ type RepositoryContextType = {
   repository?: Repository;
 };
 
-export const initialRepositoryContextValues = {
-  repository: undefined,
-};
-
-const RepositoryContext = createContext<RepositoryContextType>(initialRepositoryContextValues);
+const RepositoryContext = createContext<RepositoryContextType>({ repository: undefined });
 
 export const useRepositoryContext = () => useContext(RepositoryContext);
 
 export const RepositoryContextProvider: FC<PropsWithChildren> = ({ children }) => {
-  const [repository, setRepository] = useState<Repository | undefined>(undefined);
+  const [repository, setRepository] = useState<Repository>();
 
   const router = useRouter();
   const { username, repository: repositoryName } = router.query;
@@ -47,10 +43,8 @@ export const RepositoryContextProvider: FC<PropsWithChildren> = ({ children }) =
   }, [fetchedRepo]);
 
   return (
-    <>
-      <RepositoryContext.Provider value={{ repository }}>
-        {repository ? children : error ? <NotFound /> : <></>}
-      </RepositoryContext.Provider>
-    </>
+    <RepositoryContext.Provider value={{ repository }}>
+      {repository ? children : error ? <NotFound /> : <></>}
+    </RepositoryContext.Provider>
   );
 };

@@ -8,9 +8,9 @@ async function findMany(username: string, repoName: string, name: string = ""): 
   );
 }
 
-async function findOne(username: string, repoName: string, branchName: string): Promise<Branch | null> {
+async function findOne(username: string, repoName: string, branchName: string): Promise<Branch | undefined> {
   const branches = await findMany(username, repoName);
-  return branches.find((branch: Branch) => branch === branchName) || null;
+  return branches.find((branch: Branch) => branch === branchName);
 }
 
 async function findOneOrThrow(username: string, repoName: string, branchName: string): Promise<Branch> {
@@ -18,11 +18,7 @@ async function findOneOrThrow(username: string, repoName: string, branchName: st
   if (!branch) {
     throw new MissingEntityException(`Branch ${branchName} does not exist.`);
   }
-  return branch as Branch;
-}
-
-async function count(username: string, repoName: string): Promise<number> {
-  return (await gitServerClient.getBranches(username, repoName)).length;
+  return branch;
 }
 
 async function createBranch(username: string, repoName: string, source: string, branchName: string): Promise<Branch> {
@@ -60,9 +56,8 @@ async function removeBranch(username: string, repoName: string, branchName: stri
 
 export type BranchesService = {
   findMany(username: string, repoName: string, name?: string): Promise<Branch[]>;
-  findOne(username: string, repoName: string, branchName: string): Promise<Branch | null>;
+  findOne(username: string, repoName: string, branchName: string): Promise<Branch | undefined>;
   findOneOrThrow(username: string, repoName: string, branchName: string): Promise<Branch>;
-  count(username: string, repoName: string): Promise<number>;
   create(username: string, repoName: string, source: string, branchName: string): Promise<Branch>;
   rename(username: string, repoName: string, branchName: string, newBranchName: string): Promise<Branch>;
   remove(username: string, repoName: string, branchName: string): Promise<Branch>;
@@ -72,7 +67,6 @@ const branchesService: BranchesService = {
   findMany,
   findOne,
   findOneOrThrow,
-  count,
   create: createBranch,
   rename: renameBranch,
   remove: removeBranch,

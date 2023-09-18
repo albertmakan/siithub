@@ -1,5 +1,5 @@
 import { type FC, useEffect, useState } from "react";
-import { useBranches, useDefaultBranch } from "./useBranches";
+import { useBranches } from "./useBranches";
 import { ResultStatus, useResult } from "../../core/contexts/Result";
 import { Button } from "../../core/components/Button";
 import { BranchesTable } from "./BranchesTable";
@@ -8,6 +8,7 @@ import { BranchesSearchForm } from "./BranchesSearchForm";
 import debounce from "lodash.debounce";
 import { Modal } from "../../core/components/Modal";
 import { CreateBranchForm } from "./CreateBranchForm";
+import { useRepositoryContext } from "../repository/RepositoryContext";
 
 const debouncedCb = debounce((cb: () => void) => cb(), 300);
 
@@ -23,9 +24,8 @@ export const BranchesPage: FC<BranchesPageProps> = ({ repo, username }) => {
 
   const { key, refresh } = useRefresh("branchesSearchForm");
   const { result: branchesResult, setResult: setBranchesResult } = useResult("branches");
-  const { result: defaultBranchResult, setResult: setDefaultBranchResult } = useResult("default_branch");
   const { branches } = useBranches(username, repo, finalName, [branchesResult]);
-  const { defaultBranch } = useDefaultBranch(username, repo, [defaultBranchResult]);
+  const defaultBranch = useRepositoryContext().repository?.defaultBranch;
 
   useEffect(() => {
     debouncedCb(() => setFinalName(name));
@@ -39,12 +39,6 @@ export const BranchesPage: FC<BranchesPageProps> = ({ repo, username }) => {
 
     setBranchesResult(undefined);
   }, [branchesResult, setBranchesResult]);
-
-  useEffect(() => {
-    if (!defaultBranchResult) return;
-
-    setDefaultBranchResult(undefined);
-  }, [defaultBranchResult, setDefaultBranchResult]);
 
   const clearName = () => {
     setName("");
@@ -82,7 +76,7 @@ export const BranchesPage: FC<BranchesPageProps> = ({ repo, username }) => {
           </div>
         </div>
 
-        <BranchesTable repo={repo} username={username} branches={branches} defaultBranch={defaultBranch} />
+        <BranchesTable repo={repo} username={username} branches={branches} defaultBranch={defaultBranch ?? ""} />
       </div>
     </>
   );
