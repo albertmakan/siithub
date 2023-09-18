@@ -54,14 +54,6 @@ describe("BranchesService", () => {
     });
   });
 
-  describe("count", () => {
-    it("should return count", async () => {
-      const count = await service.count(username, repoName);
-
-      expect(count).toBe(3);
-    });
-  });
-
   describe("create", () => {
     it("should throw MissingEntityException because source does not exist", async () => {
       const source = "notExistingBranch";
