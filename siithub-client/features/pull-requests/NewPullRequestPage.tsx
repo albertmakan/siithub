@@ -7,50 +7,39 @@ import { useRepositoryContext } from "../repository/RepositoryContext";
 import { CommitsHistory } from "../commits/CommitsTable";
 import { CommitDiffViewer } from "../commits/CommitDiff";
 
-type NewPullRequestPageProps = {
-  repositoryId: Repository["_id"];
-};
-
-export const NewPullRequestPage: FC<NewPullRequestPageProps> = ({ repositoryId }) => {
+export const NewPullRequestPage: FC = () => {
   const { pullRequest, pullRequestDispatcher } = usePullRequestContext();
 
-  const { repository }: any = useRepositoryContext();
-  const { owner, name } = repository as Repository;
+  const { repository } = useRepositoryContext();
+  const { owner, name, _id: repositoryId } = repository as Repository;
 
   useEffect(() => {
-    pullRequestDispatcher(
-      setPullRequest({
-        ...initialPullRequest,
-        repositoryId,
-      })
-    );
-  }, [repositoryId]);
+    pullRequestDispatcher(setPullRequest({ ...initialPullRequest, repositoryId }));
+  }, [repositoryId, pullRequestDispatcher]);
 
-  const { commits, isLoading } = useCommitsBetweenBranches(owner, name, pullRequest.csm.base, pullRequest.csm.compare, [
+  const { commits, isLoading } = useCommitsBetweenBranches(
+    repositoryId,
     pullRequest.csm.base,
     pullRequest.csm.compare,
-  ]);
+    [pullRequest.csm.base, pullRequest.csm.compare]
+  );
 
-  const { commit } = useCommitsDiffBetweenBranches(owner, name, pullRequest.csm.base, pullRequest.csm.compare, [
+  const { commit } = useCommitsDiffBetweenBranches(repositoryId, pullRequest.csm.base, pullRequest.csm.compare, [
     pullRequest.csm.base,
     pullRequest.csm.compare,
   ]);
 
   return (
-    <>
-      <div className="">
-        <div className="mb-5">
-          <DefinePullRequestForm />
-        </div>
-        {!isLoading && commits && !commits?.length ? (
-          <div className="text-center text-3xl">There isn’t anything to compare.</div>
-        ) : (
-          <></>
-        )}
-
-        {commits && commits.length ? <CommitsHistory username={owner} repoName={name} commits={commits} /> : <></>}
-        {commit && commit.diff?.length ? <CommitDiffViewer commit={commit} /> : <></>}
+    <div className="">
+      <div className="mb-5">
+        <DefinePullRequestForm />
       </div>
-    </>
+      {!isLoading && commits && !commits?.length && (
+        <div className="text-center text-3xl">There isn`t anything to compare.</div>
+      )}
+
+      {commits?.length ? <CommitsHistory username={owner} repoName={name} commits={commits} /> : <></>}
+      {commit?.diff?.length ? <CommitDiffViewer commit={commit} /> : <></>}
+    </div>
   );
 };

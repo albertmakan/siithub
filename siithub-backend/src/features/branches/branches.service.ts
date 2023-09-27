@@ -8,9 +8,9 @@ async function findMany(username: string, repoName: string, name: string = ""): 
   );
 }
 
-async function findOne(username: string, repoName: string, branchName: string): Promise<Branch | undefined> {
+async function findOne(username: string, repoName: string, branchName: string): Promise<Branch | null> {
   const branches = await findMany(username, repoName);
-  return branches.find((branch: Branch) => branch === branchName);
+  return branches.find((branch) => branch === branchName) ?? null;
 }
 
 async function findOneOrThrow(username: string, repoName: string, branchName: string): Promise<Branch> {
@@ -56,7 +56,7 @@ async function removeBranch(username: string, repoName: string, branchName: stri
 
 export type BranchesService = {
   findMany(username: string, repoName: string, name?: string): Promise<Branch[]>;
-  findOne(username: string, repoName: string, branchName: string): Promise<Branch | undefined>;
+  findOne(username: string, repoName: string, branchName: string): Promise<Branch | null>;
   findOneOrThrow(username: string, repoName: string, branchName: string): Promise<Branch>;
   create(username: string, repoName: string, source: string, branchName: string): Promise<Branch>;
   rename(username: string, repoName: string, branchName: string, newBranchName: string): Promise<Branch>;

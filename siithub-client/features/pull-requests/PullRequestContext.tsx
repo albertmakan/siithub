@@ -1,4 +1,4 @@
-import { type FC, type PropsWithChildren, createContext, useContext } from "react";
+import { type FC, type PropsWithChildren, createContext, useContext, Reducer } from "react";
 import { useReducerWithThunkAndImmer } from "../../core/hooks/useReducerCustom";
 import {
   type PullRequest,
@@ -600,15 +600,12 @@ const PullRequestContext = createContext<PullRequestContextType>(initialPullRequ
 export const usePullRequestContext = () => useContext(PullRequestContext);
 
 export const PullRequestContextProvider: FC<PropsWithChildren> = ({ children }) => {
-  const [pullRequest, pullRequestDispatcher] = useReducerWithThunkAndImmer<any, any>(
-    pullRequestReducer,
-    initialPullRequest
-  );
+  const [pullRequest, pullRequestDispatcher] = useReducerWithThunkAndImmer(pullRequestReducer, initialPullRequest);
 
-  const isEdit = !!(pullRequest as PullRequest)._id;
+  const isEdit = !!pullRequest._id;
 
   return (
-    <PullRequestContext.Provider value={{ pullRequest: pullRequest as any, isEdit, pullRequestDispatcher }}>
+    <PullRequestContext.Provider value={{ pullRequest, isEdit, pullRequestDispatcher }}>
       {children}
     </PullRequestContext.Provider>
   );

@@ -11,7 +11,7 @@ export const LabelPreview: FC<LabelPreviewProps> = ({ name, color }) => {
       type="button"
       className={
         "text-md font-medium leading-6 rounded-full px-2 " +
-        (color !== "ffffff" ? "text-white" : "border-2 border-black")
+        (color === "#ffffff" ? "border-2 border-black" : "text-white")
       }
       style={{ backgroundColor: color, minWidth: "100px" }}
     >

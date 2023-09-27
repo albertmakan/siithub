@@ -1,72 +1,37 @@
 import { type Request, type Response, Router } from "express";
 import { z } from "zod";
-import { getRepoIdFromPath } from "../../utils/getRepo";
 import { branchesService } from "./branches.service";
 import "express-async-errors";
+import { isAllowedToAccessRepo } from "../collaborators/collaborators.middleware";
+import { type Repository } from "../repository/repository.model";
 
-const router = Router();
+const getBranchesQuerySchema = z.object({ name: z.string().default("") });
+const createBranchBodySchema = z.object({ source: z.string(), branchName: z.string() });
+const renameBranchBodySchema = z.object({ newBranchName: z.string() });
 
-const commonParamsSchema = z.object({
-  username: z.string(),
-  repository: z.string(),
-});
+const branchesRoutes = Router();
 
-const getBranchesQuerySchema = z.object({
-  name: z.string().default(""),
-});
-
-router.get("/:username/:repository/branches", async (req: Request, res: Response) => {
-  await checkExistanceOfRepository(req);
-
+branchesRoutes.get("/", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
   const { name } = getBranchesQuerySchema.parse(req.query);
-  const { username, repository } = commonParamsSchema.parse(req.params);
-
-  res.send(await branchesService.findMany(username, repository, name));
+  const { owner, name: repoName } = res.locals.repository as Repository;
+  res.send(await branchesService.findMany(owner, repoName, name));
 });
 
-const createBranchBodySchema = z.object({
-  source: z.string(),
-  branchName: z.string(),
-});
-
-router.post("/:username/:repository/branches", async (req: Request, res: Response) => {
-  await checkExistanceOfRepository(req);
-
-  const { username, repository } = commonParamsSchema.parse(req.params);
+branchesRoutes.post("/", isAllowedToAccessRepo(), async (req: Request, res: Response) => {
   const { source, branchName } = createBranchBodySchema.parse(req.body);
-
-  res.send(await branchesService.create(username, repository, source, branchName));
+  const { owner, name: repoName } = res.locals.repository as Repository;
+  res.send(await branchesService.create(owner, repoName, source, branchName));
 });
 
-const modifyBranchParamsSchema = z.object({
-  username: z.string(),
-  repository: z.string(),
-  branchName: z.string(),
-});
-
-const renameBranchBodySchema = z.object({
-  newBranchName: z.string(),
-});
-
-router.put("/:username/:repository/branches/:branchName", async (req: Request, res: Response) => {
-  await checkExistanceOfRepository(req);
-
-  const { username, repository, branchName } = modifyBranchParamsSchema.parse(req.params);
+branchesRoutes.put("/:branchName", isAllowedToAccessRepo(), async (req: Request, res: Response) => {
   const { newBranchName } = renameBranchBodySchema.parse(req.body);
-
-  res.send(await branchesService.rename(username, repository, branchName, newBranchName));
+  const { owner, name: repoName } = res.locals.repository as Repository;
+  res.send(await branchesService.rename(owner, repoName, req.params.branchName, newBranchName));
 });
 
-router.delete("/:username/:repository/branches/:branchName", async (req: Request, res: Response) => {
-  await checkExistanceOfRepository(req);
-
-  const { username, repository, branchName } = modifyBranchParamsSchema.parse(req.params);
-
-  res.send(await branchesService.remove(username, repository, branchName));
+branchesRoutes.delete("/:branchName", isAllowedToAccessRepo(), async (req: Request, res: Response) => {
+  const { owner, name: repoName } = res.locals.repository as Repository;
+  res.send(await branchesService.remove(owner, repoName, req.params.branchName));
 });
 
-async function checkExistanceOfRepository(req: Request) {
-  await getRepoIdFromPath(req);
-}
-
-export { router as branchesRoutes };
+export { branchesRoutes };

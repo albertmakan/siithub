@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useQuery } from "react-query";
+import { type Repository } from "../repository/repository.service";
 
 type Commit = {
   message: string;
@@ -15,16 +16,11 @@ type TreeEntry = {
   commit: Commit;
 };
 
-export function useTree(
-  username: string,
-  repoName: string,
-  branch: string,
-  treePath: string,
-  dependencies: any[] = []
-) {
+export function useTree(repositoryId: Repository["_id"], branch: string, treePath: string, dependencies: any[] = []) {
   const { data, error, isLoading } = useQuery(
-    [`tree_${username}/${repoName}/${branch}/${treePath}`, ...dependencies],
-    () => axios.get(`/api/${username}/${repoName}/tree/${encodeURIComponent(branch)}/${encodeURIComponent(treePath)}`),
+    [`tree_${repositoryId}/${branch}/${treePath}`, ...dependencies],
+    () =>
+      axios.get(`/api/repositories/${repositoryId}/tree/${encodeURIComponent(branch)}/${encodeURIComponent(treePath)}`),
     {
       enabled: dependencies.reduce((acc, d) => acc && !d, true),
     }

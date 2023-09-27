@@ -54,12 +54,31 @@ async function removeCollaborator(collaborator: CollaboratorRemove): Promise<Col
   return await collaboratorsRepo.crud.delete(existingCollaborator._id);
 }
 
+async function resolveUsers(collaborators: Collaborator[], name: string) {
+  const collaboratorUserIds = collaborators?.map((c) => c.userId);
+  const users = await userService.findManyByIds(collaboratorUserIds, {
+    name: { $regex: name, $options: "i" },
+  });
+  const usersMap = users.reduce((acc: { [id: string]: User }, user: User) => {
+    acc[user._id.toString()] = user;
+    return acc;
+  }, {});
+
+  return collaborators
+    .map((c) => ({
+      ...c,
+      user: usersMap[c.userId.toString()],
+    }))
+    .filter((c) => !!c.user);
+}
+
 export type CollaboratorService = {
   add(collaborator: CollaboratorAdd, onGitServerToo?: boolean): Promise<Collaborator | null>;
   remove(collaborator: CollaboratorRemove): Promise<Collaborator | null>;
   findByRepository(repositoryId: Repository["_id"]): Promise<Collaborator[]>;
   findByUser(userId: User["_id"]): Promise<Collaborator[]>;
   findByRepositoryAndUser(repositoryId: Repository["_id"], userId: User["_id"]): Promise<Collaborator | null>;
+  resolveUsers(collaborators: Collaborator[], name: string): Promise<(Collaborator & { user: User })[]>;
 };
 
 const collaboratorsService: CollaboratorService = {
@@ -68,6 +87,7 @@ const collaboratorsService: CollaboratorService = {
   findByRepository,
   findByUser,
   findByRepositoryAndUser,
+  resolveUsers,
 };
 
 export { collaboratorsService };

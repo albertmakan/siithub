@@ -22,7 +22,7 @@ export function createRepository(owner: string, repository: CreateRepository) {
 }
 
 export function deleteRepository(username: string, repo: string) {
-  return () => axios.delete(`/api/repositories/${username}/${repo}`);
+  return () => axios.delete(`/api/repositories/r/${username}/${repo}`);
 }
 
 export function searchRepositories(owner: string, term: string) {

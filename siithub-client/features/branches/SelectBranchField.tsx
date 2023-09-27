@@ -1,25 +1,24 @@
 import { type FC } from "react";
 import AsyncSelect from "react-select/async";
 import { type Branch, getBranches } from "./branchesActions";
+import { useRepositoryContext } from "../repository/RepositoryContext";
 
 type SelectBranchFieldProps = {
-  repo: string;
-  username: string;
   showLabel?: boolean;
   defaultBranch?: string;
   onChange: (branch: string) => any;
 };
 
 export const SelectBranchField: FC<SelectBranchFieldProps> = ({
-  repo,
-  username,
+  onChange,
   showLabel = true,
   defaultBranch = undefined,
-  onChange,
 }) => {
+  const repositoryId = useRepositoryContext().repository?._id ?? "";
+
   const loadOptions = (inputValue: string, callback: (options: any[]) => void) => {
-    getBranches(username, repo, inputValue).then((resp: any) => {
-      const branchOptions = resp?.data.map((b: Branch) => ({ value: b, label: b }));
+    getBranches(repositoryId, inputValue).then((resp: any) => {
+      const branchOptions = ((resp?.data ?? []) as Branch[]).map((b) => ({ value: b, label: b }));
       callback(branchOptions);
     });
   };

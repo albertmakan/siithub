@@ -10,21 +10,20 @@ import { useAction } from "../../core/hooks/useAction";
 import { useNotifications } from "../../core/hooks/useNotifications";
 import { useZodValidatedFrom } from "../../core/hooks/useZodValidatedForm";
 import { extractErrorMessage } from "../../core/utils/errors";
-import { createFork, type CreateFork, forkSchema } from "./repository.service";
+import { createFork, type CreateFork, forkSchema, type Repository } from "./repository.service";
 import { useFork } from "./useRepositories";
 import { useRepositoryContext } from "./RepositoryContext";
 
-type CreateForkFormProps = {
-  repo: string;
-  username: string;
-};
-
-export const CreateForkForm: FC<CreateForkFormProps> = ({ username, repo }) => {
+export const CreateForkForm: FC = () => {
   const router = useRouter();
   const notifications = useNotifications();
+
   const myUsername = (useAuthContext()?.user as AuthUser)?.username;
-  const defaultBranch = useRepositoryContext().repository?.defaultBranch;
-  const { fork } = useFork(username, repo, myUsername);
+
+  const { repository } = useRepositoryContext();
+  const { owner, name, defaultBranch } = repository as Repository;
+
+  const { fork } = useFork(owner, name, myUsername);
   const defaultBranchName = defaultBranch ?? "master";
   const { setResult } = useResult("create-fork");
   const [, setToggle] = useState(false);
@@ -37,14 +36,14 @@ export const CreateForkForm: FC<CreateForkFormProps> = ({ username, repo }) => {
     getValues,
     setValue,
   } = useZodValidatedFrom<CreateFork>(forkSchema, {
-    name: repo,
+    name,
     only1Branch: defaultBranchName,
   });
 
   const createForkAction = useAction<CreateFork>(
     (fork) => {
       setCopying(true);
-      return createFork(fork, username, repo);
+      return createFork(fork, owner, name);
     },
     {
       onSuccess: () => {

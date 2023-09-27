@@ -2,7 +2,7 @@ import { labelService } from "./label.service";
 import { type Label } from "./label.model";
 import { type Repository } from "../repository/repository.model";
 
-async function seedDefaultLabels(repositoryId: Repository["_id"]): Promise<Label[]> {
+async function seedDefaultLabels(repositoryId: Repository["_id"]) {
   const labels = [
     {
       name: "bug",
@@ -43,12 +43,12 @@ async function seedDefaultLabels(repositoryId: Repository["_id"]): Promise<Label
     {
       name: "#wontfix",
       description: "This will not be worked on",
-      color: "ffffff",
+      color: "#ffffff",
       repositoryId,
     },
-  ] as Label[];
+  ];
 
-  const createdLabels: Label[] = [];
+  const createdLabels = [];
   for (const label of labels) {
     try {
       createdLabels.push((await labelService.create(label)) as Label);

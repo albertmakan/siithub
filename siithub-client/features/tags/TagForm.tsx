@@ -32,9 +32,9 @@ const tagSchema = z.object({
 
 type TagSchemaType = z.infer<typeof tagSchema>;
 
-export const TagForm: FC = ({}) => {
+export const TagForm: FC = () => {
   const { repository } = useRepositoryContext();
-  const { owner, name, defaultBranch } = repository as Repository;
+  const { owner, name, defaultBranch, _id } = repository as Repository;
   const { setResult } = useResult("tags");
   const { branches } = useBranches(owner, name);
 
@@ -48,7 +48,7 @@ export const TagForm: FC = ({}) => {
 
   const description = watch("description");
 
-  const createTagAction = useAction<TagCreate>(createTag(owner, name), {
+  const createTagAction = useAction<TagCreate>(createTag(_id), {
     onSuccess: () => {
       notifications.success("You have successfully created a new tag.");
       setResult({ status: ResultStatus.Ok, type: "CREATE_TAG" });

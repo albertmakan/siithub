@@ -3,20 +3,11 @@ import { DirectoryTable } from "../../../../../features/tree/DirectoryTable";
 
 const Tree = () => {
   const router = useRouter();
-  const { repository, username, branch } = router.query;
+  const { branch } = router.query;
 
   if (!branch) return <></>;
 
-  return (
-    <>
-      <DirectoryTable
-        repoName={repository?.toString() ?? ""}
-        username={username?.toString() ?? ""}
-        branch={branch.toString()}
-        treePath={""}
-      />
-    </>
-  );
+  return <DirectoryTable branch={branch.toString()} treePath={""} />;
 };
 
 export default Tree;

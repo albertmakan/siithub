@@ -1,4 +1,4 @@
-import { type FC, useState } from "react";
+import { type FC, useState, useEffect } from "react";
 import { useAuthContext } from "../../core/contexts/Auth";
 import { ChooseLabelsField } from "../common/ChooseLabelsField";
 import { assignLabelToPR, unassignLabelFromPR, usePullRequestContext } from "./PullRequestContext";
@@ -9,27 +9,27 @@ export const LabelsForm: FC = () => {
   const executedBy = user?._id ?? "";
 
   const { pullRequest, pullRequestDispatcher } = usePullRequestContext();
-  const [selectedLabels, setSelectedLabels] = useState<any>(pullRequest.csm.labels);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
 
-  const onLabelChange = (labels: any): void => {
+  useEffect(() => setSelectedLabels(pullRequest.csm.labels ?? []), [pullRequest.csm.labels]);
+
+  const onLabelChange = (labels: string[]): void => {
     if (labels.length > selectedLabels.length) {
       const added = findDifference(labels, selectedLabels);
-      pullRequestDispatcher(assignLabelToPR(pullRequest, added, executedBy));
+      if (added) pullRequestDispatcher(assignLabelToPR(pullRequest, added, executedBy));
     } else {
       const removed = findDifference(selectedLabels, labels);
-      pullRequestDispatcher(unassignLabelFromPR(pullRequest, removed, executedBy));
+      if (removed) pullRequestDispatcher(unassignLabelFromPR(pullRequest, removed, executedBy));
     }
-
     setSelectedLabels(labels);
   };
 
   return (
-    <>
-      <ChooseLabelsField
-        repositoryId={pullRequest.repositoryId}
-        selectedLabels={selectedLabels}
-        onLabelChange={onLabelChange}
-      />
-    </>
+    <ChooseLabelsField
+      key={selectedLabels.length}
+      repositoryId={pullRequest.repositoryId}
+      selectedLabels={selectedLabels}
+      onLabelChange={onLabelChange}
+    />
   );
 };

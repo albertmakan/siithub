@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useQuery } from "react-query";
+import { type Repository } from "../repository/repository.service";
 
 export type PulseInsights = {
   totalPrs: number;
@@ -10,10 +11,10 @@ export type PulseInsights = {
   newIssues: number;
 };
 
-export function usePulseInsights(username: string, repoName: string, dependencies: any[] = []) {
+export function usePulseInsights(repositoryId: Repository["_id"], dependencies: any[] = []) {
   const { data, error, isLoading } = useQuery(
-    [`contributor_insights${username}/${repoName}`, ...dependencies],
-    () => axios.get(`/api/${username}/${repoName}/insights/pulse`),
+    [`contributor_insights_${repositoryId}`, ...dependencies],
+    () => axios.get(`/api/repositories/${repositoryId}/insights/pulse`),
     {
       enabled: dependencies.reduce((acc, d) => acc && !!d, true),
     }
@@ -46,10 +47,10 @@ export type ContributorInsights = {
   }[];
 };
 
-export function useContributorInsights(username: string, repoName: string, branch: string, dependencies: any[] = []) {
+export function useContributorInsights(repositoryId: Repository["_id"], branch: string, dependencies: any[] = []) {
   const { data, error, isLoading } = useQuery(
-    [`contributor_insights${username}/${repoName}/${branch}`, ...dependencies],
-    () => axios.get(`/api/${username}/${repoName}/insights/contributors/${encodeURIComponent(branch)}`),
+    [`contributor_insights_${repositoryId}/${branch}`, ...dependencies],
+    () => axios.get(`/api/repositories/${repositoryId}/insights/contributors/${encodeURIComponent(branch)}`),
     {
       enabled: dependencies.reduce((acc, d) => acc && !!d, true),
     }
@@ -66,10 +67,10 @@ export type CommitsInsights = {
   daily: GroupedCommitCount[];
 };
 
-export function useCommitsInsights(username: string, repoName: string, branch: string, dependencies: any[] = []) {
+export function useCommitsInsights(repositoryId: Repository["_id"], branch: string, dependencies: any[] = []) {
   const { data, error, isLoading } = useQuery(
-    [`commits_insights${username}/${repoName}/${branch}`, ...dependencies],
-    () => axios.get(`/api/${username}/${repoName}/insights/commits/${encodeURIComponent(branch)}`),
+    [`commits_insights_${repositoryId}/${branch}`, ...dependencies],
+    () => axios.get(`/api/repositories/${repositoryId}/insights/commits/${encodeURIComponent(branch)}`),
     {
       enabled: dependencies.reduce((acc, d) => acc && !!d, true),
     }
@@ -87,10 +88,10 @@ export type CodeFrequencyInsight = {
   dels: number;
 };
 
-export function useCodeFrequencyInsights(username: string, repoName: string, branch: string, dependencies: any[] = []) {
+export function useCodeFrequencyInsights(repositoryId: Repository["_id"], branch: string, dependencies: any[] = []) {
   const { data, error, isLoading } = useQuery(
-    [`code_frequency_insights${username}/${repoName}/${branch}`, ...dependencies],
-    () => axios.get(`/api/${username}/${repoName}/insights/frequency/${encodeURIComponent(branch)}`),
+    [`code_frequency_insights_${repositoryId}/${branch}`, ...dependencies],
+    () => axios.get(`/api/repositories/${repositoryId}/insights/frequency/${encodeURIComponent(branch)}`),
     {
       enabled: dependencies.reduce((acc, d) => acc && !!d, true),
     }

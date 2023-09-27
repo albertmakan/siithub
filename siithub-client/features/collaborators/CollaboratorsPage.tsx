@@ -2,22 +2,20 @@ import { type FC, useEffect, useState } from "react";
 import { useCollaborators } from "./useCollaborators";
 import { CollaboratorsTable } from "./CollaboratorsTable";
 import { useResult } from "../../core/contexts/Result";
-import { CollaboratorsSearchForm } from "./CollaboratorsSearchForm";
 import { Button } from "../../core/components/Button";
 import { useRefresh } from "../../core/hooks/useRefresh";
 import { CollaboratorsForm } from "./CollaboratorsForm";
 import { Modal } from "../../core/components/Modal";
+import { useRepositoryContext } from "../repository/RepositoryContext";
+import { InputField } from "../../core/components/InputField";
 
-type CollaboratorsPageProps = {
-  repo: string;
-  username: string;
-};
+export const CollaboratorsPage: FC = () => {
+  const repoId = useRepositoryContext().repository?._id ?? "";
 
-export const CollaboratorsPage: FC<CollaboratorsPageProps> = ({ repo, username }) => {
   const [name, setName] = useState("");
   const { key, refresh } = useRefresh("collaboratorsSearchForm");
   const { result, setResult } = useResult("collaborators");
-  const { collaborators } = useCollaborators(username, repo, name, [result]);
+  const { collaborators } = useCollaborators(repoId, name, [result]);
 
   useEffect(() => {
     if (!result) return;
@@ -43,7 +41,7 @@ export const CollaboratorsPage: FC<CollaboratorsPageProps> = ({ repo, username }
       </div>
 
       <Modal title="Add Collaborator" isOpen={isOpen} onClose={() => setIsOpen(false)}>
-        <CollaboratorsForm repo={repo} username={username} />
+        <CollaboratorsForm />
       </Modal>
 
       <div className="hidden sm:block" aria-hidden="true">
@@ -55,7 +53,7 @@ export const CollaboratorsPage: FC<CollaboratorsPageProps> = ({ repo, username }
       <div className="overflow-hidden shadow sm:rounded-md px-4 py-3">
         <div className="mb-4 grid grid-cols-12">
           <div key={key} className="col-span-11">
-            <CollaboratorsSearchForm existingName={name} onNameChange={setName} />
+            <InputField label="Name" formElement={{ value: name, onChange: (e: any) => setName(e.target.value) }} />
           </div>
 
           <div className="mt-8 col-span-1 text-right">
@@ -63,7 +61,7 @@ export const CollaboratorsPage: FC<CollaboratorsPageProps> = ({ repo, username }
           </div>
         </div>
 
-        <CollaboratorsTable repo={repo} username={username} collaborators={collaborators} />
+        <CollaboratorsTable collaborators={collaborators} />
       </div>
     </>
   );

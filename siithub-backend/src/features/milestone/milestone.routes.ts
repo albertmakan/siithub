@@ -1,15 +1,12 @@
 import { type Request, type Response, Router } from "express";
+import "express-async-errors";
 import { z } from "zod";
 import type { MilestoneCreate, MilestoneUpdate } from "./milestone.model";
 import { milestoneService } from "./milestone.service";
-import "express-async-errors";
-import { optionalDateString } from "../../utils/zod";
-import { getRepoIdFromPath } from "../../utils/getRepo";
-import { ObjectId } from "mongodb";
-import { authorize } from "../auth/auth.middleware";
+import { localIdSchema, optionalDateString } from "../../utils/zod";
 import { isAllowedToAccessRepo } from "../collaborators/collaborators.middleware";
 
-const router = Router();
+const milestoneRoutes = Router();
 
 const milestoneBodySchema = z.object({
   title: z.string().trim().min(1, "Title is required."),
@@ -20,126 +17,49 @@ const milestoneBodySchema = z.object({
 const createMilestoneBodySchema = milestoneBodySchema;
 const updateMilestoneBodySchema = milestoneBodySchema;
 
-const localIdSchema = z.number().min(0);
+milestoneRoutes.get("/", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const isOpen = { closed: false, open: true }[req.query.state + ""];
+  const repositoryId = res.locals.repository._id;
+  res.send(await milestoneService.findByRepositoryId(repositoryId, isOpen));
+});
 
-router.get(
-  "/repositories/:repositoryId/milestones",
-  authorize(),
-  isAllowedToAccessRepo(true),
-  async (req: Request, res: Response) => {
-    const repositoryId = new ObjectId(req.params.repositoryId);
+milestoneRoutes.get("/:localId", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const localId = localIdSchema.parse(+req.params.localId);
+  const repositoryId = res.locals.repository._id;
+  res.send(await milestoneService.findByRepositoryIdAndLocalId(repositoryId, localId));
+});
 
-    res.send(await milestoneService.searchByTitle("", repositoryId));
-  }
-);
+milestoneRoutes.post("/", isAllowedToAccessRepo(), async (req: Request, res: Response) => {
+  const createMilestone = createMilestoneBodySchema.parse(req.body);
+  const milestone = createMilestone as MilestoneCreate;
+  milestone.repositoryId = res.locals.repository._id;
+  res.send(await milestoneService.create(milestone));
+});
 
-router.get(
-  "/:username/:repository/milestones/search",
-  authorize(),
-  isAllowedToAccessRepo(true),
-  async (req: Request, res: Response) => {
-    const title = req.query.title;
-    const repositoryId = await getRepoIdFromPath(req);
-    if (!title) {
-      res.send(await milestoneService.findByRepositoryId(repositoryId));
-    } else {
-      res.send(await milestoneService.searchByTitle(title.toString(), repositoryId));
-    }
-  }
-);
+milestoneRoutes.put("/:localId", isAllowedToAccessRepo(), async (req: Request, res: Response) => {
+  const updateMilestone = updateMilestoneBodySchema.parse(req.body);
+  const milestone = updateMilestone as MilestoneUpdate;
+  milestone.localId = localIdSchema.parse(+req.params.localId);
+  milestone.repositoryId = res.locals.repository._id;
+  res.send(await milestoneService.update(milestone));
+});
 
-router.get(
-  "/:username/:repository/milestones",
-  authorize(),
-  isAllowedToAccessRepo(true),
-  async (req: Request, res: Response) => {
-    const isOpen = req.query.state !== "closed";
-    const repositoryId = await getRepoIdFromPath(req);
-    res.send(await milestoneService.findByRepositoryId(repositoryId, isOpen));
-  }
-);
+milestoneRoutes.delete("/:localId", isAllowedToAccessRepo(), async (req: Request, res: Response) => {
+  const localId = localIdSchema.parse(+req.params.localId);
+  const repositoryId = res.locals.repository._id;
+  res.send(await milestoneService.delete(repositoryId, localId));
+});
 
-router.get(
-  "/:username/:repository/milestones/:localId",
-  authorize(),
-  isAllowedToAccessRepo(true),
-  async (req: Request, res: Response) => {
-    const localId = localIdSchema.parse(+req.params.localId);
-    const repositoryId = await getRepoIdFromPath(req);
-    res.send(await milestoneService.findByRepositoryIdAndLocalId(repositoryId, localId));
-  }
-);
+milestoneRoutes.put("/:localId/close", isAllowedToAccessRepo(), async (req: Request, res: Response) => {
+  const localId = localIdSchema.parse(+req.params.localId);
+  const repositoryId = res.locals.repository._id;
+  res.send(await milestoneService.changeStatus(repositoryId, localId, false));
+});
 
-router.post(
-  "/:username/:repository/milestones",
-  authorize(),
-  isAllowedToAccessRepo(),
-  async (req: Request, res: Response) => {
-    const createMilestone = createMilestoneBodySchema.safeParse(req.body);
+milestoneRoutes.put("/:localId/open", isAllowedToAccessRepo(), async (req: Request, res: Response) => {
+  const localId = localIdSchema.parse(+req.params.localId);
+  const repositoryId = res.locals.repository._id;
+  res.send(await milestoneService.changeStatus(repositoryId, localId, true));
+});
 
-    if (!createMilestone.success) {
-      res.status(400).send(createMilestone.error.issues);
-      return;
-    }
-
-    const milestone = createMilestone.data as MilestoneCreate;
-    milestone.repositoryId = await getRepoIdFromPath(req);
-
-    res.send(await milestoneService.create(milestone));
-  }
-);
-
-router.put(
-  "/:username/:repository/milestones/:localId",
-  authorize(),
-  isAllowedToAccessRepo(),
-  async (req: Request, res: Response) => {
-    const updateMilestone = updateMilestoneBodySchema.safeParse(req.body);
-
-    if (!updateMilestone.success) {
-      res.status(400).send(updateMilestone.error.issues);
-      return;
-    }
-
-    const milestone = updateMilestone.data as MilestoneUpdate;
-    milestone.localId = localIdSchema.parse(+req.params.localId);
-    milestone.repositoryId = await getRepoIdFromPath(req);
-
-    res.send(await milestoneService.update(milestone));
-  }
-);
-
-router.delete(
-  "/:username/:repository/milestones/:localId",
-  authorize(),
-  isAllowedToAccessRepo(),
-  async (req: Request, res: Response) => {
-    const localId = localIdSchema.parse(+req.params.localId);
-    const repositoryId = await getRepoIdFromPath(req);
-    res.send(await milestoneService.delete(repositoryId, localId));
-  }
-);
-
-router.put(
-  "/:username/:repository/milestones/:localId/close",
-  authorize(),
-  isAllowedToAccessRepo(),
-  async (req: Request, res: Response) => {
-    const localId = localIdSchema.parse(+req.params.localId);
-    const repositoryId = await getRepoIdFromPath(req);
-    res.send(await milestoneService.changeStatus(repositoryId, localId, false));
-  }
-);
-
-router.put(
-  "/:username/:repository/milestones/:localId/open",
-  authorize(),
-  isAllowedToAccessRepo(),
-  async (req: Request, res: Response) => {
-    const localId = localIdSchema.parse(+req.params.localId);
-    const repositoryId = await getRepoIdFromPath(req);
-    res.send(await milestoneService.changeStatus(repositoryId, localId, true));
-  }
-);
-
-export { milestoneBodySchema, router as milestoneRoutes };
+export { milestoneBodySchema, milestoneRoutes };

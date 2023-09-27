@@ -6,25 +6,20 @@ import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import { StarIcon as StarOutline } from "@heroicons/react/24/outline";
 import { useAction } from "../../core/hooks/useAction";
 import { addStarFor, removeStarFor } from "./starActions";
+import { type Repository } from "../repository/repository.service";
 
-type StarButtonProps = {
-  repo: string;
-  username: string;
-  count: number;
-};
-
-export const StarButton: FC<StarButtonProps> = ({ repo, username, count }) => {
+export const StarButton: FC<{ repositoryId: Repository["_id"]; count: number }> = ({ count, repositoryId }) => {
   const userId = (useAuthContext()?.user as AuthUser)?._id;
   const { result, setResult } = useResult("stars");
-  const { star } = useStar(username, repo, [result]);
+  const { star } = useStar(repositoryId, [result]);
 
-  const addStarAction = useAction(addStarFor(username, repo), {
+  const addStarAction = useAction(addStarFor(repositoryId), {
     onSuccess: () => {
       setResult({ status: ResultStatus.Ok, type: "ADD_STAR" });
     },
     onError: () => {},
   });
-  const removeStarAction = useAction(removeStarFor(username, repo), {
+  const removeStarAction = useAction(removeStarFor(repositoryId), {
     onSuccess: () => {
       setResult({ status: ResultStatus.Ok, type: "REMOVE_STAR" });
     },

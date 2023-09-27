@@ -4,15 +4,13 @@ import { ResultStatus, useResult } from "../../core/contexts/Result";
 import { LabelForm } from "./LabelForm";
 import { LabelsTable } from "./LabelsTable";
 import { useSearchLabels } from "./useLabels";
-import { LabelsSearchForm } from "./LabelsSearchForm";
 import { useRefresh } from "../../core/hooks/useRefresh";
-import { type Repository } from "../repository/repository.service";
+import { InputField } from "../../core/components/InputField";
+import { useRepositoryContext } from "../repository/RepositoryContext";
 
-type LabelsPageProps = {
-  repositoryId: Repository["_id"];
-};
+export const LabelsPage: FC = () => {
+  const repositoryId = useRepositoryContext().repository?._id ?? "";
 
-export const LabelsPage: FC<LabelsPageProps> = ({ repositoryId }) => {
   const { key, refresh } = useRefresh("labelSearchForm");
   const [name, setName] = useState("");
 
@@ -46,7 +44,7 @@ export const LabelsPage: FC<LabelsPageProps> = ({ repositoryId }) => {
 
       <div className="ml-2 grid grid-cols-12 gap-6">
         <div key={key} className="col-span-9">
-          <LabelsSearchForm existingName={name} onNameChange={setName} />
+          <InputField label="Name" formElement={{ value: name, onChange: (e: any) => setName(e.target.value) }} />
         </div>
 
         <div className="col-span-3 mt-6">
@@ -60,11 +58,11 @@ export const LabelsPage: FC<LabelsPageProps> = ({ repositoryId }) => {
       </div>
 
       <div key={visibility + ""} hidden={visibility} className="mt-5 md:col-span-2 md:mt-0">
-        <LabelForm repositoryId={repositoryId} />
+        <LabelForm />
       </div>
 
       <div className="py-3">
-        <LabelsTable repositoryId={repositoryId} labels={labels} />
+        <LabelsTable labels={labels} />
       </div>
     </>
   );

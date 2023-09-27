@@ -2,11 +2,13 @@ import { type FC } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useCodeFrequencyInsights } from "./useInsights";
 import { useRepositoryContext } from "../repository/RepositoryContext";
+import { type Repository } from "../repository/repository.service";
 
-export const CodeFrequencyInsights: FC<{ repo: string; username: string }> = ({ username, repo }) => {
-  const defaultBranch = useRepositoryContext().repository?.defaultBranch;
+export const CodeFrequencyInsights: FC = () => {
+  const { repository } = useRepositoryContext();
+  const { _id, defaultBranch } = repository as Repository;
 
-  const { insights, isLoading } = useCodeFrequencyInsights(username, repo, defaultBranch ?? "", [defaultBranch]);
+  const { insights, isLoading } = useCodeFrequencyInsights(_id, defaultBranch ?? "", [defaultBranch]);
 
   if (!defaultBranch) return <>This repository is empty</>;
   if (isLoading || !insights) return <>loading...</>;

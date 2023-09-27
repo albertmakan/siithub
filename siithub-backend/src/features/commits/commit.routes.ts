@@ -1,63 +1,44 @@
 import { type Request, type Response, Router } from "express";
 import "express-async-errors";
-import { getRepoIdFromPath } from "../../utils/getRepo";
 import { commitService } from "./commit.service";
+import { isAllowedToAccessRepo } from "../collaborators/collaborators.middleware";
+import { type Repository } from "../repository/repository.model";
 
-const router = Router();
+const commitRoutes = Router();
 
-router.get("/:username/:repository/commits/between", async (req: Request, res: Response) => {
-  await getRepoIdFromPath(req);
-  const { username, repository } = req.params as any;
-  const { base, compare } = req.query as any;
-
-  res.send(await commitService.getCommitsBetweenBranches(username, repository, base, compare));
+commitRoutes.get("/between/:base/:compare", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const { owner, name } = res.locals.repository as Repository;
+  res.send(await commitService.getCommitsBetweenBranches(owner, name, req.params.base, req.params.compare));
 });
 
-router.get("/:username/:repository/commits/between/diff", async (req: Request, res: Response) => {
-  await getRepoIdFromPath(req);
-  const { username, repository } = req.params as any;
-  const { base, compare } = req.query as any;
-
-  res.send(await commitService.getCommitsDiffBetweenBranches(username, repository, base, compare));
+commitRoutes.get("/diff/:base/:compare", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const { owner, name } = res.locals.repository as Repository;
+  res.send(await commitService.getCommitsDiffBetweenBranches(owner, name, req.params.base, req.params.compare));
 });
 
-router.get("/:username/:repository/commits/:branch", async (req: Request, res: Response) => {
-  const repoId = await getRepoIdFromPath(req);
-  res.send(await commitService.getCommits(req.params.username, req.params.repository, req.params.branch));
+commitRoutes.get("/history/:branch", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const { owner, name } = res.locals.repository as Repository;
+  res.send(await commitService.getCommits(owner, name, req.params.branch));
 });
 
-router.get("/:username/:repository/commits/:branch/with-diff", async (req: Request, res: Response) => {
-  const repoId = await getRepoIdFromPath(req);
-  res.send(await commitService.getCommitsWithDiff(req.params.username, req.params.repository, req.params.branch));
+commitRoutes.get("/history/:branch/:filePath", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const { owner, name } = res.locals.repository as Repository;
+  res.send(await commitService.getFileHistoryCommits(owner, name, req.params.branch, req.params.filePath));
 });
 
-router.get("/:username/:repository/commits/:branch/:filePath", async (req: Request, res: Response) => {
-  const repoId = await getRepoIdFromPath(req);
-  res.send(
-    await commitService.getFileHistoryCommits(
-      req.params.username,
-      req.params.repository,
-      req.params.branch,
-      req.params.filePath
-    )
-  );
+commitRoutes.get("/count/:branch", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const { owner, name } = res.locals.repository as Repository;
+  res.send(await commitService.getCommitCount(owner, name, req.params.branch));
 });
 
-router.get("/:username/:repository/commit-count/:branch", async (req: Request, res: Response) => {
-  const repoId = await getRepoIdFromPath(req);
-  res.send(await commitService.getCommitCount(req.params.username, req.params.repository, req.params.branch));
+commitRoutes.get("/:sha", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const { owner, name } = res.locals.repository as Repository;
+  res.send(await commitService.getCommit(owner, name, req.params.sha));
 });
 
-router.get("/:username/:repository/commit/:sha", async (req: Request, res: Response) => {
-  const repoId = await getRepoIdFromPath(req);
-  res.send(await commitService.getCommit(req.params.username, req.params.repository, req.params.sha));
+commitRoutes.get("/blob-info/:branch/:blobPath", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const { owner, name } = res.locals.repository as Repository;
+  res.send(await commitService.getFileInfo(owner, name, req.params.branch, req.params.blobPath));
 });
 
-router.get("/:username/:repository/blob-info/:branch/:blobPath", async (req: Request, res: Response) => {
-  const repoId = await getRepoIdFromPath(req);
-  res.send(
-    await commitService.getFileInfo(req.params.username, req.params.repository, req.params.branch, req.params.blobPath)
-  );
-});
-
-export { router as commitRoutes };
+export { commitRoutes };

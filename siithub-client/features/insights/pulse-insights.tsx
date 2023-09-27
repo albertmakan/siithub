@@ -6,9 +6,12 @@ import {
 } from "@heroicons/react/24/outline";
 import { type FC } from "react";
 import { usePulseInsights } from "./useInsights";
+import { useRepositoryContext } from "../repository/RepositoryContext";
 
-export const PulseInsights: FC<{ repo: string; username: string }> = ({ username, repo }) => {
-  const { insights, isLoading } = usePulseInsights(username, repo);
+export const PulseInsights: FC = () => {
+  const repoId = useRepositoryContext().repository?._id;
+
+  const { insights, isLoading } = usePulseInsights(repoId ?? "");
 
   if (isLoading || !insights) return <>loading...</>;
 

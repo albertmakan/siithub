@@ -10,16 +10,16 @@ import { useNotifications } from "../../core/hooks/useNotifications";
 import { extractErrorMessage } from "../../core/utils/errors";
 import { closeMilestoneFor, deleteMilestoneFor, type Milestone, openMilestoneFor } from "./milestoneActions";
 import { useMilestones } from "./useMilestones";
+import { useRepositoryContext } from "../repository/RepositoryContext";
+import { type Repository } from "../repository/repository.service";
 
-type MilestonesPageProps = {
-  repo: string;
-  username: string;
-};
+export const MilestonesPage: FC = () => {
+  const { repository } = useRepositoryContext();
+  const { owner, name, _id } = repository as Repository;
 
-export const MilestonesPage: FC<MilestonesPageProps> = ({ repo, username }) => {
   const [open, setOpen] = useState(true);
   const { result, setResult } = useResult("milestones");
-  const { milestones, error } = useMilestones(username, repo, open, [result]);
+  const { milestones, error } = useMilestones(_id, open, [result]);
   const notifications = useNotifications();
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export const MilestonesPage: FC<MilestonesPageProps> = ({ repo, username }) => {
     setResult(undefined);
   }, [result, setResult]);
 
-  const deleteMilestoneAction = useAction(deleteMilestoneFor(username, repo), {
+  const deleteMilestoneAction = useAction(deleteMilestoneFor(_id), {
     onSuccess: () => {
       notifications.success("You have successfully deleted milestone.");
       setResult({ status: ResultStatus.Ok, type: "DELETE_Milestone" });
@@ -37,13 +37,13 @@ export const MilestonesPage: FC<MilestonesPageProps> = ({ repo, username }) => {
       setResult({ status: ResultStatus.Error, type: "DELETE_Milestone" });
     },
   });
-  const closeMilestoneAction = useAction(closeMilestoneFor(username, repo), {
+  const closeMilestoneAction = useAction(closeMilestoneFor(_id), {
     onSuccess: () => {
       setResult({ status: ResultStatus.Ok, type: "CLOSE_Milestone" });
     },
     onError: () => {},
   });
-  const openMilestoneAction = useAction(openMilestoneFor(username, repo), {
+  const openMilestoneAction = useAction(openMilestoneFor(_id), {
     onSuccess: () => {
       setResult({ status: ResultStatus.Ok, type: "OPEN_Milestone" });
     },
@@ -60,7 +60,7 @@ export const MilestonesPage: FC<MilestonesPageProps> = ({ repo, username }) => {
     <>
       <div className="px-4 py-3 text-right sm:px-6">
         <Button>
-          <Link href={`/${username}/${repo}/milestones/new`}>New milestone</Link>
+          <Link href={`/${owner}/${name}/milestones/new`}>New milestone</Link>
         </Button>
       </div>
 
@@ -90,7 +90,7 @@ export const MilestonesPage: FC<MilestonesPageProps> = ({ repo, username }) => {
                 <div key={milestone._id} className="bg-white border-b p-4 flex">
                   <div className="w-1/2 m-3">
                     <Link
-                      href={`/${username}/${repo}/milestones/${milestone.localId}`}
+                      href={`/${owner}/${name}/milestones/${milestone.localId}`}
                       className="text-2xl font-semibold cursor-pointer hover:text-blue-500"
                     >
                       {milestone.title}
@@ -114,7 +114,7 @@ export const MilestonesPage: FC<MilestonesPageProps> = ({ repo, username }) => {
                     </p>
                     <div className="flex">
                       <Link
-                        href={`/${username}/${repo}/milestones/${milestone.localId}/edit`}
+                        href={`/${owner}/${name}/milestones/${milestone.localId}/edit`}
                         className="text-base font-semibold text-blue-400 mr-2"
                       >
                         Edit

@@ -9,15 +9,14 @@ import { useNotifications } from "../../core/hooks/useNotifications";
 import { extractErrorMessage } from "../../core/utils/errors";
 import { changeDefaultBranch, removeBranch, renameBranch, type Branch } from "./branchesActions";
 import { SelectBranchField } from "./SelectBranchField";
+import { useRepositoryContext } from "../repository/RepositoryContext";
+import { Repository } from "../repository/repository.service";
 
 type BranchesTableProps = {
-  repo: string;
-  username: string;
   branches: Branch[];
-  defaultBranch: Branch;
 };
 
-const RenameBranchForm = ({ onSubmit }: any) => {
+const RenameBranchForm: FC<{ onSubmit: any }> = ({ onSubmit }) => {
   const [newName, setNewName] = useState("");
 
   return (
@@ -31,7 +30,7 @@ const RenameBranchForm = ({ onSubmit }: any) => {
   );
 };
 
-const ChangeDefaultBranchForm = ({ username, repo, onSubmit }: any) => {
+const ChangeDefaultBranchForm: FC<{ onSubmit: any }> = ({ onSubmit }) => {
   const [newDefaultBranch, setNewDefaultBranch] = useState("");
 
   return (
@@ -41,7 +40,7 @@ const ChangeDefaultBranchForm = ({ username, repo, onSubmit }: any) => {
         onSubmit(newDefaultBranch);
       }}
     >
-      <SelectBranchField username={username} repo={repo} onChange={setNewDefaultBranch} />
+      <SelectBranchField onChange={setNewDefaultBranch} />
 
       <div className="py-3 text-right">
         <Button>Submit</Button>
@@ -50,7 +49,10 @@ const ChangeDefaultBranchForm = ({ username, repo, onSubmit }: any) => {
   );
 };
 
-export const BranchesTable: FC<BranchesTableProps> = ({ repo, username, branches, defaultBranch }) => {
+export const BranchesTable: FC<BranchesTableProps> = ({ branches }) => {
+  const { repository } = useRepositoryContext();
+  const { _id: repositoryId, defaultBranch } = repository as Repository;
+
   const notifications = useNotifications();
   const { setResult: setBranchesResult } = useResult("branches");
   const { setResult: setDefaultBranchResult } = useResult("repositories");
@@ -65,7 +67,7 @@ export const BranchesTable: FC<BranchesTableProps> = ({ repo, username, branches
     setIsRenameOpen(true);
   };
 
-  const renameBranchAction = useAction<any>(renameBranch(username, repo), {
+  const renameBranchAction = useAction<any>(renameBranch(repositoryId), {
     onSuccess: () => {
       notifications.success("You have successfully renamed an existing branch from the repo.");
       setBranchesResult({ status: ResultStatus.Ok, type: "RENAME" });
@@ -83,7 +85,7 @@ export const BranchesTable: FC<BranchesTableProps> = ({ repo, username, branches
     setIsDeleteOpen(true);
   };
 
-  const removeBranchAction = useAction<string>(removeBranch(username, repo), {
+  const removeBranchAction = useAction<string>(removeBranch(repositoryId), {
     onSuccess: () => {
       notifications.success("You have successfully removed an existing branch from the repo.");
       setBranchesResult({ status: ResultStatus.Ok, type: "REMOVE_BRANCH" });
@@ -96,7 +98,7 @@ export const BranchesTable: FC<BranchesTableProps> = ({ repo, username, branches
     },
   });
 
-  const changeDefaultBranchAction = useAction<string>(changeDefaultBranch(username, repo), {
+  const changeDefaultBranchAction = useAction<string>(changeDefaultBranch(repositoryId), {
     onSuccess: () => {
       notifications.success("You have successfully changed default branch for the repo the repo.");
       setDefaultBranchResult({ status: ResultStatus.Ok, type: "CHANGE_BRANCH" });
@@ -132,7 +134,7 @@ export const BranchesTable: FC<BranchesTableProps> = ({ repo, username, branches
       </Modal>
 
       <Modal title="Change default branch" isOpen={isChangeOpen} onClose={() => setIsChangeOpen(false)}>
-        <ChangeDefaultBranchForm username={username} repo={repo} onSubmit={changeDefaultBranchAction} />
+        <ChangeDefaultBranchForm onSubmit={changeDefaultBranchAction} />
       </Modal>
 
       <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
@@ -146,10 +148,10 @@ export const BranchesTable: FC<BranchesTableProps> = ({ repo, username, branches
             </tr>
           </thead>
           <tbody>
-            {branches?.map((branch: Branch, i: number) => (
+            {branches?.map((branch, i) => (
               <tr key={i} className="bg-white border-b">
                 <th scope="row" className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">
-                  {branch} {defaultBranch === branch ? " (default)" : ""}
+                  {branch} {defaultBranch === branch && " (default)"}
                 </th>
                 <td className="py-4 px-6 text-right">
                   {defaultBranch === branch && (

@@ -4,11 +4,13 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { ProfilePicture } from "../../core/components/ProfilePicture";
 import { useContributorInsights } from "./useInsights";
 import { useRepositoryContext } from "../repository/RepositoryContext";
+import { type Repository } from "../repository/repository.service";
 
-export const ContributorsInsights: FC<{ repo: string; username: string }> = ({ username, repo }) => {
-  const defaultBranch = useRepositoryContext().repository?.defaultBranch;
+export const ContributorsInsights: FC = () => {
+  const { repository } = useRepositoryContext();
+  const { _id, defaultBranch } = repository as Repository;
 
-  const { insights, isLoading } = useContributorInsights(username, repo, defaultBranch ?? "", [defaultBranch]);
+  const { insights, isLoading } = useContributorInsights(_id, defaultBranch ?? "", [defaultBranch]);
 
   const [view, setView] = useState("commits");
 

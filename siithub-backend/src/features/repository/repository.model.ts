@@ -23,3 +23,5 @@ export type RepositoryForkCreate = {
   repoOwner: string;
   only1Branch?: string;
 };
+
+export type CounterType = "milestone" | "issue" | "stars" | "pull-request" | "forks";

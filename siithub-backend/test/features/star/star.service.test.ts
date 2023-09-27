@@ -66,9 +66,9 @@ describe("StarService", () => {
       expect(added).toHaveProperty("_id");
       if (!added) return;
 
-      const found = await service.findOneOrThrow(added._id);
+      const found = await service.findByUserIdAndRepoId(user1._id, repo1._id);
       expect(found).not.toBeNull();
-      expect(found._id + "").toBe(added._id + "");
+      expect(found?._id + "").toBe(added._id + "");
 
       count = await service.countByRepoId(repo1._id);
       expect(count).toBe(1);

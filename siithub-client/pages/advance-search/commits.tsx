@@ -11,14 +11,10 @@ const Commits = () => {
   return (
     <>
       <SortComponent
-        options={{
-          "Sort by commit date 🔼": {
-            date: 1,
-          },
-          "Sort by commit date 🔽": {
-            date: -1,
-          },
-        }}
+        options={[
+          { label: "Sort by commit date 🔼", value: { date: 1 } },
+          { label: "Sort by commit date 🔽", value: { date: -1 } },
+        ]}
       />
       <CommitsSearch param={param?.toString() ?? ""} repositoryId={repositoryId?.toString() ?? ""} sort={sort} />
     </>

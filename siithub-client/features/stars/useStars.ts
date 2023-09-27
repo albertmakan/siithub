@@ -1,9 +1,10 @@
 import { useQuery } from "react-query";
-import { User } from "../users/user.model";
+import { type User } from "../users/user.model";
 import { getStar, getStargazers } from "./starActions";
+import { type Repository } from "../repository/repository.service";
 
-export function useStar(username: string, repo: string, dependencies: any[] = []) {
-  const { data, error } = useQuery([`stars_${username}/${repo}`, ...dependencies], () => getStar(username, repo), {
+export function useStar(repositoryId: Repository["_id"], dependencies: any[] = []) {
+  const { data, error } = useQuery([`stars_${repositoryId}`, ...dependencies], () => getStar(repositoryId), {
     enabled: dependencies?.reduce((acc, dep) => acc && !dep, true),
   });
   return {
@@ -12,14 +13,10 @@ export function useStar(username: string, repo: string, dependencies: any[] = []
   };
 }
 
-export function useStargazers(username: string, repo: string, dependencies: any[] = []) {
-  const { data, error } = useQuery(
-    [`stargazers_${username}/${repo}`, ...dependencies],
-    () => getStargazers(username, repo),
-    {
-      enabled: dependencies?.reduce((acc, dep) => acc && !dep, true),
-    }
-  );
+export function useStargazers(repositoryId: Repository["_id"], dependencies: any[] = []) {
+  const { data, error } = useQuery([`stargazers_${repositoryId}`, ...dependencies], () => getStargazers(repositoryId), {
+    enabled: dependencies?.reduce((acc, dep) => acc && !dep, true),
+  });
   return {
     users: data?.data as User[],
     error: (error as any)?.response?.data,

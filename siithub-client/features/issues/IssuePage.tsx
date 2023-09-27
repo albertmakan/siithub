@@ -4,18 +4,19 @@ import { useIssue } from "./useIssue";
 import { LabelsForm } from "./LabelsForm";
 import { initialIssue as emptyIssue, setIssue, useIssueContext } from "./IssueContext";
 import { IssueHistory } from "./IssueHistory";
-import { AssignessForm } from "./AssignessForm";
-import { type Repository } from "../repository/repository.service";
+import { AssigneesForm } from "./AssigneesForm";
 import { MilestonesForm } from "./MilestonesForm";
 import { CommentForm } from "./CommentForm";
 import NotFound from "../../core/components/NotFound";
+import { useRepositoryContext } from "../repository/RepositoryContext";
 
 type IssuePageProps = {
-  repositoryId: Repository["_id"];
   existingIssueId?: number;
 };
 
-export const IssuePage: FC<IssuePageProps> = ({ repositoryId, existingIssueId = undefined }) => {
+export const IssuePage: FC<IssuePageProps> = ({ existingIssueId = undefined }) => {
+  const repositoryId = useRepositoryContext().repository?._id ?? "";
+
   const { issue: existingIssue, error } = useIssue(repositoryId, existingIssueId ?? 0);
   const isEdit = !!existingIssueId;
 
@@ -41,12 +42,10 @@ export const IssuePage: FC<IssuePageProps> = ({ repositoryId, existingIssueId = 
 
           <IssueHistory />
 
-          {isEdit ? (
+          {isEdit && (
             <div key={issue?.csm?.comments?.length}>
               <CommentForm />
             </div>
-          ) : (
-            <></>
           )}
         </div>
         <div className="col-span-4">
@@ -58,7 +57,7 @@ export const IssuePage: FC<IssuePageProps> = ({ repositoryId, existingIssueId = 
             <MilestonesForm />
           </div>
 
-          <AssignessForm />
+          <AssigneesForm />
         </div>
       </div>
     </>

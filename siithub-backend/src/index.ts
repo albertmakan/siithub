@@ -7,15 +7,16 @@ import { ErrorHandler } from "./error-handling/error-handler";
 
 const app: Express = express();
 
-const errorHandler = (error: TypeError , request: Request, response: Response, next: NextFunction) => {
-  ErrorHandler.forResponse(response).handleError(error as Error);
+const errorHandler = (error: Error, request: Request, response: Response, next: NextFunction) => {
+  ErrorHandler.forResponse(response).handleError(error);
   next(error);
 };
 
-app.use(express.json({limit: '10mb'}))
-   .use(express.urlencoded({limit: '10mb'}))
-   .use("/api", apiRoutes)
-   .use(errorHandler);
+app
+  .use(express.json({ limit: "10mb" }))
+  .use(express.urlencoded({ limit: "10mb" }))
+  .use("/api", apiRoutes)
+  .use(errorHandler);
 
 app.listen(config.port, () => {
   getConnection();

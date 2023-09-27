@@ -7,35 +7,33 @@ import { useSearchIssues } from "./useIssue";
 import { type IssuesQuery } from "./issueActions";
 import { type Repository } from "../repository/repository.service";
 import { useRepositoryContext } from "../repository/RepositoryContext";
+import { useRefresh } from "../../core/hooks/useRefresh";
 
-let search_form_key_count = 1;
-
-type IssuePageProps = {
-  repositoryId: Repository["_id"];
-};
-
-export const IssuesPage: FC<IssuePageProps> = ({ repositoryId }) => {
+export const IssuesPage: FC = () => {
   const { repository } = useRepositoryContext();
+  const { owner, name, _id: repositoryId } = repository as Repository;
+
   const router = useRouter();
   const [existingParams, setExistingParams] = useState<IssuesQuery>({});
   const { issues } = useSearchIssues(existingParams, repositoryId);
+  const { key, refresh } = useRefresh("iss_search_form");
 
-  const navigateToNewIssue = () => router.push(`/${repository?.owner ?? ""}/${repository?.name ?? ""}/issues/new`);
+  const navigateToNewIssue = () => router.push(`/${owner}/${name}/issues/new`);
+
   const clearParams = () => {
-    search_form_key_count++, setExistingParams({});
+    setExistingParams({});
+    refresh();
   };
 
   return (
     <>
       <div className="hidden sm:block" aria-hidden="true">
         <div className="py-5">
-          <div key={`search_form_${search_form_key_count}`} className="border-t border-gray-200">
+          <div key={key} className="border-t border-gray-200">
             <IssuesSearchForm
               repositoryId={repositoryId}
               existingParams={existingParams}
-              onParamsChange={(params: any) => {
-                setExistingParams(params);
-              }}
+              onParamsChange={(params) => setExistingParams(params)}
             />
           </div>
         </div>
@@ -48,7 +46,7 @@ export const IssuesPage: FC<IssuePageProps> = ({ repositoryId }) => {
           <Button onClick={navigateToNewIssue}>New Issue</Button>
         </span>
       </div>
-      <IssuesTable repositoryId={repositoryId} issues={issues} />
+      <IssuesTable issues={issues} />
     </>
   );
 };

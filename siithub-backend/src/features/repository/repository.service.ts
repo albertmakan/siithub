@@ -12,14 +12,12 @@ import { gitServerClient } from "../gitserver/gitserver.client";
 import { labelSeeder } from "../label/label.seeder";
 import { type User } from "../user/user.model";
 import { userService } from "../user/user.service";
-import type { Repository, RepositoryCreate, RepositoryForkCreate } from "./repository.model";
+import type { CounterType, Repository, RepositoryCreate, RepositoryForkCreate } from "./repository.model";
 import { repositoryRepo } from "./repository.repo";
 
 async function getRelevantRepos(userId: User["_id"]): Promise<Repository[]> {
   const collabs = await collaboratorsService.findByUser(userId);
-  const repoIds: Repository["_id"][] = collabs.map((collab) => collab.repositoryId);
-
-  return repositoryService.findByIds(repoIds);
+  return findByIds(collabs.map((collab) => collab.repositoryId));
 }
 
 async function findOneOrThrow(id: Repository["_id"]): Promise<Repository> {
@@ -91,10 +89,7 @@ async function search(owner: string, term: string): Promise<Repository[]> {
   return (await getRelevantRepos(user._id)).filter((x) => !term || x.name.toLowerCase().includes(term.toLowerCase()));
 }
 
-async function increaseCounterValue(
-  id: Repository["_id"],
-  thing: "milestone" | "issue" | "stars" | "pull-request" | "forks"
-): Promise<number> {
+async function increaseCounterValue(id: Repository["_id"], thing: CounterType): Promise<number> {
   const repo = await findOneOrThrow(id);
   const counters = repo.counters ?? { [thing]: 0 };
   counters[thing] = counters[thing] + 1 || 1;
@@ -196,10 +191,7 @@ export type RepositoryService = {
   create(repository: RepositoryCreate): Promise<Repository>;
   delete(owner: string, name: string): Promise<Repository | null>;
   findByOwnerAndName(owner: string, name: string): Promise<Repository | null>;
-  increaseCounterValue(
-    id: Repository["_id"],
-    thing: "milestone" | "issue" | "stars" | "pull-request" | "forks"
-  ): Promise<number>;
+  increaseCounterValue(id: Repository["_id"], thing: CounterType): Promise<number>;
   search(owner: string, term?: string): Promise<Repository[]>;
   decreaseCounterValue(id: Repository["_id"], thing: "stars" | "forks"): Promise<number>;
   findByIds(ids: Repository["_id"][], type?: "private" | "public"): Promise<Repository[]>;

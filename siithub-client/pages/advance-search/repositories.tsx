@@ -11,20 +11,12 @@ const Repositories = () => {
   return (
     <>
       <SortComponent
-        options={{
-          "Sort by name 🔼": {
-            name: 1,
-          },
-          "Sort by name 🔽": {
-            name: -1,
-          },
-          "Sort by description 🔼": {
-            description: 1,
-          },
-          "Sort by description 🔽": {
-            description: -1,
-          },
-        }}
+        options={[
+          { label: "Sort by name 🔼", value: { name: 1 } },
+          { label: "Sort by name 🔽", value: { name: -1 } },
+          { label: "Sort by description 🔼", value: { description: 1 } },
+          { label: "Sort by description 🔽", value: { description: -1 } },
+        ]}
       />
       <RepositoriesSearch param={param?.toString() ?? ""} sort={sort} />
     </>

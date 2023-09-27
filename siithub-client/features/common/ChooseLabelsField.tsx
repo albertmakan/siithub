@@ -1,20 +1,20 @@
 import { type FC } from "react";
 import { type Repository } from "../repository/repository.service";
-import { type Label } from "../labels/labelActions";
 import { useLabels } from "../labels/useLabels";
 import Select from "react-select";
+import { LabelPreview } from "../labels/LabelPreview";
 
 type ChooseLabelsFieldProps = {
   repositoryId: Repository["_id"];
-  selectedLabels: any;
-  onLabelChange: (labels: any) => any;
+  selectedLabels: string[];
+  onLabelChange: (labels: string[]) => any;
 };
 
 export const ChooseLabelsField: FC<ChooseLabelsFieldProps> = ({ repositoryId, selectedLabels, onLabelChange }) => {
   const { labels } = useLabels(repositoryId);
 
-  const labelOptions = labels?.map((l: Label) => ({ value: l._id, label: l.name })) ?? [];
-  const defaultValue = labelOptions?.filter((l: any) => selectedLabels?.includes(l.value));
+  const labelOptions = labels?.map((l) => ({ value: l._id, label: <LabelPreview {...l} /> })) ?? [];
+  const defaultValue = labelOptions?.filter((l) => selectedLabels?.includes(l.value));
 
   return (
     <>

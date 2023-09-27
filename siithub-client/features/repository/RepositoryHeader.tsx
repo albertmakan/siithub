@@ -13,7 +13,7 @@ type RepositoryHeaderProps = {
 
 export const RepositoryHeader: FC<RepositoryHeaderProps> = ({}) => {
   const { repository } = useRepositoryContext();
-  const { owner: username, name: repo, counters, forkedFromRepo } = repository as Repository;
+  const { owner: username, name: repo, counters, forkedFromRepo, _id: repositoryId } = repository as Repository;
 
   return repository ? (
     <div>
@@ -39,7 +39,7 @@ export const RepositoryHeader: FC<RepositoryHeaderProps> = ({}) => {
           </span>
         </div>
 
-        <StarButton repo={repo} username={username} count={counters?.stars ?? 0} />
+        <StarButton repositoryId={repositoryId} count={counters?.stars ?? 0} />
         <ForkButton repo={repo} username={username} count={counters?.forks ?? 0} />
       </div>
       {forkedFromRepo && (

@@ -1,16 +1,17 @@
 import { useQuery } from "react-query";
 import { type Tag, getTagsCountByRepo, searchTagsInRepo } from "./tagActions";
+import { type Repository } from "../repository/repository.service";
 
-export function useTags(owner: string, name: string, dependencies: any[] = []) {
-  return useSearchTags(owner, name, "", dependencies);
+export function useTags(repositoryId: Repository["_id"], dependencies: any[] = []) {
+  return useSearchTags(repositoryId, "", dependencies);
 }
 
-export function useSearchTags(owner: string, name: string, tagName: string, dependencies: any[] = []) {
+export function useSearchTags(repositoryId: Repository["_id"], tagName: string, dependencies: any[] = []) {
   const { data } = useQuery(
-    [`tags_${owner}_${name}_${tagName}`, name, tagName, ...dependencies],
-    () => searchTagsInRepo(owner, name, tagName),
+    [`tags_${repositoryId}_${tagName}`, name, tagName, ...dependencies],
+    () => searchTagsInRepo(repositoryId, tagName),
     {
-      enabled: dependencies.reduce((acc, d) => acc && !d, true) && !!owner && !!name,
+      enabled: dependencies.reduce((acc, d) => acc && !d, true) && !!repositoryId,
     }
   );
 
@@ -19,9 +20,9 @@ export function useSearchTags(owner: string, name: string, tagName: string, depe
   };
 }
 
-export function useTagsCount(owner: string, name: string) {
-  const { data } = useQuery([`tags_${owner}_${name}_count`, name], () => getTagsCountByRepo(owner, name), {
-    enabled: !!owner && !!name,
+export function useTagsCount(repositoryId: Repository["_id"]) {
+  const { data } = useQuery([`tags_${repositoryId}_count`, name], () => getTagsCountByRepo(repositoryId), {
+    enabled: !!repositoryId,
   });
 
   return {

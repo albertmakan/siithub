@@ -8,7 +8,8 @@ import { type User, type UserCreate } from "../../../src/features/user/user.mode
 describe("RepositoryService", () => {
   setupTestEnv("RepositoryService");
 
-  const { setCreateRepoHandler, setDeleteRepoHandler, setCreateRepoForkHandler } = setupGitServer();
+  const { setCreateRepoHandler, setDeleteRepoHandler, setCreateRepoForkHandler, setGetBranchesHandler } =
+    setupGitServer();
 
   let service: RepositoryService;
   let owner = "testuser";
@@ -20,6 +21,7 @@ describe("RepositoryService", () => {
     service = repositoryService;
     await userRepo.crud.add({ username: owner } as UserCreate);
     otherUser = (await userRepo.crud.add({ username: "other-user" } as UserCreate)) as User;
+    setGetBranchesHandler(() => []);
   });
 
   describe("findOneOrThrow", () => {

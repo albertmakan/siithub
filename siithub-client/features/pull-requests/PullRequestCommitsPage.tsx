@@ -5,22 +5,15 @@ import { useRepositoryContext } from "../repository/RepositoryContext";
 import { usePullRequestContext } from "./PullRequestContext";
 import { CommitsHistory } from "../commits/CommitsTable";
 
-type PullRequestCommitsPageProps = {
-  repositoryId: Repository["_id"];
-  pullRequestId: number;
-};
-
-export const PullRequestCommitsPage: FC<PullRequestCommitsPageProps> = ({ repositoryId, pullRequestId }) => {
+export const PullRequestCommitsPage: FC = () => {
   const { pullRequest } = usePullRequestContext();
-  const { repository }: any = useRepositoryContext();
-  const { owner, name } = repository as Repository;
+  const { repository } = useRepositoryContext();
+  const { owner, name, _id } = repository as Repository;
 
-  const { commits } = useCommitsBetweenBranches(owner, name, pullRequest.csm.base, pullRequest.csm.compare, [
+  const { commits } = useCommitsBetweenBranches(_id, pullRequest.csm.base, pullRequest.csm.compare, [
     pullRequest.csm.base,
     pullRequest.csm.compare,
   ]);
 
-  return (
-    <> {commits && commits.length ? <CommitsHistory username={owner} repoName={name} commits={commits} /> : <></>} </>
-  );
+  return <>{commits?.length ? <CommitsHistory username={owner} repoName={name} commits={commits} /> : <></>}</>;
 };

@@ -15,34 +15,33 @@ export const MilestonesForm: FC = () => {
   const executedBy = user?._id ?? "";
 
   const { issue, isEdit, issueDispatcher } = useIssueContext();
-  const [selectedMilestones, setSelectedMilestones] = useState<any>([]);
+  const [selectedMilestones, setSelectedMilestones] = useState<string[]>([]);
 
-  useEffect(() => {
-    setSelectedMilestones(issue.csm.milestones);
-  }, [issue.csm.milestones]);
+  useEffect(() => setSelectedMilestones(issue.csm.milestones ?? []), [issue.csm.milestones]);
 
-  const onMilestonesChange = (milestones: any): void => {
+  const onMilestonesChange = (milestones: string[]): void => {
     if (milestones.length > selectedMilestones.length) {
       const added = findDifference(milestones, selectedMilestones);
-      issueDispatcher(isEdit ? instantAssignMilestoneTo(issue, added, executedBy) : assignMilestone(added, executedBy));
+      if (added)
+        issueDispatcher(
+          isEdit ? instantAssignMilestoneTo(issue, added, executedBy) : assignMilestone(added, executedBy)
+        );
     } else {
       const removed = findDifference(selectedMilestones, milestones);
-      issueDispatcher(
-        isEdit ? instantUnassignMilestoneFrom(issue, removed, executedBy) : unassignMilestone(removed, executedBy)
-      );
+      if (removed)
+        issueDispatcher(
+          isEdit ? instantUnassignMilestoneFrom(issue, removed, executedBy) : unassignMilestone(removed, executedBy)
+        );
     }
-
     setSelectedMilestones(milestones);
   };
 
   return (
-    <>
-      <ChooseMilestonesField
-        key={selectedMilestones.length}
-        repositoryId={issue?.repositoryId}
-        selectedMilestones={selectedMilestones}
-        onMilestonesChange={onMilestonesChange}
-      />
-    </>
+    <ChooseMilestonesField
+      key={selectedMilestones.length}
+      repositoryId={issue?.repositoryId}
+      selectedMilestones={selectedMilestones}
+      onMilestonesChange={onMilestonesChange}
+    />
   );
 };

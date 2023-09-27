@@ -1,56 +1,26 @@
-import { type Request, type Response, Router } from "express";
+import { type Response, Router } from "express";
 import "express-async-errors";
-import { getRepoIdFromPath } from "../../utils/getRepo";
-import { getUserIdFromRequest } from "../auth/auth.utils";
 import { userService } from "../user/user.service";
 import { starService } from "./star.service";
-import { authorize } from "../auth/auth.middleware";
 import { isAllowedToAccessRepo } from "../collaborators/collaborators.middleware";
 
-const router = Router();
+const starRoutes = Router();
 
-router.get(
-  "/:username/:repository/stargazers",
-  authorize(),
-  isAllowedToAccessRepo(true),
-  async (req: Request, res: Response) => {
-    const repositoryId = await getRepoIdFromPath(req);
-    const stars = await starService.findByRepoId(repositoryId);
-    res.send(await userService.findManyByIds(stars.map((s) => s.userId)));
-  }
-);
+starRoutes.get("/all", isAllowedToAccessRepo(true), async (_, res: Response) => {
+  const stars = await starService.findByRepoId(res.locals.repository._id);
+  res.send(await userService.findManyByIds(stars.map((s) => s.userId)));
+});
 
-router.get(
-  "/:username/:repository/star",
-  authorize(),
-  isAllowedToAccessRepo(true),
-  async (req: Request, res: Response) => {
-    const repositoryId = await getRepoIdFromPath(req);
-    const userId = getUserIdFromRequest(req);
-    res.send(await starService.findByUserIdAndRepoId(userId, repositoryId));
-  }
-);
+starRoutes.get("/", isAllowedToAccessRepo(true), async (_, res: Response) => {
+  res.send(await starService.findByUserIdAndRepoId(res.locals.userId, res.locals.repository._id));
+});
 
-router.post(
-  "/:username/:repository/star",
-  authorize(),
-  isAllowedToAccessRepo(true),
-  async (req: Request, res: Response) => {
-    const repositoryId = await getRepoIdFromPath(req);
-    const userId = getUserIdFromRequest(req);
-    res.send(await starService.addStar(userId, repositoryId));
-  }
-);
+starRoutes.post("/", isAllowedToAccessRepo(true), async (_, res: Response) => {
+  res.send(await starService.addStar(res.locals.userId, res.locals.repository._id));
+});
 
-router.delete(
-  "/:username/:repository/star",
-  authorize(),
-  isAllowedToAccessRepo(true),
-  async (req: Request, res: Response) => {
-    const repositoryId = await getRepoIdFromPath(req);
-    const userId = getUserIdFromRequest(req);
-    res.send(await starService.removeStar(userId, repositoryId));
-  }
-);
+starRoutes.delete("/", isAllowedToAccessRepo(true), async (_, res: Response) => {
+  res.send(await starService.removeStar(res.locals.userId, res.locals.repository._id));
+});
 
-export { router as starRoutes };
+export { starRoutes };

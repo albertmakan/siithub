@@ -15,34 +15,31 @@ export const LabelsForm: FC = () => {
   const executedBy = user?._id ?? "";
 
   const { issue, isEdit, issueDispatcher } = useIssueContext();
-  const [selectedLabels, setSelectedLabels] = useState<any>([]);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
 
-  useEffect(() => {
-    setSelectedLabels(issue.csm.labels ?? []);
-  }, [issue.csm.labels]);
+  useEffect(() => setSelectedLabels(issue.csm.labels ?? []), [issue.csm.labels]);
 
-  const onLabelChange = (labels: any): void => {
+  const onLabelChange = (labels: string[]): void => {
     if (labels.length > selectedLabels.length) {
       const added = findDifference(labels, selectedLabels);
-      issueDispatcher(isEdit ? instantAssignLabelTo(issue, added, executedBy) : assignLabel(added, executedBy));
+      if (added)
+        issueDispatcher(isEdit ? instantAssignLabelTo(issue, added, executedBy) : assignLabel(added, executedBy));
     } else {
       const removed = findDifference(selectedLabels, labels);
-      issueDispatcher(
-        isEdit ? instantUnassignLabelFrom(issue, removed, executedBy) : unassignLabel(removed, executedBy)
-      );
+      if (removed)
+        issueDispatcher(
+          isEdit ? instantUnassignLabelFrom(issue, removed, executedBy) : unassignLabel(removed, executedBy)
+        );
     }
-
     setSelectedLabels(labels);
   };
 
   return (
-    <>
-      <ChooseLabelsField
-        key={selectedLabels.length}
-        repositoryId={issue?.repositoryId}
-        selectedLabels={selectedLabels}
-        onLabelChange={onLabelChange}
-      />
-    </>
+    <ChooseLabelsField
+      key={selectedLabels.length}
+      repositoryId={issue?.repositoryId}
+      selectedLabels={selectedLabels}
+      onLabelChange={onLabelChange}
+    />
   );
 };

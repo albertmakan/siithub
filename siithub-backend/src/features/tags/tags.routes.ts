@@ -1,15 +1,12 @@
 import { type Request, type Response, Router } from "express";
 import "express-async-errors";
 import { z } from "zod";
-import { authorize } from "../auth/auth.middleware";
 import { isAllowedToAccessRepo } from "../collaborators/collaborators.middleware";
 import { tagsService } from "./tags.service";
 import { type TagCreate } from "./tags.model";
 import { ALPHANUMERIC_AND_WHITESPACE_REGEX } from "../../patterns";
-import { getUserIdFromRequest } from "../auth/auth.utils";
-import { getRepoIdFromPath } from "../../utils/getRepo";
 
-const router = Router();
+const tagsRoutes = Router();
 
 const tagBodySchema = z.object({
   name: z
@@ -23,56 +20,36 @@ const tagBodySchema = z.object({
   isPreRelease: z.boolean().default(false),
 });
 
-router.get(
-  "/:username/:repository/tags",
-  authorize(),
-  isAllowedToAccessRepo(true),
-  async (req: Request, res: Response) => {
-    const repositoryId = await getRepoIdFromPath(req);
-    const name = req.query?.name?.toString() ?? "";
+tagsRoutes.get("/", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const repositoryId = res.locals.repository._id;
+  const name = req.query?.name?.toString() ?? "";
 
-    res.send(await tagsService.searchByNameAndRepositoryId(name, repositoryId));
-  }
-);
+  res.send(await tagsService.searchByNameAndRepositoryId(name, repositoryId));
+});
 
-router.get(
-  "/:username/:repository/tags/count",
-  authorize(),
-  isAllowedToAccessRepo(true),
-  async (req: Request, res: Response) => {
-    const repositoryId = await getRepoIdFromPath(req);
-    res.send({ count: await tagsService.countByRepositoryId(repositoryId) });
-  }
-);
+tagsRoutes.get("/count", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const repositoryId = res.locals.repository._id;
+  res.send({ count: await tagsService.countByRepositoryId(repositoryId) });
+});
 
-router.post(
-  "/:username/:repository/tags",
-  authorize(),
-  isAllowedToAccessRepo(),
-  async (req: Request, res: Response) => {
-    const createTag = tagBodySchema.parse(req.body);
+tagsRoutes.post("/", isAllowedToAccessRepo(), async (req: Request, res: Response) => {
+  const createTag = tagBodySchema.parse(req.body);
 
-    const tag: TagCreate = {
-      ...createTag,
-      repositoryId: await getRepoIdFromPath(req),
-      author: getUserIdFromRequest(req),
-      timeStamp: new Date(),
-    };
+  const tag: TagCreate = {
+    ...createTag,
+    repositoryId: res.locals.repository._id,
+    author: res.locals.userId,
+    timeStamp: new Date(),
+  };
 
-    res.send(await tagsService.create(tag));
-  }
-);
+  res.send(await tagsService.create(tag));
+});
 
-router.delete(
-  "/:username/:repository/tags/:version",
-  authorize(),
-  isAllowedToAccessRepo(),
-  async (req: Request, res: Response) => {
-    const repositoryId = await getRepoIdFromPath(req);
-    const { version } = req.params;
+tagsRoutes.delete("/:version", isAllowedToAccessRepo(), async (req: Request, res: Response) => {
+  const repositoryId = res.locals.repository._id;
+  const { version } = req.params;
 
-    res.send(await tagsService.delete(version, repositoryId));
-  }
-);
+  res.send(await tagsService.delete(version, repositoryId));
+});
 
-export { router as tagsRoutes };
+export { tagsRoutes };

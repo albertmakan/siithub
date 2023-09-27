@@ -12,26 +12,19 @@ import {
 } from "../../patterns";
 import "express-async-errors";
 import { userGithubService } from "./user-github.service";
-import { asOptionalField, objectIdString } from "../../utils/zod";
+import { asOptionalField, idSchema } from "../../utils/zod";
 import { getUserIdFromRequest } from "../auth/auth.utils";
-import { authorize } from "../auth/auth.middleware";
-import { modifyingOwnAccount } from "./user.middleware";
 
 const router = Router();
 
-const idSchema = objectIdString("Invalid id");
-
-const nameQuerySchema = z.object({
-  name: z.string().default(""),
-});
+const nameQuerySchema = z.object({ name: z.string().default("") });
 
 router.get("/", async (req: Request, res: Response) => {
   const { name } = nameQuerySchema.parse(req.query);
-
   res.send(await userService.findMany({ name: { $regex: name, $options: "i" } }));
 });
 
-router.get("/:id", async (req: Request, res: Response) => {
+router.get("/u/:id", async (req: Request, res: Response) => {
   const id = idSchema.parse(req.params.id);
   res.send(await userService.findOneOrThrow(id));
 });
@@ -62,12 +55,8 @@ const createUserBodySchema = z.object({
 });
 
 router.post("/", async (req: Request, res: Response) => {
-  const createUser = createUserBodySchema.safeParse(req.body);
-  if (!createUser.success) {
-    res.send(createUser.error.issues);
-    return;
-  }
-  res.send(await userService.create(createUser.data));
+  const createUser = createUserBodySchema.parse(req.body);
+  res.send(await userService.create(createUser));
 });
 
 const updateProfileBodySchema = z.object({
@@ -76,14 +65,10 @@ const updateProfileBodySchema = z.object({
   bio: z.string().default(""),
 });
 
-router.put("/", authorize(), async (req: Request, res: Response) => {
+router.put("/", async (req: Request, res: Response) => {
   const id = getUserIdFromRequest(req);
-  const updateUser = updateProfileBodySchema.safeParse(req.body);
-  if (!updateUser.success) {
-    res.status(400).send(updateUser.error.issues);
-    return;
-  }
-  res.send(await userService.updateProfile(id, updateUser.data));
+  const updateUser = updateProfileBodySchema.parse(req.body);
+  res.send(await userService.updateProfile(id, updateUser));
 });
 
 const passwordBodySchema = z.object({
@@ -91,14 +76,10 @@ const passwordBodySchema = z.object({
   newPassword: passwordSchema,
 });
 
-router.put("/change-password", authorize(), modifyingOwnAccount, async (req: Request, res: Response) => {
+router.put("/change-password", async (req: Request, res: Response) => {
   const id = getUserIdFromRequest(req);
-  const passwordUpdate = passwordBodySchema.safeParse(req.body);
-  if (!passwordUpdate.success) {
-    res.status(400).send(passwordUpdate.error.issues);
-    return;
-  }
-  await userService.updatePassword(id, passwordUpdate.data);
+  const passwordUpdate = passwordBodySchema.parse(req.body);
+  await userService.updatePassword(id, passwordUpdate);
   res.send();
 });
 
@@ -106,21 +87,14 @@ const changeGithubAccountBodySchema = z.object({
   username: z.string().regex(GITHUB_ACCOUNT, "Github username should be valid."),
 });
 
-router.put("/:id/github", authorize(), modifyingOwnAccount, async (req: Request, res: Response) => {
-  const id = idSchema.parse(req.params.id);
-  const githubAccount = changeGithubAccountBodySchema.safeParse(req.body);
-
-  if (!githubAccount.success) {
-    res.status(400).send(githubAccount.error.issues);
-    return;
-  }
-
-  res.send(await userGithubService.update(id, githubAccount.data));
+router.put("/github", async (req: Request, res: Response) => {
+  const id = getUserIdFromRequest(req);
+  const githubAccount = changeGithubAccountBodySchema.parse(req.body);
+  res.send(await userGithubService.update(id, githubAccount));
 });
 
-router.delete("/:id/github", authorize(), async (req: Request, res: Response) => {
-  const id = idSchema.parse(req.params.id);
-
+router.delete("/github", async (req: Request, res: Response) => {
+  const id = getUserIdFromRequest(req);
   res.send(await userGithubService.delete(id));
 });
 

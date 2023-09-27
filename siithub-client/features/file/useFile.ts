@@ -1,21 +1,14 @@
 import axios from "axios";
 import { useQuery } from "react-query";
+import { type Repository } from "../repository/repository.service";
 
-export function useFile(
-  username: string,
-  repoName: string,
-  branch: string,
-  blobPath: string,
-  dependencies: any[] = []
-) {
+export function useFile(repositoryId: Repository["_id"], branch: string, blobPath: string, dependencies: any[] = []) {
   const { data, error, isLoading } = useQuery(
-    [`blob_${username}/${repoName}/${branch}/${blobPath}`, ...dependencies],
+    [`blob_${repositoryId}/${branch}/${blobPath}`, ...dependencies],
     async () => {
       const res = await axios.get(
-        `/api/${username}/${repoName}/blob/${encodeURIComponent(branch)}/${encodeURIComponent(blobPath)}`,
-        {
-          responseType: "blob",
-        }
+        `/api/repositories/${repositoryId}/blob/${encodeURIComponent(branch)}/${encodeURIComponent(blobPath)}`,
+        { responseType: "blob" }
       );
       const isBinary = res?.headers["bin"] === "1";
       const size = +(res?.headers["size"] ?? 0);
@@ -32,9 +25,7 @@ export function useFile(
         url: url || URL.createObjectURL(res.data),
       };
     },
-    {
-      enabled: dependencies.reduce((acc, d) => acc && !d, true),
-    }
+    { enabled: dependencies.reduce((acc, d) => acc && !d, true) }
   );
   return {
     ...data,

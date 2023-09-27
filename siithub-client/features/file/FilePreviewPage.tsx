@@ -13,21 +13,18 @@ import { HashtagLink } from "../../core/components/HashtagLink";
 import { truncate } from "../../core/utils/string";
 import { CommitsIcon } from "../commits/CommitsIcon";
 import { ProfilePicture } from "../../core/components/ProfilePicture";
+import { useRepositoryContext } from "../repository/RepositoryContext";
+import { Repository } from "../repository/repository.service";
 
-type FilePreviewPageProps = {
+type FileContribInfoProps = {
   username: string;
   repoName: string;
   branch: string;
   blobPath: string;
+  info: LastCommitAndContrib;
 };
 
-const FileContribInfo: FC<FilePreviewPageProps & { info: LastCommitAndContrib }> = ({
-  username,
-  repoName,
-  branch,
-  blobPath,
-  info,
-}) => {
+const FileContribInfo: FC<FileContribInfoProps> = ({ username, repoName, branch, blobPath, info }) => {
   if (!info) return <></>;
   return (
     <div className="rounded-lg mb-3 border-2">
@@ -80,11 +77,14 @@ const FileContribInfo: FC<FilePreviewPageProps & { info: LastCommitAndContrib }>
   );
 };
 
-export const FilePreviewPage: FC<FilePreviewPageProps> = ({ username, repoName, branch, blobPath }) => {
+export const FilePreviewPage: FC<{ branch: string; blobPath: string }> = ({ branch, blobPath }) => {
+  const { repository } = useRepositoryContext();
+  const { owner, name, _id } = repository as Repository;
+
   const { result, setResult } = useResult("files");
   const notification = useNotifications();
-  const { content, size, isBinary, error, isLoading, url } = useFile(username, repoName, branch, blobPath, [result]);
-  const { info } = useFileInfo(username, repoName, branch, blobPath, [result]);
+  const { content, size, isBinary, error, isLoading, url } = useFile(_id, branch, blobPath, [result]);
+  const { info } = useFileInfo(_id, branch, blobPath, [result]);
 
   useEffect(() => {
     if (!result) return;
@@ -122,36 +122,34 @@ export const FilePreviewPage: FC<FilePreviewPageProps> = ({ username, repoName, 
   if (error) return <NotFound />;
 
   return (
-    <>
-      <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
-        <FileContribInfo repoName={repoName} username={username} branch={branch} blobPath={blobPath} info={info} />
+    <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
+      <FileContribInfo repoName={name} username={owner} branch={branch} blobPath={blobPath} info={info} />
 
-        <div className="w-full border-2 border-gray-200">
-          {isLoading ? (
-            <>
-              <div className="flex bg-white border-b p-4">
-                <Spinner size={4} />
-              </div>
-              <div className="flex items-center justify-center bg-white border-b p-4">
-                <Spinner size={16} />
-              </div>
-            </>
-          ) : (
-            <>
-              <FileOptions />
-              <div>
-                <FilePreview
-                  url={url ?? ""}
-                  content={content}
-                  extension={blobPath.substring(blobPath.lastIndexOf(".") + 1)}
-                  size={size ?? 0}
-                  isBinary={isBinary ?? false}
-                />
-              </div>
-            </>
-          )}
-        </div>
+      <div className="w-full border-2 border-gray-200">
+        {isLoading ? (
+          <>
+            <div className="flex bg-white border-b p-4">
+              <Spinner size={4} />
+            </div>
+            <div className="flex items-center justify-center bg-white border-b p-4">
+              <Spinner size={16} />
+            </div>
+          </>
+        ) : (
+          <>
+            <FileOptions />
+            <div>
+              <FilePreview
+                url={url ?? ""}
+                content={content}
+                extension={blobPath.substring(blobPath.lastIndexOf(".") + 1)}
+                size={size ?? 0}
+                isBinary={isBinary ?? false}
+              />
+            </div>
+          </>
+        )}
       </div>
-    </>
+    </div>
   );
 };

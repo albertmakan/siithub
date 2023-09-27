@@ -1,13 +1,12 @@
 import { type FC } from "react";
 import { type Repository } from "../repository/repository.service";
-import { type Milestone } from "../milestones/milestoneActions";
-import { useMilestonesByRepoId } from "../milestones/useMilestones";
+import { useMilestones } from "../milestones/useMilestones";
 import Select from "react-select";
 
 type ChooseMilestonesFieldProps = {
   repositoryId: Repository["_id"];
-  selectedMilestones: any;
-  onMilestonesChange: (milestones: any) => any;
+  selectedMilestones: string[];
+  onMilestonesChange: (milestones: string[]) => any;
 };
 
 export const ChooseMilestonesField: FC<ChooseMilestonesFieldProps> = ({
@@ -15,10 +14,10 @@ export const ChooseMilestonesField: FC<ChooseMilestonesFieldProps> = ({
   selectedMilestones,
   onMilestonesChange,
 }) => {
-  const { milestones } = useMilestonesByRepoId(repositoryId);
+  const { milestones } = useMilestones(repositoryId);
 
-  const milestoneOptions = milestones?.map((m: Milestone) => ({ value: m._id, label: m.title })) ?? [];
-  const defaultValue = milestoneOptions.filter((m: any) => selectedMilestones?.includes(m.value));
+  const milestoneOptions = milestones?.map((m) => ({ value: m._id, label: m.title })) ?? [];
+  const defaultValue = milestoneOptions.filter((m) => selectedMilestones?.includes(m.value));
 
   return (
     <>
@@ -32,7 +31,7 @@ export const ChooseMilestonesField: FC<ChooseMilestonesFieldProps> = ({
         options={milestoneOptions}
         className="mt-1 basic-multi-select"
         classNamePrefix="select"
-        onChange={(milestones) => onMilestonesChange(milestones?.map((m) => m.value))}
+        onChange={(milestones) => onMilestonesChange(milestones.map((m) => m.value))}
       />
     </>
   );

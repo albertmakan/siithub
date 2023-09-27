@@ -10,32 +10,16 @@ const Tags = () => {
   return (
     <>
       <SortComponent
-        options={{
-          "Sort by timestamp 🔼": {
-            timeStamp: -1,
-          },
-          "Sort by timestamp 🔽": {
-            timeStamp: 1,
-          },
-          "Sort by name 🔼": {
-            name: 1,
-          },
-          "Sort by name 🔽": {
-            name: -1,
-          },
-          "Sort by description 🔼": {
-            description: 1,
-          },
-          "Sort by description 🔽": {
-            description: -1,
-          },
-          "Sort by version 🔼": {
-            version: 1,
-          },
-          "Sort by version 🔽": {
-            version: -1,
-          },
-        }}
+        options={[
+          { label: "Sort by timestamp 🔽", value: { timeStamp: -1 } },
+          { label: "Sort by timestamp 🔼", value: { timeStamp: 1 } },
+          { label: "Sort by name 🔼", value: { name: 1 } },
+          { label: "Sort by name 🔽", value: { name: -1 } },
+          { label: "Sort by description 🔼", value: { description: 1 } },
+          { label: "Sort by description 🔽", value: { description: -1 } },
+          { label: "Sort by version 🔼", value: { version: 1 } },
+          { label: "Sort by version 🔽", value: { version: -1 } },
+        ]}
       />
       <TagsSearch param={param?.toString() ?? ""} repositoryId={repositoryId?.toString() ?? ""} sort={sort} />
     </>

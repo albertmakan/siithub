@@ -1,30 +1,29 @@
 import "express-async-errors";
 import { type Request, type Response, Router } from "express";
 import { insightService } from "./insight.service";
-import { getRepoIdFromPath } from "../../utils/getRepo";
+import { isAllowedToAccessRepo } from "../collaborators/collaborators.middleware";
+import { type Repository } from "../repository/repository.model";
 
-const router = Router();
+const insightRoutes = Router();
 
-router.get("/:username/:repository/insights/pulse", async (req: Request, res: Response) => {
-  const repoId = await getRepoIdFromPath(req);
+insightRoutes.get("/pulse", isAllowedToAccessRepo(true), async (_, res: Response) => {
+  const repoId = res.locals.repository._id;
   res.send(await insightService.getPulseInsights(repoId));
 });
 
-router.get("/:username/:repository/insights/contributors/:branch", async (req: Request, res: Response) => {
-  await getRepoIdFromPath(req);
-  res.send(await insightService.getContributorInsights(req.params.username, req.params.repository, req.params.branch));
+insightRoutes.get("/contributors/:branch", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const { owner, name } = res.locals.repository as Repository;
+  res.send(await insightService.getContributorInsights(owner, name, req.params.branch));
 });
 
-router.get("/:username/:repository/insights/commits/:branch", async (req: Request, res: Response) => {
-  await getRepoIdFromPath(req);
-  res.send(await insightService.getCommitsInsights(req.params.username, req.params.repository, req.params.branch));
+insightRoutes.get("/commits/:branch", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const { owner, name } = res.locals.repository as Repository;
+  res.send(await insightService.getCommitsInsights(owner, name, req.params.branch));
 });
 
-router.get("/:username/:repository/insights/frequency/:branch", async (req: Request, res: Response) => {
-  await getRepoIdFromPath(req);
-  res.send(
-    await insightService.getCodeFrequencyInsights(req.params.username, req.params.repository, req.params.branch)
-  );
+insightRoutes.get("/frequency/:branch", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const { owner, name } = res.locals.repository as Repository;
+  res.send(await insightService.getCodeFrequencyInsights(owner, name, req.params.branch));
 });
 
-export { router as insightRoutes };
+export { insightRoutes };

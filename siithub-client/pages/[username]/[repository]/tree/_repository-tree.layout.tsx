@@ -4,12 +4,17 @@ import { type FC, type PropsWithChildren } from "react";
 import { BranchesMenu } from "../../../../features/branches/BranchesMenu";
 import { CommitsIcon } from "../../../../features/commits/CommitsIcon";
 import { useCommitCount } from "../../../../features/commits/useCommits";
+import { useRepositoryContext } from "../../../../features/repository/RepositoryContext";
+import { type Repository } from "../../../../features/repository/repository.service";
 
 export const RepositoryTreeLayout: FC<PropsWithChildren> = ({ children }) => {
   const router = useRouter();
-  const { repository, username, branch } = router.query;
+  const { branch } = router.query;
 
-  const { count } = useCommitCount(username as string, repository as string, branch as string);
+  const { repository } = useRepositoryContext();
+  const { owner, name, _id } = repository as Repository;
+
+  const { count } = useCommitCount(_id, branch as string);
 
   return (
     <>
@@ -19,7 +24,7 @@ export const RepositoryTreeLayout: FC<PropsWithChildren> = ({ children }) => {
         <div className="flex items-center justify-end">
           <Link
             className="flex hover:text-blue-800 w-full"
-            href={`/${username}/${repository}/commits/${encodeURIComponent(branch as string)}`}
+            href={`/${owner}/${name}/commits/${encodeURIComponent(branch as string)}`}
           >
             <CommitsIcon className="mt-1 mr-1" />
             {count} commits

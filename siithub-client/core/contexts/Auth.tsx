@@ -89,7 +89,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
     }
 
     axios
-      .get("/api/users/" + getUserIdFromToken())
+      .get("/api/users/u/" + getUserIdFromToken())
       .then((response: any) => {
         const auth = { user: response.data as AuthUser, token: getToken() + "" };
         _authDispatcher(onLogin(auth));

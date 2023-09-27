@@ -1,11 +1,5 @@
 import { TagPage } from "../../../../features/tags/TagPage";
 
-const Tag = () => {
-  return (
-    <>
-      <TagPage />
-    </>
-  );
-};
+const Tag = () => <TagPage />;
 
 export default Tag;

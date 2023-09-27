@@ -9,14 +9,16 @@ import { useNotifications } from "../../core/hooks/useNotifications";
 import { closeMilestoneFor, openMilestoneFor } from "./milestoneActions";
 import { MilestoneForm } from "./MilestoneForm";
 import { useMilestone } from "./useMilestones";
+import { useRepositoryContext } from "../repository/RepositoryContext";
+import { type Repository } from "../repository/repository.service";
 
-type MilestoneEditProps = {
-  repo: string, username: string, localId: number
-}
+export const MilestoneEdit: FC<{ localId: number }> = ({ localId }) => {
+  const { repository } = useRepositoryContext();
+  const { owner, name, _id } = repository as Repository;
+  const backRoute = `/${owner}/${name}/milestones`;
 
-export const MilestoneEdit: FC<MilestoneEditProps> = ({ repo, username, localId }) => {
-  const { result, setResult } = useResult('milestones');
-  const { milestone, error } = useMilestone(username, repo, localId, [result]);
+  const { result, setResult } = useResult("milestones");
+  const { milestone, error } = useMilestone(_id, localId, [result]);
   const router = useRouter();
   const notifications = useNotifications();
 
@@ -25,36 +27,37 @@ export const MilestoneEdit: FC<MilestoneEditProps> = ({ repo, username, localId 
     setResult(undefined);
   }, [result, setResult]);
 
-  const closeMilestoneAction = useAction(closeMilestoneFor(username, repo), {
+  const closeMilestoneAction = useAction(closeMilestoneFor(_id), {
     onSuccess: () => {
-      notifications.success('Milestone is successfully closed.');
-      setResult({ status: ResultStatus.Ok, type: 'CLOSE_Milestone' });
-      router.push(`/${username}/${repo}/milestones`);
+      notifications.success("Milestone is successfully closed.");
+      setResult({ status: ResultStatus.Ok, type: "CLOSE_Milestone" });
+      router.push(backRoute);
     },
-    onError: () => {}
-  })
-  const openMilestoneAction = useAction(openMilestoneFor(username, repo), {
+    onError: () => {},
+  });
+  const openMilestoneAction = useAction(openMilestoneFor(_id), {
     onSuccess: () => {
-      notifications.success('Milestone is successfully reopened.');
-      setResult({ status: ResultStatus.Ok, type: 'OPEN_Milestone' });
-      router.push(`/${username}/${repo}/milestones`);
+      notifications.success("Milestone is successfully reopened.");
+      setResult({ status: ResultStatus.Ok, type: "OPEN_Milestone" });
+      router.push(backRoute);
     },
-    onError: () => {}
-  })
+    onError: () => {},
+  });
 
-  if (error) return <NotFound/>;
+  if (error) return <NotFound />;
+  if (!milestone) return <></>;
 
   return (
     <>
-      {milestone ? <>
-      <MilestoneForm username={username} repo={repo} existingMilestone={milestone} />
+      <MilestoneForm existingMilestone={milestone} />
       <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
-        <Button><Link href={`/${username}/${repo}/milestones`}>Cancel</Link></Button>
+        <Button>
+          <Link href={backRoute}>Cancel</Link>
+        </Button>
         <Button onClick={() => (milestone.isOpen ? closeMilestoneAction : openMilestoneAction)(milestone)}>
           {milestone?.isOpen ? "Close" : "Reopen"} milestone
         </Button>
       </div>
-      </> : <></>}
     </>
-  )
-}
+  );
+};

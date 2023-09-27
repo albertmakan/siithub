@@ -2,19 +2,24 @@ import Link from "next/link";
 import { type FC } from "react";
 import { ProfilePicture } from "../../core/components/ProfilePicture";
 import { useForks } from "../repository/useRepositories";
+import { useRepositoryContext } from "../repository/RepositoryContext";
+import { type Repository } from "../repository/repository.service";
 
-export const ForksInsights: FC<{ repo: string; username: string }> = ({ username, repo }) => {
-  const { forks } = useForks(username, repo);
+export const ForksInsights: FC = () => {
+  const { repository } = useRepositoryContext();
+  const { owner, name } = repository as Repository;
+
+  const { forks } = useForks(owner, name);
   return (
     <div className="w-full">
       <div className="flex items-center">
-        <ProfilePicture username={username} size={16} />
-        <Link className="hover:text-blue-500 hover:underline ml-3" href={`/users/${username}`}>
-          {username}
+        <ProfilePicture username={owner} size={16} />
+        <Link className="hover:text-blue-500 hover:underline ml-3" href={`/users/${owner}`}>
+          {owner}
         </Link>
         <span className="mx-1">/</span>
-        <Link className="hover:text-blue-500 hover:underline" href={`/${username}/${repo}`}>
-          {repo}
+        <Link className="hover:text-blue-500 hover:underline" href={`/${owner}/${name}`}>
+          {name}
         </Link>
       </div>
       {forks?.map((fork) => (

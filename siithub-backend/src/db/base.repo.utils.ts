@@ -1,4 +1,4 @@
-import { Document, Filter, FindCursor, FindOptions, Timestamp, WithId } from "mongodb";
+import { Document, Filter, FindCursor, FindOptions, WithId } from "mongodb";
 import { getCollection } from "./mongo.utils";
 
 export type BaseEntity = {
@@ -39,33 +39,33 @@ export const BaseRepoFactory = <
   collectionName: string
 ) => {
   return {
-    async findOne(id: T["_id"] | string): Promise<T | null> {
+    async findOne(id: T["_id"] | string) {
       const collection = await getCollection(collectionName);
       return collection.findOne({ _id: id }) as Promise<T | null>;
     },
-    async findMany(filter: Filter<T> = {}, options: FindOptions<T> = {}): Promise<T[]> {
+    async findMany(filter: Filter<T> = {}, options: FindOptions<T> = {}) {
       return (await this.findManyCursor(filter, options)).toArray();
     },
-    async findManyCursor(filter: Filter<T> = {}, options: FindOptions<T> = {}): Promise<FindCursor<T>> {
+    async findManyCursor(filter: Filter<T> = {}, options: FindOptions<T> = {}) {
       const collection = await getCollection(collectionName);
-      return collection.find(filter, options) as unknown as Promise<FindCursor<T>>;
+      return collection.find(filter, options) as any as FindCursor<T>;
     },
-    async add(entity: TCreate): Promise<T | null> {
+    async add(entity: TCreate) {
       const collection = await getCollection(collectionName);
       const result = await collection.insertOne(entity);
       return this.findOne(result.insertedId);
     },
-    async update(id: T["_id"] | string, entity: TUpdate): Promise<T | null> {
+    async update(id: T["_id"] | string, entity: TUpdate) {
       const collection = await getCollection(collectionName);
       await collection.updateOne({ _id: id }, { $set: entity });
       return this.findOne(id);
     },
-    async delete(id: T["_id"] | string): Promise<T | null> {
+    async delete(id: T["_id"] | string) {
       const collection = await getCollection(collectionName);
       const result = await collection.findOneAndDelete({ _id: id });
       return result.value as T | null;
     },
-    async count(filter: Filter<T>): Promise<number> {
+    async count(filter: Filter<T>) {
       const collection = await getCollection(collectionName);
       return collection.countDocuments(filter);
     },

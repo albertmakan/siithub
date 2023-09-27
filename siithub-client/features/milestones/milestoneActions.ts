@@ -1,6 +1,6 @@
 import axios from "axios";
 import { z } from "zod";
-import { Repository } from "../repository/repository.service";
+import { type Repository } from "../repository/repository.service";
 
 const milestoneBodySchema = z.object({
   title: z.string().trim().min(1, "Title is required."),
@@ -21,32 +21,30 @@ type Milestone = CreateMilestone & {
   };
 };
 
-function searchRepositoryMilestones(username: string, repo: string, title: string = "") {
-  return axios.get(`/api/${username}/${repo}/milestones/search`, { params: { title } });
+function getRepositoryMilestones(repositoryId: Repository["_id"], open?: boolean) {
+  return axios.get(`/api/repositories/${repositoryId}/milestones`, {
+    params: open === undefined ? {} : { state: open ? "open" : "closed" },
+  });
 }
-function getRepositoryMilestones(username: string, repo: string, open: boolean) {
-  return axios.get(`/api/${username}/${repo}/milestones`, { params: open ? {} : { state: "closed" } });
+function getMilestone(repositoryId: Repository["_id"], localId: number) {
+  return axios.get(`/api/repositories/${repositoryId}/milestones/${localId}`);
 }
-function getMilestonesByRepositoryId(repositoryId: Repository["_id"]) {
-  return axios.get(`/api/repositories/${repositoryId}/milestones`);
+function createMilestoneFor(repositoryId: Repository["_id"]) {
+  return (milestone: CreateMilestone) => axios.post(`/api/repositories/${repositoryId}/milestones`, milestone);
 }
-function getMilestone(username: string, repo: string, localId: number) {
-  return axios.get(`/api/${username}/${repo}/milestones/${localId}`);
+function updateMilestoneFor(repositoryId: Repository["_id"], localId: number) {
+  return (milestone: UpdateMilestone) =>
+    axios.put(`/api/repositories/${repositoryId}/milestones/${localId}`, milestone);
 }
-function createMilestoneFor(username: string, repo: string) {
-  return (milestone: CreateMilestone) => axios.post(`/api/${username}/${repo}/milestones`, milestone);
+function deleteMilestoneFor(repositoryId: Repository["_id"]) {
+  return (milestone: Milestone) => axios.delete(`/api/repositories/${repositoryId}/milestones/${milestone.localId}`);
 }
-function updateMilestoneFor(username: string, repo: string, localId: number) {
-  return (milestone: UpdateMilestone) => axios.put(`/api/${username}/${repo}/milestones/${localId}`, milestone);
+function closeMilestoneFor(repositoryId: Repository["_id"]) {
+  return (milestone: Milestone) =>
+    axios.put(`/api/repositories/${repositoryId}/milestones/${milestone?.localId}/close`);
 }
-function deleteMilestoneFor(username: string, repo: string) {
-  return (milestone: Milestone) => axios.delete(`/api/${username}/${repo}/milestones/${milestone?.localId}`);
-}
-function closeMilestoneFor(username: string, repo: string) {
-  return (milestone: Milestone) => axios.put(`/api/${username}/${repo}/milestones/${milestone?.localId}/close`);
-}
-function openMilestoneFor(username: string, repo: string) {
-  return (milestone: Milestone) => axios.put(`/api/${username}/${repo}/milestones/${milestone?.localId}/open`);
+function openMilestoneFor(repositoryId: Repository["_id"]) {
+  return (milestone: Milestone) => axios.put(`/api/repositories/${repositoryId}/milestones/${milestone.localId}/open`);
 }
 
 export {
@@ -58,8 +56,6 @@ export {
   getMilestone,
   closeMilestoneFor,
   openMilestoneFor,
-  searchRepositoryMilestones,
-  getMilestonesByRepositoryId,
 };
 
 export type { CreateMilestone, UpdateMilestone, Milestone };

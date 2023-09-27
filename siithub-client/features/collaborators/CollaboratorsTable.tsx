@@ -4,18 +4,15 @@ import { useAction } from "../../core/hooks/useAction";
 import { useNotifications } from "../../core/hooks/useNotifications";
 import { extractErrorMessage } from "../../core/utils/errors";
 import { removeCollaborator, type Collaborator, type RemoveCollaborator } from "./collaboratorAction";
+import { useRepositoryContext } from "../repository/RepositoryContext";
 
-type CollaboratorsTableProps = {
-  repo: string;
-  username: string;
-  collaborators: Collaborator[];
-};
+export const CollaboratorsTable: FC<{ collaborators: Collaborator[] }> = ({ collaborators }) => {
+  const repoId = useRepositoryContext().repository?._id ?? "";
 
-export const CollaboratorsTable: FC<CollaboratorsTableProps> = ({ repo, username, collaborators }) => {
   const notifications = useNotifications();
   const { setResult } = useResult("collaborators");
 
-  const removeCollaboratorAction = useAction<RemoveCollaborator>(removeCollaborator(username, repo), {
+  const removeCollaboratorAction = useAction<RemoveCollaborator>(removeCollaborator(repoId), {
     onSuccess: () => {
       notifications.success("You have successfully removed collaborator from the repo.");
       setResult({ status: ResultStatus.Ok, type: "REMOVE_COLLABORATOR" });
@@ -27,39 +24,35 @@ export const CollaboratorsTable: FC<CollaboratorsTableProps> = ({ repo, username
   });
 
   return (
-    <>
-      <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
-        <table className="w-full text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-            <tr>
-              <th scope="col" className="py-3 px-6">
-                Collaborators
+    <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
+      <table className="w-full text-sm text-left text-gray-500">
+        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+          <tr>
+            <th scope="col" className="py-3 px-6">
+              Collaborators
+            </th>
+            <th scope="col" className="py-3 px-6" />
+          </tr>
+        </thead>
+        <tbody>
+          {collaborators?.map((collaborator) => (
+            <tr key={collaborator._id} className="bg-white border-b">
+              <th scope="row" className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">
+                {collaborator.user?.name}
               </th>
-              <th scope="col" className="py-3 px-6" />
+              <td className="py-4 px-6 text-right">
+                <a
+                  href="#"
+                  onClick={() => removeCollaboratorAction(collaborator)}
+                  className="ml-4 font-medium text-blue-600 hover:underline text right"
+                >
+                  Remove
+                </a>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {collaborators?.map((collaborator: Collaborator) => (
-              <tr key={collaborator._id} className="bg-white border-b">
-                <th scope="row" className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">
-                  {collaborator.user?.name}
-                </th>
-                <td className="py-4 px-6 text-right">
-                  <a
-                    href="#"
-                    onClick={() => {
-                      removeCollaboratorAction(collaborator);
-                    }}
-                    className="ml-4 font-medium text-blue-600 hover:underline text right"
-                  >
-                    Remove
-                  </a>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };

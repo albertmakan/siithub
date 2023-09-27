@@ -54,12 +54,12 @@ async function getFileInfo(username: string, repoName: string, branch: string, f
   return info;
 }
 
-async function resolveAuthors(commits: Commit[]): Promise<Commit[]> {
+async function resolveAuthors(commits: Commit[]) {
   const contributorsEmails = commits
     .map((c) => c.author?.email)
     .filter((value, index, array) => array.indexOf(value) === index);
-  const users: { [email: string]: User } = (await userService.findManyByEmails(contributorsEmails)).reduce(
-    (acc: any, user: User) => {
+  const users = (await userService.findManyByEmails(contributorsEmails)).reduce(
+    (acc: { [email: string]: User }, user: User) => {
       acc[user.email] = user;
       return acc;
     },

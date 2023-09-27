@@ -10,21 +10,18 @@ import { IssuesTable } from "../issues/IssuesTable";
 import { useSearchIssues } from "../issues/useIssue";
 import { useRepositoryContext } from "../repository/RepositoryContext";
 import { useMilestone } from "./useMilestones";
+import { type Repository } from "../repository/repository.service";
 
-type MilestonePageProps = {
-  repo: string;
-  username: string;
-  localId: number;
-};
+export const MilestonePage: FC<{ localId: number }> = ({ localId }) => {
+  const { repository } = useRepositoryContext();
+  const { owner, name, _id } = repository as Repository;
 
-export const MilestonePage: FC<MilestonePageProps> = ({ repo, username, localId }) => {
   const [openIssues, setOpenIssues] = useState(true);
   const { result, setResult } = useResult("milestones");
-  const { milestone, error } = useMilestone(username, repo, localId, [result]);
-  const { repository } = useRepositoryContext();
+  const { milestone, error } = useMilestone(_id, localId, [result]);
   const { issues } = useSearchIssues(
     { milestones: [milestone?._id], state: openIssues ? [IssueState.Open, IssueState.Reopened] : [IssueState.Closed] },
-    repository?._id ?? "",
+    _id,
     [!milestone]
   );
 
@@ -56,7 +53,7 @@ export const MilestonePage: FC<MilestonePageProps> = ({ repo, username, localId 
 
       <div className="px-4 py-3 text-right sm:px-6">
         <Button>
-          <Link href={`/${username}/${repo}/milestones/${localId}/edit`}>Edit milestone</Link>
+          <Link href={`/${owner}/${name}/milestones/${localId}/edit`}>Edit milestone</Link>
         </Button>
       </div>
       <div className="flex bg-white border-b p-4">
@@ -75,7 +72,7 @@ export const MilestonePage: FC<MilestonePageProps> = ({ repo, username, localId 
       </div>
       {issues &&
         (issues.length > 0 ? (
-          <IssuesTable issues={issues} repositoryId={repository?._id ?? ""} />
+          <IssuesTable issues={issues} />
         ) : (
           <div className="bg-white border-b p-4">
             <p className="text-2xl text-center m-5">

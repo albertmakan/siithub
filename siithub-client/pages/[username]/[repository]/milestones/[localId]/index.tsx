@@ -3,17 +3,9 @@ import { MilestonePage } from "../../../../../features/milestones/MilestonePage"
 
 const Milestone = () => {
   const router = useRouter();
-  const { repository, username, localId } = router.query;
+  const { localId } = router.query;
 
-  return (
-    <>
-      <MilestonePage
-        repo={repository?.toString() ?? ""}
-        username={username?.toString() ?? ""}
-        localId={+(localId?.toString() ?? "0")}
-      />
-    </>
-  );
+  return <MilestonePage localId={+(localId?.toString() ?? "0")} />;
 };
 
 export default Milestone;

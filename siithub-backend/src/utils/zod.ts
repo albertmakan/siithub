@@ -12,10 +12,7 @@ export const optionalDateString = emptyStringToUndefined.or(
   z.nullable(
     z
       .string()
-      .regex(
-        /((?:19|20)\d\d)-(0?[1-9]|1[012])-([12][0-9]|3[01]|0?[1-9])/,
-        "Invalid date"
-      )
+      .regex(/((?:19|20)\d\d)-(0?[1-9]|1[012])-([12][0-9]|3[01]|0?[1-9])/, "Invalid date")
       .transform((s) => new Date(s))
       .refine((d) => d.getTime() === d.getTime(), "Invalid date")
   )
@@ -26,3 +23,17 @@ export const objectIdString = (msg: string) =>
     .string()
     .regex(OBJECT_ID_REGEX, msg)
     .transform((s) => new ObjectId(s));
+
+export const idSchema = objectIdString("Invalid id");
+
+export const localIdSchema = z.number().min(0);
+
+export const paramSchema = z.object({
+  param: z.string(),
+  sort: asOptionalField(
+    z
+      .string()
+      .regex(/^-?[^\d\W]\w*$/, "Invalid sort")
+      .transform((s) => (s.startsWith("-") ? { [s.substring(1)]: -1 } : { [s]: 1 }))
+  ),
+});

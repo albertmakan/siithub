@@ -4,72 +4,30 @@ import { sshKeyService } from "./ssh-key.service";
 import "express-async-errors";
 import { authorizeSshKeyOwner } from "./ssh-key.middleware";
 
-const router = Router();
+const sshKeyRoutes = Router();
 
 const sshKeyBodySchema = z.object({
   name: z.string().min(3, "Name should have at least 3 characters."),
   value: z.string(),
   owner: z.string(),
 });
-
 const createSshKeyBodySchema = sshKeyBodySchema;
+const sshKeyParamsSchema = z.object({ id: z.string().uuid() });
 
-router.post(
-  "/",
-  authorizeSshKeyOwner(),
-  async (req: Request, res: Response) => {
-    const createSshKey = createSshKeyBodySchema.safeParse(req.body);
-
-    if (!createSshKey.success) {
-      res.status(400).send(createSshKey.error.issues);
-      return;
-    }
-
-    const sshKey = createSshKey.data;
-
-    res.send(await sshKeyService.create(sshKey));
-  }
-);
-
-const sshKeyParamsSchema = z.object({
-  id: z.string().uuid(),
+sshKeyRoutes.post("/", authorizeSshKeyOwner, async (req: Request, res: Response) => {
+  const createSshKey = createSshKeyBodySchema.parse(req.body);
+  res.send(await sshKeyService.create(createSshKey));
 });
 
-router.put(
-  "/:id",
-  authorizeSshKeyOwner(),
-  async (req: Request, res: Response) => {
-    const params = sshKeyParamsSchema.safeParse(req.params);
-    const updateSshKey = createSshKeyBodySchema.safeParse(req.body);
+sshKeyRoutes.put("/:id", authorizeSshKeyOwner, async (req: Request, res: Response) => {
+  const params = sshKeyParamsSchema.parse(req.params);
+  const updateSshKey = createSshKeyBodySchema.parse(req.body);
+  res.send(await sshKeyService.update(params.id, updateSshKey));
+});
 
-    if (!updateSshKey.success) {
-      res.status(400).send(updateSshKey.error.issues);
-      return;
-    }
-    if (!params.success) {
-      res.status(400).send(params.error.issues);
-      return;
-    }
+sshKeyRoutes.delete("/:id", authorizeSshKeyOwner, async (req: Request, res: Response) => {
+  const params = sshKeyParamsSchema.parse(req.params);
+  res.send(await sshKeyService.delete(params.id));
+});
 
-    const sshKey = updateSshKey.data;
-
-    res.send(await sshKeyService.update(params.data.id, sshKey));
-  }
-);
-
-router.delete(
-  "/:id",
-  authorizeSshKeyOwner(),
-  async (req: Request, res: Response) => {
-    const params = sshKeyParamsSchema.safeParse(req.params);
-
-    if (!params.success) {
-      res.status(400).send(params.error.issues);
-      return;
-    }
-
-    res.send(await sshKeyService.delete(params.data.id));
-  }
-);
-
-export { sshKeyBodySchema, router as sshKeyRoutes };
+export { sshKeyBodySchema, sshKeyRoutes };

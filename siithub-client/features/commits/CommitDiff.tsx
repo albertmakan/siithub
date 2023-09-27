@@ -5,6 +5,7 @@ import ReactDiffViewer from "react-diff-viewer-continued";
 import { truncate } from "../../core/utils/string";
 import Link from "next/link";
 import { Spinner } from "../../core/components/Spinner";
+import { useRepositoryContext } from "../repository/RepositoryContext";
 
 type CommitDiffViewerProps = {
   commit: CommitWithDiff;
@@ -60,22 +61,14 @@ export const CommitDiffViewer: FC<CommitDiffViewerProps> = ({ commit }) => {
   );
 };
 
-type CommitDiffProps = {
-  username: string;
-  repoName: string;
-  sha: string;
-};
+export const CommitDiff: FC<{ sha: string }> = ({ sha }) => {
+  const repoId = useRepositoryContext().repository?._id ?? "";
 
-export const CommitDiff: FC<CommitDiffProps> = ({ username, repoName, sha }) => {
-  const { commit, error, isLoading } = useCommit(username, repoName, sha);
+  const { commit, error, isLoading } = useCommit(repoId, sha);
 
   if (error) return <NotFound />;
 
   if (isLoading) return <Spinner size={20} />;
 
-  return (
-    <>
-      <CommitDiffViewer commit={commit} />
-    </>
-  );
+  return <CommitDiffViewer commit={commit} />;
 };

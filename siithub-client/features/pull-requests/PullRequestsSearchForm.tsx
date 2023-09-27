@@ -1,12 +1,12 @@
 import { type FC, useState } from "react";
 import { InputField } from "../../core/components/InputField";
 import Select from "react-select";
-import { useUsers } from "../users/registration/useUsers";
 import { type Repository } from "../repository/repository.service";
-import { ChooseAssignessField } from "../common/ChooseAssignessField";
+import { ChooseAssigneesField } from "../common/ChooseAssigneesField";
 import { PullRequestState, type PullRequestsQuery } from "./pullRequestActions";
 import { ChooseLabelsField } from "../common/ChooseLabelsField";
 import { ChooseMilestonesField } from "../common/ChooseMilestonesField";
+import { useCollaborators } from "../collaborators/useCollaborators";
 
 const avaiableStates = [
   {
@@ -43,18 +43,14 @@ export const PullRequestsSearchForm: FC<PullRequestsSearchFormProps> = ({
 }) => {
   const [params, setParams] = useState<PullRequestsQuery>(existingParams);
 
-  const { users } = useUsers(["PullRequestsSearchForm"], true);
+  const { collaborators } = useCollaborators(repositoryId, "");
   const userOptions = [
     { value: "", label: "Any" },
-    ...(users?.map((u: any) => ({ value: u._id, label: u.name })) ?? []),
+    ...collaborators.map((c) => ({ value: c.user._id, label: c.user.name })),
   ];
 
-  const onDataChange = (data: any) => {
-    const newParams = {
-      ...params,
-      ...data,
-    };
-
+  const onDataChange = (data: Partial<PullRequestsQuery>) => {
+    const newParams = { ...params, ...data };
     onParamsChange(newParams);
     setParams(newParams);
   };
@@ -78,9 +74,7 @@ export const PullRequestsSearchForm: FC<PullRequestsSearchFormProps> = ({
             options={sortOptions}
             className="mt-1 basic-select"
             classNamePrefix="select"
-            onChange={(sort: any) => {
-              onDataChange({ sort: sort.value });
-            }}
+            onChange={(sort) => onDataChange({ sort: sort?.value })}
           />
         </div>
       </div>
@@ -96,9 +90,7 @@ export const PullRequestsSearchForm: FC<PullRequestsSearchFormProps> = ({
             options={avaiableStates}
             className="mt-1 basic-select"
             classNamePrefix="select"
-            onChange={(state: any) => {
-              onDataChange({ state: state.value });
-            }}
+            onChange={(state) => onDataChange({ state: state?.value })}
           />
         </div>
 
@@ -112,33 +104,31 @@ export const PullRequestsSearchForm: FC<PullRequestsSearchFormProps> = ({
             options={userOptions}
             className="mt-1 basic-select"
             classNamePrefix="select"
-            onChange={(author: any) => {
-              onDataChange({ author: author.value });
-            }}
+            onChange={(author) => onDataChange({ author: author?.value })}
           />
         </div>
 
         <div className="col-span-3">
-          <ChooseAssignessField
+          <ChooseAssigneesField
             repositoryId={repositoryId}
-            selectedAssignes={existingParams.assignees}
-            onAssignessChange={(assignees: any) => onDataChange({ assignees })}
+            selectedAssignees={existingParams.assignees ?? []}
+            onAssigneesChange={(assignees) => onDataChange({ assignees })}
           />
         </div>
 
         <div className="col-span-3">
           <ChooseLabelsField
             repositoryId={repositoryId}
-            selectedLabels={existingParams.labels}
-            onLabelChange={(labels: any) => onDataChange({ labels })}
+            selectedLabels={existingParams.labels ?? []}
+            onLabelChange={(labels) => onDataChange({ labels })}
           />
         </div>
 
         <div className="col-span-3">
           <ChooseMilestonesField
             repositoryId={repositoryId}
-            selectedMilestones={existingParams.milestones}
-            onMilestonesChange={(milestones: any) => onDataChange({ milestones })}
+            selectedMilestones={existingParams.milestones ?? []}
+            onMilestonesChange={(milestones) => onDataChange({ milestones })}
           />
         </div>
       </div>

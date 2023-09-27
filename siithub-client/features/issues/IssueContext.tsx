@@ -564,10 +564,8 @@ const IssueContext = createContext<IssueContextType>(initialIssueContextValues);
 export const useIssueContext = () => useContext(IssueContext);
 
 export const IssueContextProvider: FC<PropsWithChildren> = ({ children }) => {
-  const [issue, issueDispatcher] = useReducerWithThunk<any, any>(issueReducer, initialIssue);
-  const isEdit = !!(issue as Issue)._id;
+  const [issue, issueDispatcher] = useReducerWithThunk(issueReducer, initialIssue);
+  const isEdit = !!issue._id;
 
-  return (
-    <IssueContext.Provider value={{ issue: issue as Issue, isEdit, issueDispatcher }}>{children}</IssueContext.Provider>
-  );
+  return <IssueContext.Provider value={{ issue, isEdit, issueDispatcher }}>{children}</IssueContext.Provider>;
 };

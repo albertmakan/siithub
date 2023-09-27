@@ -13,6 +13,8 @@ import { TagCard } from "./TagCard";
 import { InputField } from "../../core/components/InputField";
 import debounce from "lodash.debounce";
 import { useRefresh } from "../../core/hooks/useRefresh";
+import { useRepositoryContext } from "../repository/RepositoryContext";
+import { Repository } from "../repository/repository.service";
 
 type TagSearchFormProps = {
   name: string;
@@ -20,27 +22,20 @@ type TagSearchFormProps = {
 };
 
 const TagSearchForm: FC<TagSearchFormProps> = ({ name, onNameChange }) => {
-  return (
-    <>
-      <InputField label="" formElement={{ value: name, onChange: (e: any) => onNameChange(e.target.value) }} />
-    </>
-  );
-};
-
-type TagsPageProps = {
-  owner: string;
-  name: string;
+  return <InputField label="" formElement={{ value: name, onChange: (e: any) => onNameChange(e.target.value) }} />;
 };
 
 const debouncedCb = debounce((cb: () => void) => cb(), 300);
 
-export const TagsPage: FC<TagsPageProps> = ({ owner, name: repoName }) => {
+export const TagsPage: FC = () => {
+  const { repository } = useRepositoryContext();
+  const { owner, name: repoName, _id } = repository as Repository;
   const [name, setName] = useState("");
   const [finalName, setFinalName] = useState(name);
 
   const { key, refresh } = useRefresh("tagsSearchForm");
   const { result, setResult } = useResult("tags");
-  const { tags } = useSearchTags(owner, repoName, finalName, [result]);
+  const { tags } = useSearchTags(_id, finalName, [result]);
   const notifications = useNotifications();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,7 +45,7 @@ export const TagsPage: FC<TagsPageProps> = ({ owner, name: repoName }) => {
     setSelectedTag(tag.version);
     setIsModalOpen(true);
   };
-  const removeTagAction = useAction<string>(deleteTag(owner, repoName), {
+  const removeTagAction = useAction<string>(deleteTag(_id), {
     onSuccess: () => {
       notifications.success("You have successfully removed an existing tag from the repo.");
       setResult({ status: ResultStatus.Ok, type: "REMOVE_TAG" });

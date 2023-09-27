@@ -9,11 +9,7 @@ import { useZodValidatedFrom } from "../../core/hooks/useZodValidatedForm";
 import { extractErrorMessage } from "../../core/utils/errors";
 import { createBranch } from "./branchesActions";
 import { SelectBranchField } from "./SelectBranchField";
-
-type CreateBranchFormProps = {
-  repo: string;
-  username: string;
-};
+import { useRepositoryContext } from "../repository/RepositoryContext";
 
 const createBranchScheme = z.object({
   branchName: z.string().min(1, "Branch name is required."),
@@ -22,7 +18,9 @@ const createBranchScheme = z.object({
 
 type createBranch = z.infer<typeof createBranchScheme>;
 
-export const CreateBranchForm: FC<CreateBranchFormProps> = ({ repo, username }) => {
+export const CreateBranchForm: FC = () => {
+  const repositoryId = useRepositoryContext().repository?._id ?? "";
+
   const notifications = useNotifications();
   const { setResult } = useResult("branches");
   const {
@@ -32,7 +30,7 @@ export const CreateBranchForm: FC<CreateBranchFormProps> = ({ repo, username }) 
     formState: { errors },
   } = useZodValidatedFrom<createBranch>(createBranchScheme);
 
-  const createBranchAction = useAction<createBranch>(createBranch(username, repo), {
+  const createBranchAction = useAction<createBranch>(createBranch(repositoryId), {
     onSuccess: () => {
       notifications.success("You have successfully created a new branch on the repo.");
       setResult({ status: ResultStatus.Ok, type: "CREATE" });
@@ -44,27 +42,25 @@ export const CreateBranchForm: FC<CreateBranchFormProps> = ({ repo, username }) 
   });
 
   return (
-    <>
-      <form onSubmit={handleSubmit(createBranchAction)}>
-        <div className="bg-white px-4 py-5 sm:p-6">
-          <div className="grid grid-cols-6 gap-6">
-            <div className="col-span-6">
-              <InputField
-                label="Name"
-                formElement={createBranchForm("branchName")}
-                errorMessage={errors?.branchName?.message}
-              />
-            </div>
-            <div className="col-span-6">
-              <SelectBranchField username={username} repo={repo} onChange={(branch) => setValue("source", branch)} />
-            </div>{" "}
+    <form onSubmit={handleSubmit(createBranchAction)}>
+      <div className="bg-white px-4 py-5 sm:p-6">
+        <div className="grid grid-cols-6 gap-6">
+          <div className="col-span-6">
+            <InputField
+              label="Name"
+              formElement={createBranchForm("branchName")}
+              errorMessage={errors?.branchName?.message}
+            />
           </div>
+          <div className="col-span-6">
+            <SelectBranchField onChange={(branch) => setValue("source", branch)} />
+          </div>{" "}
         </div>
+      </div>
 
-        <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
-          <Button>Save</Button>
-        </div>
-      </form>
-    </>
+      <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
+        <Button>Save</Button>
+      </div>
+    </form>
   );
 };

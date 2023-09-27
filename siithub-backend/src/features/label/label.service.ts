@@ -14,14 +14,14 @@ async function findByRepositoryId(repositoryId: Repository["_id"]): Promise<Labe
 
 async function findByNameAndRepositoryId(name: string, repositoryId: Repository["_id"]): Promise<Label | null> {
   return await labelRepo.findByNameAndRepositoryId(name, repositoryId);
-}  
+}
 
 async function findOneOrThrow(id: Label["_id"]): Promise<Label> {
   const label = await labelRepo.crud.findOne(id);
   if (!label) {
     throw new MissingEntityException("Label with given id does not exist.");
   }
-  return label as Label;
+  return label;
 }
 
 async function searchByName(name: string, repositoryId: Repository["_id"]): Promise<Label[] | null> {
@@ -43,7 +43,7 @@ async function updateLabel(label: LabelUpdate): Promise<Label | null> {
   const existingLabel = await findOneOrThrow(label._id);
 
   const labelWithSameName = await labelRepo.findByNameAndRepositoryId(label.name, label.repositoryId);
-  if (labelWithSameName && labelWithSameName._id + '' !== existingLabel._id + '') {
+  if (labelWithSameName && labelWithSameName._id + "" !== existingLabel._id + "") {
     throw new DuplicateException("Label with same name already exists.", label);
   }
 
@@ -54,22 +54,22 @@ async function updateLabel(label: LabelUpdate): Promise<Label | null> {
   return await labelRepo.crud.update(label._id, existingLabel);
 }
 
-async function deleteLabel(id: Label['_id']): Promise<Label | null> {
+async function deleteLabel(id: Label["_id"]): Promise<Label | null> {
   const existingLabel = await findOneOrThrow(id);
 
   return await labelRepo.crud.delete(existingLabel._id);
 }
 
 export type LabelService = {
-  create(label: LabelCreate): Promise<Label | null>,
-  update(label: LabelUpdate): Promise<Label | null>,
-  delete(id: Label['_id']): Promise<Label | null>,
-  findOne(id: Label['_id']): Promise<Label | null>,
-  findOneOrThrow(id: Label["_id"]): Promise<Label>,
-  findByRepositoryId(repositoryId: Repository["_id"]): Promise<Label[]>,
-  findByNameAndRepositoryId(name: string, repositoryId: Repository["_id"]): Promise<Label | null>,
-  searchByName(name: string, repositoryId: Repository["_id"]): Promise<Label[] | null>
-}
+  create(label: LabelCreate): Promise<Label | null>;
+  update(label: LabelUpdate): Promise<Label | null>;
+  delete(id: Label["_id"]): Promise<Label | null>;
+  findOne(id: Label["_id"]): Promise<Label | null>;
+  findOneOrThrow(id: Label["_id"]): Promise<Label>;
+  findByRepositoryId(repositoryId: Repository["_id"]): Promise<Label[]>;
+  findByNameAndRepositoryId(name: string, repositoryId: Repository["_id"]): Promise<Label | null>;
+  searchByName(name: string, repositoryId: Repository["_id"]): Promise<Label[] | null>;
+};
 
 const labelService: LabelService = {
   findOne,
@@ -79,7 +79,7 @@ const labelService: LabelService = {
   searchByName,
   create: createLabel,
   update: updateLabel,
-  delete: deleteLabel
-}
+  delete: deleteLabel,
+};
 
-export { labelService }
+export { labelService };

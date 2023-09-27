@@ -1,18 +1,9 @@
 import { Filter } from "mongodb";
-import { MissingEntityException } from "../../error-handling/errors";
 import type { Repository } from "../repository/repository.model";
 import { repositoryService } from "../repository/repository.service";
 import type { User } from "../user/user.model";
 import type { Star } from "./star.model";
 import { starRepo } from "./star.repo";
-
-async function findOneOrThrow(id: Star["_id"]): Promise<Star> {
-  const star = await starRepo.crud.findOne(id);
-  if (!star) {
-    throw new MissingEntityException("Star with given id does not exist.");
-  }
-  return star;
-}
 
 async function findByRepoId(repoId: Repository["_id"]): Promise<Star[]> {
   return await starRepo.crud.findMany({ repoId }, { projection: { repoId: 0 } });
@@ -61,7 +52,6 @@ async function removeStar(userId: User["_id"], repoId: Repository["_id"]): Promi
 export type StarService = {
   addStar(userId: User["_id"], repoId: Repository["_id"]): Promise<Star | null>;
   removeStar(userId: User["_id"], repoId: Repository["_id"]): Promise<Star | null>;
-  findOneOrThrow(id: Star["_id"]): Promise<Star>;
   findByUserIdAndRepoId(userId: User["_id"], repoId: Repository["_id"]): Promise<Star | null>;
   findByRepoId(repoId: Repository["_id"]): Promise<Star[]>;
   findByRepoIds(repoIds: Repository["_id"][], filters?: Filter<Star>): Promise<Star[]>;
@@ -71,7 +61,6 @@ export type StarService = {
 };
 
 const starService: StarService = {
-  findOneOrThrow,
   addStar,
   removeStar,
   findByUserIdAndRepoId,

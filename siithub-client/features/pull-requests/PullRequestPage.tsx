@@ -1,20 +1,14 @@
 import { type FC } from "react";
-import { type Repository } from "../repository/repository.service";
 import { DefinePullRequestForm } from "./DefinePullRequestForm";
 import { LabelsForm } from "./LabelsForm";
 import { MilestonesForm } from "./MilestonesForm";
-import { AssignessForm } from "./AssignessForm";
+import { AssigneesForm } from "./AssigneesForm";
 import { CommentForm } from "./CommentForm";
 import { usePullRequestContext } from "./PullRequestContext";
 import { PullRequestHistory } from "./PullRequestHistory";
 import { PullRequestClosingForm } from "./PullRequestClosingForm";
 
-type PullRequestPageProps = {
-  repositoryId: Repository["_id"];
-  pullRequestId: number;
-};
-
-export const PullRequestPage: FC<PullRequestPageProps> = ({ repositoryId, pullRequestId }) => {
+export const PullRequestPage: FC = () => {
   const { pullRequest, isEdit } = usePullRequestContext();
 
   if (!isEdit) return <></>;
@@ -51,7 +45,7 @@ export const PullRequestPage: FC<PullRequestPageProps> = ({ repositoryId, pullRe
             <MilestonesForm />
           </div>
 
-          <AssignessForm />
+          <AssigneesForm />
         </div>
       </div>
     </>

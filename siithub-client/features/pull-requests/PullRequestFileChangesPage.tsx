@@ -1,5 +1,4 @@
 import { type FC, useEffect, useState, Fragment } from "react";
-import { type Repository } from "../repository/repository.service";
 import { addConversation, usePullRequestContext } from "./PullRequestContext";
 import { useCommitsDiffBetweenBranches } from "../commits/useCommits";
 import { useRepositoryContext } from "../repository/RepositoryContext";
@@ -40,26 +39,18 @@ const highlightTokenizer = (fileName: string, hunks: any) => {
   }
 };
 
-type PullRequestCommitsPageProps = {
-  repositoryId: Repository["_id"];
-  pullRequestId: number;
-};
+const renderGutter = ({ renderDefault, inHoverState }: any) => (inHoverState ? <PlusIcon /> : renderDefault());
 
-const renderGutter = ({ renderDefault, inHoverState, ...props }: any) => {
-  return inHoverState ? <PlusIcon /> : renderDefault();
-};
-
-export const PullRequestFileChangesPage: FC<PullRequestCommitsPageProps> = ({ repositoryId, pullRequestId }) => {
+export const PullRequestFileChangesPage: FC = () => {
   const { user } = useAuthContext();
 
   const { pullRequest, pullRequestDispatcher } = usePullRequestContext();
-  const { repository }: any = useRepositoryContext();
-  const { owner, name } = repository as Repository;
+  const repositoryId = useRepositoryContext().repository?._id ?? "";
 
   const [changes, setChanges] = useState<any>([]);
-  const [visibilities, setVisibilities] = useState<any>({});
+  const [visibilities, setVisibilities] = useState<{ [file: string]: boolean }>({});
 
-  const { commit } = useCommitsDiffBetweenBranches(owner, name, pullRequest.csm.base, pullRequest.csm.compare, [
+  const { commit } = useCommitsDiffBetweenBranches(repositoryId, pullRequest.csm.base, pullRequest.csm.compare, [
     pullRequest.csm.base,
     pullRequest.csm.compare,
   ]);
@@ -70,8 +61,7 @@ export const PullRequestFileChangesPage: FC<PullRequestCommitsPageProps> = ({ re
       const [diff] = parseDiff(diffText, { nearbySequences: "zip" });
       return { change, diff };
     });
-
-    const initVisibilities = commit?.diff?.reduce((acc: any, change: any) => {
+    const initVisibilities = commit?.diff?.reduce((acc: { [file: string]: boolean }, change) => {
       acc[change?.old?.path || change?.new?.path] = true;
       return acc;
     }, {});
@@ -87,32 +77,16 @@ export const PullRequestFileChangesPage: FC<PullRequestCommitsPageProps> = ({ re
     },
   });
 
-  const getConversationsForFile = (fileName: string) => {
-    const conversations = pullRequest.csm.conversations || [];
-    return conversations
-      .filter((c) => c.topic.startsWith(fileName))
-      .filter((c) => !c.isResolved)
-      .reduce((acc: any, c: PullRequestConversation) => {
-        const line = c.topic.replace(fileName + "_", "");
-        acc[line] = c;
-        return acc;
-      }, {});
-  };
-
   const getConversationComponentsForFile = (fileName: string) => {
     const conversations = pullRequest.csm.conversations || [];
-
     return conversations
-      .filter((c) => c.topic.startsWith(fileName))
-      .filter((c) => !c.isResolved)
+      .filter((c) => c.topic.startsWith(fileName) && !c.isResolved)
       .reduce((acc: any, c: PullRequestConversation) => {
         const line = c.topic.replace(fileName + "_", "");
         acc[line] = (
-          <>
-            <div className="overflow-hidden shadow sm:rounded-md mb-5">
-              <Conversation conversation={c} />
-            </div>
-          </>
+          <div className="overflow-hidden shadow sm:rounded-md mb-5">
+            <Conversation conversation={c} />
+          </div>
         );
         return acc;
       }, {});
@@ -131,10 +105,9 @@ export const PullRequestFileChangesPage: FC<PullRequestCommitsPageProps> = ({ re
           if (!fileName) return <Fragment key={i}></Fragment>;
 
           const conversations = getConversationComponentsForFile(fileName);
-          const numComments = Object.values(getConversationsForFile(fileName)).flatMap((c: any) => c.comments)?.length;
 
           return (
-            <div key={`${fileName}_${numComments}`} className="overflow-hidden shadow sm:rounded-md mb-5">
+            <div key={i} className="overflow-hidden shadow sm:rounded-md mb-5">
               <div className="bg-white pb-5 mb-1">
                 <div
                   className="bg-gray-200 hover:bg-gray-100 cursor-pointer"
@@ -159,8 +132,8 @@ export const PullRequestFileChangesPage: FC<PullRequestCommitsPageProps> = ({ re
                     widgets={conversations}
                     renderGutter={renderGutter}
                   >
-                    {(hunks: any) =>
-                      hunks.map((hunk: any) => (
+                    {(hunks: any[]) =>
+                      hunks.map((hunk) => (
                         <Hunk key={"hunk-" + hunk.content} hunk={hunk} gutterEvents={gutterEvents(fileName)} />
                       ))
                     }

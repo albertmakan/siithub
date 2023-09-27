@@ -2,12 +2,11 @@ import { InputField } from "../../core/components/InputField";
 import { IssueState, type IssuesQuery } from "./issueActions";
 import Select from "react-select";
 import { type FC, useState } from "react";
-import { type Label } from "../labels/labelActions";
 import { type Repository } from "../repository/repository.service";
-import { type Milestone } from "../milestones/milestoneActions";
-import { useLabels } from "../labels/useLabels";
-import { useUsers } from "../users/registration/useUsers";
-import { useMilestonesByRepoId } from "../milestones/useMilestones";
+import { ChooseAssigneesField } from "../common/ChooseAssigneesField";
+import { ChooseLabelsField } from "../common/ChooseLabelsField";
+import { ChooseMilestonesField } from "../common/ChooseMilestonesField";
+import { useCollaborators } from "../collaborators/useCollaborators";
 
 const avaiableStates = [
   { value: [IssueState.Open, IssueState.Reopened, IssueState.Closed], label: "Any" },
@@ -31,24 +30,14 @@ type IssuesSearchFormProps = {
 export const IssuesSearchForm: FC<IssuesSearchFormProps> = ({ repositoryId, existingParams, onParamsChange }) => {
   const [params, setParams] = useState<IssuesQuery>(existingParams);
 
-  const { labels } = useLabels(repositoryId);
-  const labelOptions = labels?.map((l: Label) => ({ value: l._id, label: l.name }));
-
-  const { milestones } = useMilestonesByRepoId(repositoryId);
-  const milestoneOptions = milestones?.map((m: Milestone) => ({ value: m._id, label: m.title }));
-
-  const { users } = useUsers();
+  const { collaborators } = useCollaborators(repositoryId, "");
   const userOptions = [
     { value: "", label: "Any" },
-    ...(users?.map((u: any) => ({ value: u._id, label: u.name })) ?? []),
+    ...collaborators.map((c) => ({ value: c.user._id, label: c.user.name })),
   ];
 
-  const onDataChange = (data: any) => {
-    const newParams = {
-      ...params,
-      ...data,
-    };
-
+  const onDataChange = (data: Partial<IssuesQuery>) => {
+    const newParams = { ...params, ...data };
     onParamsChange(newParams);
     setParams(newParams);
   };
@@ -72,9 +61,7 @@ export const IssuesSearchForm: FC<IssuesSearchFormProps> = ({ repositoryId, exis
             options={sortOptions}
             className="mt-1 basic-select"
             classNamePrefix="select"
-            onChange={(sort: any) => {
-              onDataChange({ sort: sort.value });
-            }}
+            onChange={(sort) => onDataChange({ sort: sort?.value })}
           />
         </div>
       </div>
@@ -90,9 +77,7 @@ export const IssuesSearchForm: FC<IssuesSearchFormProps> = ({ repositoryId, exis
             options={avaiableStates}
             className="mt-1 basic-select"
             classNamePrefix="select"
-            onChange={(state: any) => {
-              onDataChange({ state: state.value });
-            }}
+            onChange={(state) => onDataChange({ state: state?.value })}
           />
         </div>
 
@@ -106,57 +91,31 @@ export const IssuesSearchForm: FC<IssuesSearchFormProps> = ({ repositoryId, exis
             options={userOptions}
             className="mt-1 basic-select"
             classNamePrefix="select"
-            onChange={(author: any) => {
-              onDataChange({ author: author.value });
-            }}
+            onChange={(author) => onDataChange({ author: author?.value })}
           />
         </div>
 
         <div className="col-span-3">
-          <label className="block text-sm font-medium text-gray-700">Assigne</label>
-
-          <Select
-            isMulti
-            name="assignees"
-            defaultValue={undefined}
-            options={userOptions}
-            className="mt-1 basic-multi-select"
-            classNamePrefix="select"
-            onChange={(assignees: any) => {
-              onDataChange({ assignees: assignees.map((a: any) => a.value) });
-            }}
+          <ChooseAssigneesField
+            repositoryId={repositoryId}
+            selectedAssignees={existingParams.assignees ?? []}
+            onAssigneesChange={(assignees) => onDataChange({ assignees })}
           />
         </div>
 
         <div className="col-span-3">
-          <label className="block text-sm font-medium text-gray-700">Labels</label>
-
-          <Select
-            isMulti
-            name="labels"
-            defaultValue={undefined}
-            options={labelOptions}
-            className="mt-1 basic-multi-select"
-            classNamePrefix="select"
-            onChange={(labels: any) => {
-              onDataChange({ labels: labels.map((l: any) => l.value) });
-            }}
+          <ChooseLabelsField
+            repositoryId={repositoryId}
+            selectedLabels={existingParams.labels ?? []}
+            onLabelChange={(labels) => onDataChange({ labels })}
           />
         </div>
 
         <div className="col-span-3">
-          <label className="block text-sm font-medium text-gray-700">Milestones</label>
-
-          <Select
-            isMulti
-            name="milestones"
-            defaultValue={undefined}
-            options={milestoneOptions}
-            className="mt-1 basic-multi-select"
-            classNamePrefix="select"
-            onChange={(milestones: any) => {
-              onDataChange({ milestones: milestones.map((m: any) => m.value) });
-            }}
+          <ChooseMilestonesField
+            repositoryId={repositoryId}
+            selectedMilestones={existingParams.milestones ?? []}
+            onMilestonesChange={(milestones) => onDataChange({ milestones })}
           />
         </div>
       </div>

@@ -2,12 +2,13 @@ import { type FC, type PropsWithChildren } from "react";
 import { SettingsLayout } from "./settings/_settings.layout";
 import { ProfileLayout } from "./users/[username]/_profile.layout";
 import { useRouter } from "next/router";
-import { RepositoryLayout } from "./[username]/[repository]/_repository.layout";
-import { RepositorySettingsLayout } from "./[username]/[repository]/settings/_repository-settings.layout";
-import { RepositoryTreeLayout } from "./[username]/[repository]/tree/_repository-tree.layout";
+import RepositoryLayout from "./[username]/[repository]/_repository.layout";
+import RepositorySettingsLayout from "./[username]/[repository]/settings/_repository-settings.layout";
+import RepositoryTreeLayout from "./[username]/[repository]/tree/_repository-tree.layout";
 import RepositoryBlobLayout from "./[username]/[repository]/blob/_repository-blob.layout";
 import PullRequestsEditLayout from "./[username]/[repository]/pull-requests/[localId]/_pull-requests-edit.layout";
 import AdvanceSearchLayout from "./advance-search/_advance-search.layout";
+import RepositoryGraphsLayout from "./[username]/[repository]/graphs/_repository-graphs.layout";
 
 type NestedLayout = {
   path: string;
@@ -58,57 +59,35 @@ const registeredLayouts: NestedLayout[] = [
         path: "/pull-requests/[localId]",
         component: PullRequestsEditLayout,
       },
+      {
+        path: "/graphs",
+        component: RepositoryGraphsLayout,
+      },
     ],
   },
 ];
 
-function match(path: string, routerPath: string, matchType: string) {
+function match(path: string, routerPath: string, matchType: "startsWith" | "exact") {
   const cleanedRouterPath = routerPath.replace("#", "");
-  const matchers: any = {
-    startsWith: () => cleanedRouterPath.startsWith(path),
-    exact: () => cleanedRouterPath.startsWith(path),
-  };
-
-  return (matchers[matchType] || (() => false))();
+  if (matchType === "startsWith") return cleanedRouterPath.startsWith(path);
+  return cleanedRouterPath === path;
 }
 
 export const NestedLayoutResolver: FC<PropsWithChildren> = ({ children }) => {
   const r = useRouter();
 
-  const findLayoutComponent = () => {
-    for (const layout of registeredLayouts) {
-      for (const childLayout of layout.children || []) {
-        if (match(layout.path + childLayout.path, r.pathname, layout.pathMatch)) {
-          const NestedLayout: FC<PropsWithChildren> = ({ children }) => {
-            return (
-              <>
-                <layout.component>
-                  <childLayout.component>{children}</childLayout.component>
-                </layout.component>
-              </>
-            );
-          };
-          return NestedLayout;
-        }
-      }
-
-      if (match(layout.path, r.pathname, layout.pathMatch)) {
-        return layout.component;
-      }
+  for (const layout of registeredLayouts) {
+    for (const childLayout of layout.children || []) {
+      if (match(layout.path + childLayout.path, r.pathname, layout.pathMatch))
+        return (
+          <layout.component>
+            <childLayout.component>{children}</childLayout.component>
+          </layout.component>
+        );
     }
-
-    return undefined;
-  };
-
-  const LayoutComponent = findLayoutComponent();
-
-  if (!LayoutComponent) return <>{children}</>;
-
-  return (
-    <>
-      <LayoutComponent>{children}</LayoutComponent>
-    </>
-  );
+    if (match(layout.path, r.pathname, layout.pathMatch)) return <layout.component>{children}</layout.component>;
+  }
+  return <>{children}</>;
 };
 
 export default NestedLayoutResolver;

@@ -11,70 +11,61 @@ import { useRepositoryContext } from "../repository/RepositoryContext";
 import { findLastEvent } from "../common/utils";
 import { HashtagLink } from "../../core/components/HashtagLink";
 
-type IssuesTableType = {
-  repositoryId: Repository["_id"];
-  issues: Issue[];
+const AdditionalText = ({ issue }: { issue: Issue }) => {
+  const issueCreated = findLastEvent(issue.events, (e: any) => e.type === "IssueCreatedEvent");
+  const issueClosed = findLastEvent(issue.events, (e: any) => e.type === "IssueClosedEvent");
+
+  return [IssueState.Open, IssueState.Reopened].includes(issue.csm.state ?? -1) ? (
+    <div>
+      was opened by {issue.participants?.[issueCreated.by].name} {moment(issueCreated.timeStamp).fromNow()}
+    </div>
+  ) : (
+    <div>
+      {issue.participants?.[issueCreated.by].name} closed {moment(issueClosed.timeStamp).fromNow()}
+    </div>
+  );
 };
 
-export const IssuesTable: FC<IssuesTableType> = ({ repositoryId, issues }) => {
+export const IssuesTable: FC<{ issues: Issue[] }> = ({ issues }) => {
   const { repository } = useRepositoryContext();
-  const router = useRouter();
+  const { owner, name, _id: repositoryId } = repository as Repository;
+
   const { labels } = useLabels(repositoryId);
 
-  const navigateToIssueEdit = (localId: number) =>
-    router.push(`/${repository?.owner ?? ""}/${repository?.name ?? ""}/issues/${localId}`);
+  const router = useRouter();
+  const navigateToIssueEdit = (localId: number) => router.push(`/${owner}/${name}/issues/${localId}`);
 
-  const AdditionalText = ({ issue }: { issue: Issue }) => {
-    const issueCreated = findLastEvent(issue.events, (e: any) => e.type === "IssueCreatedEvent");
-    const issueClosed = findLastEvent(issue.events, (e: any) => e.type === "IssueClosedEvent");
-
-    return (
-      <>
-        {[IssueState.Open, IssueState.Reopened].includes(issue.csm.state ?? -1) ? (
-          <div>
-            was opened by {issue.participants?.[issueCreated.by].name} {moment(issueCreated.timeStamp).fromNow()}
-          </div>
-        ) : (
-          <div>
-            {issue.participants?.[issueCreated.by].name} closed {moment(issueClosed.timeStamp).fromNow()}
-          </div>
-        )}
-      </>
-    );
-  };
   return (
-    <>
-      <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
-        <table className="w-full text-sm text-left text-gray-500">
-          <tbody>
-            {issues?.map((issue: Issue) => (
-              <tr key={issue._id} className="bg-white border-b">
-                <td className="py-4 px-6">
-                  <div className="cursor-pointer" onClick={() => navigateToIssueEdit(issue.localId)}>
-                    <div className="flex">
-                      <span className="mr-2 mt-2">
-                        {issue.csm.state === IssueState.Closed ? <ClosedIcon /> : <OpenedIcon />}
-                      </span>
-                      <span className="text-xl mr-2">
-                        <HashtagLink>{issue.csm.title}</HashtagLink>
-                      </span>
-                      <span>
-                        {issue.csm.labels?.map((lId) => {
-                          const label = labels?.find((l: Label) => l._id === lId) ?? {};
-                          return <LabelPreview key={label._id} {...label} />;
-                        })}
-                      </span>
-                    </div>
-                    <div className="ml-6">
-                      <AdditionalText issue={issue} />
-                    </div>
+    <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
+      <table className="w-full text-sm text-left text-gray-500">
+        <tbody>
+          {issues?.map((issue) => (
+            <tr key={issue._id} className="bg-white border-b">
+              <td className="py-4 px-6">
+                <div className="cursor-pointer" onClick={() => navigateToIssueEdit(issue.localId)}>
+                  <div className="flex">
+                    <span className="mr-2 mt-2">
+                      {issue.csm.state === IssueState.Closed ? <ClosedIcon /> : <OpenedIcon />}
+                    </span>
+                    <span className="text-xl mr-2">
+                      <HashtagLink>{issue.csm.title}</HashtagLink>
+                    </span>
+                    <span>
+                      {issue.csm.labels?.map((lId) => {
+                        const label = labels?.find((l) => l._id === lId);
+                        return label ? <LabelPreview key={label._id} {...label} /> : <></>;
+                      })}
+                    </span>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
+                  <div className="ml-6">
+                    <AdditionalText issue={issue} />
+                  </div>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };

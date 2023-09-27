@@ -1,14 +1,13 @@
 import { useQuery } from "react-query";
 import { type Collaborator, searchCollaborators } from "./collaboratorAction";
+import { type Repository } from "../repository/repository.service";
 
-export function useCollaborators(username: string, repo: string, name: string, dependencies: any[] = []) {
+export function useCollaborators(repositoryId: Repository["_id"], name: string, dependencies: any[] = []) {
   const { data } = useQuery(
-    [`collaborators_${username}/${repo}`, name, ...dependencies],
-    () => searchCollaborators(username, repo, name),
+    [`collaborators_${repositoryId}`, name, ...dependencies],
+    () => searchCollaborators(repositoryId, name),
     { enabled: dependencies.reduce((acc, d) => acc && !d, true) }
   );
 
-  return {
-    collaborators: (data?.data ?? []) as Collaborator[],
-  };
+  return { collaborators: (data?.data ?? []) as Collaborator[] };
 }

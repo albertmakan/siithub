@@ -41,10 +41,6 @@ async function findOneOrThrow(id: Milestone["_id"]): Promise<Milestone> {
   return milestone;
 }
 
-async function searchByTitle(title: string, repositoryId: Repository["_id"]): Promise<Milestone[] | null> {
-  return await milestoneRepo.searchByTitle(title, repositoryId);
-}
-
 async function createMilestone(milestone: MilestoneCreate): Promise<Milestone | null> {
   const milestoneWithSameName = await findByTitleAndRepositoryId(milestone.title, milestone.repositoryId);
   if (milestoneWithSameName) {
@@ -125,7 +121,6 @@ export type MilestoneService = {
   findOneOrThrow(id: Milestone["_id"]): Promise<Milestone>;
   findByRepositoryId(repositoryId: Repository["_id"], isOpen?: boolean): Promise<Milestone[]>;
   findByTitleAndRepositoryId(title: string, repositoryId: Repository["_id"]): Promise<Milestone | null>;
-  searchByTitle(title: string, repositoryId: Repository["_id"]): Promise<Milestone[] | null>;
   changeStatus(repositoryId: Repository["_id"], localId: number, open: boolean): Promise<Milestone | null>;
   findByRepositoryIdAndLocalId(repositoryId: Repository["_id"], localId: number): Promise<Milestone>;
   handleIssueEvent(id: Milestone["_id"], event: BaseEvent, isOpen: boolean): Promise<void>;
@@ -136,7 +131,6 @@ const milestoneService: MilestoneService = {
   findOneOrThrow,
   findByRepositoryId,
   findByTitleAndRepositoryId,
-  searchByTitle,
   changeStatus,
   create: createMilestone,
   update: updateMilestone,

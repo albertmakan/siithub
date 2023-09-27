@@ -4,32 +4,27 @@ import { ResultStatus, useResult } from "../../core/contexts/Result";
 import { Button } from "../../core/components/Button";
 import { BranchesTable } from "./BranchesTable";
 import { useRefresh } from "../../core/hooks/useRefresh";
-import { BranchesSearchForm } from "./BranchesSearchForm";
 import debounce from "lodash.debounce";
 import { Modal } from "../../core/components/Modal";
 import { CreateBranchForm } from "./CreateBranchForm";
 import { useRepositoryContext } from "../repository/RepositoryContext";
+import { InputField } from "../../core/components/InputField";
 
 const debouncedCb = debounce((cb: () => void) => cb(), 300);
 
-type BranchesPageProps = {
-  repo: string;
-  username: string;
-};
+export const BranchesPage: FC = () => {
+  const repositoryId = useRepositoryContext().repository?._id ?? "";
 
-export const BranchesPage: FC<BranchesPageProps> = ({ repo, username }) => {
   const [name, setName] = useState("");
   const [finalName, setFinalName] = useState(name);
   const [isOpen, setIsOpen] = useState(false);
 
   const { key, refresh } = useRefresh("branchesSearchForm");
   const { result: branchesResult, setResult: setBranchesResult } = useResult("branches");
-  const { branches } = useBranches(username, repo, finalName, [branchesResult]);
-  const defaultBranch = useRepositoryContext().repository?.defaultBranch;
+  const { branches } = useBranches(repositoryId, finalName, [branchesResult]);
 
   useEffect(() => {
     debouncedCb(() => setFinalName(name));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
 
   useEffect(() => {
@@ -56,7 +51,7 @@ export const BranchesPage: FC<BranchesPageProps> = ({ repo, username }) => {
       </div>
 
       <Modal title="Create branch" isOpen={isOpen} onClose={() => setIsOpen(false)}>
-        <CreateBranchForm repo={repo} username={username} />
+        <CreateBranchForm />
       </Modal>
 
       <div className="hidden sm:block" aria-hidden="true">
@@ -68,7 +63,7 @@ export const BranchesPage: FC<BranchesPageProps> = ({ repo, username }) => {
       <div className="overflow-hidden shadow sm:rounded-md px-4 py-3">
         <div className="mb-4 grid grid-cols-12">
           <div key={key} className="col-span-11">
-            <BranchesSearchForm existingName={name} onNameChange={setName} />
+            <InputField label="Name" formElement={{ value: name, onChange: (e: any) => setName(e.target.value) }} />
           </div>
 
           <div className="mt-8 col-span-1 text-right">
@@ -76,7 +71,7 @@ export const BranchesPage: FC<BranchesPageProps> = ({ repo, username }) => {
           </div>
         </div>
 
-        <BranchesTable repo={repo} username={username} branches={branches} defaultBranch={defaultBranch ?? ""} />
+        <BranchesTable branches={branches} />
       </div>
     </>
   );

@@ -1,70 +1,43 @@
 import type { Request, Response } from "express";
 import { Router } from "express";
+import "express-async-errors";
+import { localIdSchema } from "../../utils/zod";
+import { isAllowedToAccessRepo } from "../collaborators/collaborators.middleware";
 import { issueService } from "./issue.service";
 import { type IssueUpdate, type IssueCreate } from "./issue.model";
-import "express-async-errors";
 import { type IssuesQuery } from "./issue.query";
-import { authorize } from "../auth/auth.middleware";
-import { isAllowedToAccessRepo } from "../collaborators/collaborators.middleware";
-import { z } from "zod";
-import { objectIdString } from "../../utils/zod";
 
-const router = Router();
+const issueRoutes = Router();
 
-const idSchema = objectIdString("Invalid id");
-const localIdSchema = z.number().min(0);
-
-router.get("/:repositoryId/issues/", authorize(), isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
-  const repositoryId = idSchema.parse(req.params.repositoryId);
+issueRoutes.get("/", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const repositoryId = res.locals.repository._id;
   res.send(await issueService.resolveParticipants(await issueService.findByRepositoryId(repositoryId)));
 });
 
-router.get(
-  "/:repositoryId/issues/search",
-  authorize(),
-  isAllowedToAccessRepo(true),
-  async (req: Request, res: Response) => {
-    const repositoryId = idSchema.parse(req.params.repositoryId);
-    const query = req.query as IssuesQuery;
+issueRoutes.get("/search", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const repositoryId = res.locals.repository._id;
+  const query = req.query as IssuesQuery;
+  res.send(await issueService.resolveParticipants(await issueService.searchByQuery(query, repositoryId)));
+});
 
-    res.send(await issueService.resolveParticipants(await issueService.searchByQuery(query, repositoryId)));
-  }
-);
+issueRoutes.get("/:localId", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const repositoryId = res.locals.repository._id;
+  const localId = localIdSchema.parse(+req.params.localId);
+  const issue = await issueService.findByRepositoryIdAndLocalId(repositoryId, localId);
+  res.send((await issueService.resolveParticipants([issue]))[0]);
+});
 
-router.get(
-  "/:repositoryId/issues/:localId",
-  authorize(),
-  isAllowedToAccessRepo(true),
-  async (req: Request, res: Response) => {
-    const repositoryId = idSchema.parse(req.params.repositoryId);
-    const localId = localIdSchema.parse(+req.params.localId);
-    res.send(
-      (
-        await issueService.resolveParticipants([await issueService.findByRepositoryIdAndLocalId(repositoryId, localId)])
-      )[0]
-    );
-  }
-);
-
-router.post("/:repositoryId/issues/", authorize(), isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
-  const repositoryId = idSchema.parse(req.params.repositoryId);
+issueRoutes.post("/", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
   const issueCreate = req.body as IssueCreate;
-  issueCreate.repositoryId = repositoryId;
+  issueCreate.repositoryId = res.locals.repository._id;
   res.send(await issueService.create(issueCreate));
 });
 
-router.put(
-  "/:repositoryId/issues/:localId",
-  authorize(),
-  isAllowedToAccessRepo(true),
-  async (req: Request, res: Response) => {
-    const issueUpdate = req.body as IssueUpdate;
+issueRoutes.put("/:localId", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const issueUpdate = req.body as IssueUpdate;
+  issueUpdate.repositoryId = res.locals.repository._id;
+  issueUpdate.localId = localIdSchema.parse(+req.params.localId);
+  res.send(await issueService.update(issueUpdate));
+});
 
-    issueUpdate.repositoryId = idSchema.parse(req.params.repositoryId);
-    issueUpdate.localId = localIdSchema.parse(+req.params.localId);
-
-    res.send(await issueService.update(issueUpdate));
-  }
-);
-
-export { router as issueRoutes };
+export { issueRoutes };

@@ -17,27 +17,31 @@ import { pullRequestRoutes } from "./features/pull-requests/pull-requests.routes
 import { insightRoutes } from "./features/insights/insight.routes";
 import { tagsRoutes } from "./features/tags/tags.routes";
 import { advanceSearchRoutes } from "./features/advance-search/advance-search.routes";
+import { findRepository } from "./features/repository/repository.middleware";
+import { authorize } from "./features/auth/auth.middleware";
 
-const router = Router();
-
-router
+export const apiRoutes = Router()
   .use("/users", userRoutes)
   .use("/auth", authRoutes)
-  .use("/repositories", repositoryRoutes)
-  .use("/repositories", labelRoutes)
-  .use("/repositories", issueRoutes)
-  .use("/repositories", pullRequestRoutes)
-  .use("/repositories", collaboratorsRoutes)
-  .use("/repositories", tagsRoutes)
   .use("/ssh-keys", sshKeyRoutes)
-  .use("/", milestoneRoutes)
-  .use("/search", advanceSearchRoutes)
-  .use("/", starRoutes)
-  .use("/", activitiesRoutes)
-  .use("/", treeRoutes)
-  .use("/", blobRoutes)
-  .use("/", commitRoutes)
-  .use("/", insightRoutes)
-  .use("/", branchesRoutes);
-
-export { router as apiRoutes };
+  .use("/search", authorize(), advanceSearchRoutes)
+  .use("/activities", authorize(), activitiesRoutes)
+  .use("/repositories", authorize(), repositoryRoutes)
+  .use(
+    "/repositories/:repositoryId",
+    authorize(),
+    findRepository,
+    Router()
+      .use("/labels", labelRoutes)
+      .use("/issues", issueRoutes)
+      .use("/pull-requests", pullRequestRoutes)
+      .use("/collaborators", collaboratorsRoutes)
+      .use("/tags", tagsRoutes)
+      .use("/milestones", milestoneRoutes)
+      .use("/insights", insightRoutes)
+      .use("/star", starRoutes)
+      .use("/tree", treeRoutes)
+      .use("/blob", blobRoutes)
+      .use("/commits", commitRoutes)
+      .use("/branches", branchesRoutes)
+  );

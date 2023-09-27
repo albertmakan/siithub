@@ -6,6 +6,8 @@ import { type Commit, useCommits } from "./useCommits";
 import { BranchesMenu } from "../branches/BranchesMenu";
 import { FilePath } from "../file/FilePath";
 import { CommitCard } from "./CommitCard";
+import { useRepositoryContext } from "../repository/RepositoryContext";
+import { Repository } from "../repository/repository.service";
 
 type CommitsHistoryProps = {
   username: string;
@@ -37,14 +39,14 @@ export const CommitsHistory: FC<CommitsHistoryProps> = ({ username, repoName, co
 };
 
 type CommitsTableProps = {
-  username: string;
-  repoName: string;
   branch: string;
   filePath?: string;
 };
 
-export const CommitsTable: FC<CommitsTableProps> = ({ username, repoName, branch, filePath }) => {
-  const { commits, error, isLoading } = useCommits(username, repoName, branch, filePath ?? "");
+export const CommitsTable: FC<CommitsTableProps> = ({ branch, filePath }) => {
+  const { repository } = useRepositoryContext();
+  const { owner, name, _id } = repository as Repository;
+  const { commits, error, isLoading } = useCommits(_id, branch, filePath ?? "");
 
   if (error) return <NotFound />;
 
@@ -55,7 +57,7 @@ export const CommitsTable: FC<CommitsTableProps> = ({ username, repoName, branch
           {filePath ? (
             <p className="text-lg items-center">
               History for{" "}
-              <FilePath username={username} repoName={repoName} branch={branch} filePath={filePath} forCommits={true} />
+              <FilePath username={owner} repoName={name} branch={branch} filePath={filePath} forCommits={true} />
             </p>
           ) : (
             <BranchesMenu />
@@ -69,7 +71,7 @@ export const CommitsTable: FC<CommitsTableProps> = ({ username, repoName, branch
               </div>
             </div>
           ) : (
-            <CommitsHistory username={username} repoName={repoName} commits={commits} />
+            <CommitsHistory username={owner} repoName={name} commits={commits} />
           )}
         </div>
       </div>

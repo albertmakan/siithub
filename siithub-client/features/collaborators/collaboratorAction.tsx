@@ -11,18 +11,17 @@ type Collaborator = AddCollaborator & {
   user: User;
 };
 
-function searchCollaborators(username: string, repo: string, name: string = "") {
-  return axios.get(`/api/repositories/${username}/${repo}/collaborators`, { params: { name } });
+function searchCollaborators(repositoryId: Repository["_id"], name: string = "") {
+  return axios.get(`/api/repositories/${repositoryId}/collaborators`, { params: { name } });
 }
 
-function addCollaborator(username: string, repo: string) {
-  return (collaborator: AddCollaborator) =>
-    axios.post(`/api/repositories/${username}/${repo}/collaborators`, collaborator);
+function addCollaborator(repositoryId: Repository["_id"]) {
+  return (collaborator: AddCollaborator) => axios.post(`/api/repositories/${repositoryId}/collaborators`, collaborator);
 }
 
-function removeCollaborator(username: string, repo: string) {
+function removeCollaborator(repositoryId: Repository["_id"]) {
   return (collaborator: RemoveCollaborator) =>
-    axios.delete(`/api/repositories/${username}/${repo}/collaborators`, { data: collaborator });
+    axios.delete(`/api/repositories/${repositoryId}/collaborators/${collaborator.userId}`);
 }
 
 export { searchCollaborators, addCollaborator, removeCollaborator };

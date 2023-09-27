@@ -24,24 +24,24 @@ type TagWithRepository = Tag & {
   user: User;
 };
 
-function getTagsByRepo(owner: string, name: string) {
-  return axios.get(`/api/repositories/${owner}/${name}/tags`);
+function getTagsByRepo(repositoryId: Repository["_id"]) {
+  return axios.get(`/api/repositories/${repositoryId}/tags`);
 }
 
-function searchTagsInRepo(owner: string, name: string, tagName: string) {
-  return axios.get(`/api/repositories/${owner}/${name}/tags`, { params: { name: tagName } });
+function searchTagsInRepo(repositoryId: Repository["_id"], tagName: string) {
+  return axios.get(`/api/repositories/${repositoryId}/tags`, { params: { name: tagName } });
 }
 
-function getTagsCountByRepo(owner: string, name: string) {
-  return axios.get(`/api/repositories/${owner}/${name}/tags/count`);
+function getTagsCountByRepo(repositoryId: Repository["_id"]) {
+  return axios.get(`/api/repositories/${repositoryId}/tags/count`);
 }
 
-function createTag(owner: string, name: string) {
-  return (tag: TagCreate) => axios.post(`/api/repositories/${owner}/${name}/tags`, tag);
+function createTag(repositoryId: Repository["_id"]) {
+  return (tag: TagCreate) => axios.post(`/api/repositories/${repositoryId}/tags`, tag);
 }
 
-function deleteTag(owner: string, name: string) {
-  return (version: string) => axios.delete(`/api/repositories/${owner}/${name}/tags/${version}`);
+function deleteTag(repositoryId: Repository["_id"]) {
+  return (version: string) => axios.delete(`/api/repositories/${repositoryId}/tags/${version}`);
 }
 
 export { getTagsByRepo, searchTagsInRepo, getTagsCountByRepo, createTag, deleteTag };

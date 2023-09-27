@@ -1,20 +1,19 @@
 import { type Request, type Response, Router } from "express";
 import "express-async-errors";
-import { getRepoIdFromPath } from "../../utils/getRepo";
 import { gitServerClient } from "../gitserver/gitserver.client";
+import { isAllowedToAccessRepo } from "../collaborators/collaborators.middleware";
+import { type Repository } from "../repository/repository.model";
 
-const router = Router();
+const treeRoutes = Router();
 
-router.get("/:username/:repository/tree/:branch/:treePath", async (req: Request, res: Response) => {
-  const repoId = await getRepoIdFromPath(req);
-  res.send(
-    await gitServerClient.getTree(req.params.username, req.params.repository, req.params.branch, req.params.treePath)
-  );
+treeRoutes.get("/:branch/:treePath", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const { owner, name: repoName } = res.locals.repository as Repository;
+  res.send(await gitServerClient.getTree(owner, repoName, req.params.branch, req.params.treePath));
 });
 
-router.get("/:username/:repository/tree/:branch", async (req: Request, res: Response) => {
-  const repoId = await getRepoIdFromPath(req);
-  res.send(await gitServerClient.getTree(req.params.username, req.params.repository, req.params.branch, ""));
+treeRoutes.get("/:branch", isAllowedToAccessRepo(true), async (req: Request, res: Response) => {
+  const { owner, name: repoName } = res.locals.repository as Repository;
+  res.send(await gitServerClient.getTree(owner, repoName, req.params.branch, ""));
 });
 
-export { router as treeRoutes };
+export { treeRoutes };

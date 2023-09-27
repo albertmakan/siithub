@@ -18,11 +18,7 @@ export const PersonalInformationsPage: FC = () => {
 
   if (!user) return <></>;
 
-  return (
-    <>
-      <PersonalInfoForm user={user} />
-    </>
-  );
+  return <PersonalInfoForm user={user} />;
 };
 
 export const GithubAccountPage: FC = () => {
@@ -37,19 +33,9 @@ export const GithubAccountPage: FC = () => {
 
   if (!user) return <></>;
 
-  return (
-    <>
-      <>
-        <GithubUsernameForm key={user.githubAccount?.username} userId={userId} githubAccount={user.githubAccount} />
-      </>
-    </>
-  );
+  return <GithubUsernameForm key={user.githubAccount?.username} githubAccount={user.githubAccount} />;
 };
 
 export const ChangePasswordPage: FC = () => {
-  return (
-    <>
-      <ChangePasswordForm />
-    </>
-  );
+  return <ChangePasswordForm />;
 };

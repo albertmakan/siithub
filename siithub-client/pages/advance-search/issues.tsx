@@ -11,26 +11,14 @@ const Issues = () => {
   return (
     <>
       <SortComponent
-        options={{
-          "Sort by timestamp 🔼": {
-            "csm.timeStamp": -1,
-          },
-          "Sort by timestamp 🔽": {
-            "csm.timeStamp": 1,
-          },
-          "Sort by title 🔼": {
-            "csm.title": 1,
-          },
-          "Sort by title 🔽": {
-            "csm.title": -1,
-          },
-          "Sort by local number 🔼": {
-            localId: 1,
-          },
-          "Sort by local number 🔽": {
-            localId: -1,
-          },
-        }}
+        options={[
+          { label: "Sort by timestamp 🔽", value: { "csm.timeStamp": -1 } },
+          { label: "Sort by timestamp 🔼", value: { "csm.timeStamp": 1 } },
+          { label: "Sort by title 🔼", value: { "csm.title": 1 } },
+          { label: "Sort by title 🔽", value: { "csm.title": -1 } },
+          { label: "Sort by local number 🔼", value: { localId: 1 } },
+          { label: "Sort by local number 🔽", value: { localId: -1 } },
+        ]}
       />
       <IssuesSearch param={param?.toString() ?? ""} repositoryId={repositoryId?.toString() ?? ""} sort={sort} />
     </>

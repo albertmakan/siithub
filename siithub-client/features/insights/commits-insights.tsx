@@ -2,11 +2,13 @@ import { type FC } from "react";
 import { Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useCommitsInsights } from "./useInsights";
 import { useRepositoryContext } from "../repository/RepositoryContext";
+import { type Repository } from "../repository/repository.service";
 
-export const CommitsInsights: FC<{ repo: string; username: string }> = ({ username, repo }) => {
-  const defaultBranch = useRepositoryContext().repository?.defaultBranch;
+export const CommitsInsights: FC = () => {
+  const { repository } = useRepositoryContext();
+  const { _id, defaultBranch } = repository as Repository;
 
-  const { insights, isLoading } = useCommitsInsights(username, repo, defaultBranch ?? "", [defaultBranch]);
+  const { insights, isLoading } = useCommitsInsights(_id, defaultBranch ?? "", [defaultBranch]);
 
   if (!defaultBranch) return <>This repository is empty</>;
   if (isLoading || !insights) return <>loading...</>;

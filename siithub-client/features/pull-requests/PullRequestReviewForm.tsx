@@ -48,15 +48,15 @@ export const PullRequestReviewForm: FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const currentUserId = user?._id ?? "";
-  const assigness = pullRequest.csm?.assignees ?? [];
+  const assignees = pullRequest.csm?.assignees ?? [];
 
   if (pullRequest.csm.isClosed) return <></>;
 
-  const approve: any = () => {
+  const approve = () => {
     setType("approve");
     setIsModalOpen(true);
   };
-  const requireChanges: any = () => {
+  const requireChanges = () => {
     setType("required");
     setIsModalOpen(true);
   };
@@ -67,16 +67,13 @@ export const PullRequestReviewForm: FC = () => {
         <ReviewForm type={type} />
       </Modal>
 
-      {/* {assigness.includes(currentUserId) && currentUserId !== pullRequest.csm.author ? ( */}
-      {assigness.includes(currentUserId) ? (
+      {assignees.includes(currentUserId) && (
         <div className="grid grid-cols-12 w-100 py-3 ">
           <div className="col-span-12 text-right space-x-2">
             <Button onClick={approve}>Approve</Button>
             <Button onClick={requireChanges}>Require Changes</Button>
           </div>
         </div>
-      ) : (
-        <></>
       )}
     </>
   );

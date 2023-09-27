@@ -18,61 +18,54 @@ const BranchesIcon = ({ className }: any) => {
 
 export const BranchesMenu: FC<{ count?: boolean }> = ({ count }) => {
   const router = useRouter();
-  const { repository } = useRepositoryContext();
-  const { owner, name } = repository as Repository;
-  const { branches } = useBranches(owner, name);
   const { branch } = router.query;
-  const { count: tagsCount } = useTagsCount(owner, name);
+
+  const { repository } = useRepositoryContext();
+  const { owner, name, _id: repositoryId } = repository as Repository;
+
+  const { branches } = useBranches(repositoryId);
+  const { count: tagsCount } = useTagsCount(repositoryId);
 
   if (!branch) return <></>;
 
   const changeBranch = (branch: string) => {
     if (!branch) return;
 
-    let finalRoute = router.pathname;
-
     const queryParams = { ...router.query };
     queryParams["branch"] = branch;
+    let finalRoute = router.pathname;
 
-    for (const [param, value] of Object.entries(queryParams)) {
-      if (typeof value == "string") {
-        finalRoute = finalRoute.replace(`[${param}]`, encodeURIComponent(value?.toString()));
-      } else {
-        if (value?.length ?? 0 >= 2) {
-          finalRoute = finalRoute.replace(`[...${param}]`, encodeURIComponent(value?.join("/") ?? ""));
-        } else {
-          finalRoute = finalRoute.replace(`[...${param}]`, encodeURIComponent(value?.at(0) ?? ""));
-        }
-      }
-    }
+    for (const [param, value] of Object.entries(queryParams))
+      finalRoute =
+        typeof value === "string"
+          ? finalRoute.replace(`[${param}]`, encodeURIComponent(value))
+          : finalRoute.replace(`[...${param}]`, encodeURIComponent(value?.join("/") ?? ""));
 
     router.push(finalRoute);
   };
 
   return (
-    <>
-      <div className="flex space-x-2 items-center">
-        <div className="min-w-[256px]">
-          <Select
-            defaultValue={{ value: branch, label: branch }}
-            options={branches?.map((b) => ({ value: b, label: b }))}
-            onChange={(val) => changeBranch(val?.label as string)}
-          />
-        </div>
-
-        {count && (
-          <div className="flex space-x-2">
-            <Link href={`/${owner}/${name}/branches`} className="flex hover:text-blue-800">
-              <BranchesIcon className="mt-1 mr-1" />
-              {branches?.length} branches
-            </Link>
-            <Link href={`/${owner}/${name}/tags`} className="flex hover:text-blue-800">
-              <TagIcon className="mt-1 mr-1" />
-              {tagsCount} tags
-            </Link>
-          </div>
-        )}
+    <div className="flex space-x-2 items-center">
+      <div className="min-w-[256px]">
+        <Select
+          defaultValue={{ value: branch, label: branch }}
+          options={branches.map((b) => ({ value: b, label: b }))}
+          onChange={(val) => changeBranch(val?.label as string)}
+        />
       </div>
-    </>
+
+      {count && (
+        <div className="flex space-x-2">
+          <Link href={`/${owner}/${name}/branches`} className="flex hover:text-blue-800">
+            <BranchesIcon className="mt-1 mr-1" />
+            {branches.length} branches
+          </Link>
+          <Link href={`/${owner}/${name}/tags`} className="flex hover:text-blue-800">
+            <TagIcon className="mt-1 mr-1" />
+            {tagsCount} tags
+          </Link>
+        </div>
+      )}
+    </div>
   );
 };

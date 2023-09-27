@@ -11,20 +11,12 @@ const Users = () => {
   return (
     <>
       <SortComponent
-        options={{
-          "Sort by username 🔼": {
-            username: 1,
-          },
-          "Sort by username 🔽": {
-            username: -1,
-          },
-          "Sort by name 🔼": {
-            name: 1,
-          },
-          "Sort by name 🔽": {
-            name: -1,
-          },
-        }}
+        options={[
+          { label: "Sort by username 🔼", value: { username: 1 } },
+          { label: "Sort by username 🔽", value: { username: -1 } },
+          { label: "Sort by name 🔼", value: { name: 1 } },
+          { label: "Sort by name 🔽", value: { name: -1 } },
+        ]}
       />
       <UsersSearch param={param?.toString() ?? ""} sort={sort} />
     </>

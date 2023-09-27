@@ -9,20 +9,16 @@ import { PullRequestsSearchForm } from "./PullRequestsSearchForm";
 import { type PullRequestsQuery } from "./pullRequestActions";
 import { useRefresh } from "../../core/hooks/useRefresh";
 
-type PullRequestsPageProps = {
-  repositoryId: Repository["_id"];
-};
-
-export const PullRequestsPage: FC<PullRequestsPageProps> = ({ repositoryId }) => {
+export const PullRequestsPage: FC = () => {
   const { repository } = useRepositoryContext();
+  const { owner, name, _id: repositoryId } = repository as Repository;
+
   const router = useRouter();
   const [existingParams, setExistingParams] = useState<PullRequestsQuery>({});
   const { pullRequests } = useSearchPullRequests(existingParams, repositoryId);
   const { key, refresh } = useRefresh("pr_search_form");
 
-  const navigateToNewPullRequest = () => {
-    router.push(`/${repository?.owner ?? ""}/${repository?.name ?? ""}/pull-requests/new`);
-  };
+  const navigateToNewPullRequest = () => router.push(`/${owner}/${name}/pull-requests/new`);
 
   const clearParams = () => {
     setExistingParams({});
@@ -37,9 +33,7 @@ export const PullRequestsPage: FC<PullRequestsPageProps> = ({ repositoryId }) =>
             <PullRequestsSearchForm
               repositoryId={repositoryId}
               existingParams={existingParams}
-              onParamsChange={(params: any) => {
-                setExistingParams(params);
-              }}
+              onParamsChange={(params) => setExistingParams(params)}
             />
           </div>
         </div>
@@ -52,8 +46,7 @@ export const PullRequestsPage: FC<PullRequestsPageProps> = ({ repositoryId }) =>
           <Button onClick={navigateToNewPullRequest}>New Pull Request</Button>
         </span>
       </div>
-
-      <PullRequestsTable repositoryId={repositoryId} pullRequests={pullRequests} />
+      <PullRequestsTable pullRequests={pullRequests} />
     </>
   );
 };
