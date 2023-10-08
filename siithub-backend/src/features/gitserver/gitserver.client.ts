@@ -1,20 +1,15 @@
-import axios from "axios";
-import { config } from "../../config";
 import { type GitServerBranchesClient, gitServerBranchesClient } from "./gitserver.branches.client";
 import { MissingEntityException } from "../../error-handling/errors";
 import { gitServerCollaboratorsClient, GitServerCollaboratorsClient } from "./gitserver-collaborators.client";
 import { type GitServerTagsClient, gitServerTagsClient } from "./gitserver.tags.client";
+import { gitServerHttpClient } from "../../utils/axios";
 
 async function createUser(username: string): Promise<any> {
-  return await axios.post(`${config.gitServer.url}/api/users`, { username });
+  return await gitServerHttpClient.post(`/api/users`, { username });
 }
 
 async function createRepository(username: string, repositoryName: string, type: "public" | "private"): Promise<any> {
-  return await axios.post(`${config.gitServer.url}/api/repositories`, {
-    username,
-    repositoryName,
-    type,
-  });
+  return await gitServerHttpClient.post(`/api/repositories`, { username, repositoryName, type });
 }
 
 async function createRepositoryFork(
@@ -25,7 +20,7 @@ async function createRepositoryFork(
   type: "public" | "private",
   copyOnly1Branch?: string
 ): Promise<any> {
-  return await axios.post(`${config.gitServer.url}/api/repositories/fork`, {
+  return await gitServerHttpClient.post(`/api/repositories/fork`, {
     username,
     repositoryName,
     fromUsername,
@@ -36,37 +31,25 @@ async function createRepositoryFork(
 }
 
 async function deleteRepository(username: string, repositoryName: string): Promise<any> {
-  return await axios.put(`${config.gitServer.url}/api/repositories/delete`, {
-    username,
-    repositoryName,
-  });
+  return await gitServerHttpClient.put(`/api/repositories/delete`, { username, repositoryName });
 }
 
 async function addSshKey(username: string, key: string): Promise<any> {
-  return await axios.post(`${config.gitServer.url}/api/key`, { username, key });
+  return await gitServerHttpClient.post(`/api/key`, { username, key });
 }
 
 async function updateSshKey(username: string, oldKey: string, key: string): Promise<any> {
-  return await axios.put(`${config.gitServer.url}/api/key`, {
-    username,
-    oldKey,
-    key,
-  });
+  return await gitServerHttpClient.put(`/api/key`, { username, oldKey, key });
 }
 
 async function removeSshKey(username: string, key: string): Promise<any> {
-  return await axios.put(`${config.gitServer.url}/api/key/delete`, {
-    username,
-    key,
-  });
+  return await gitServerHttpClient.put(`/api/key/delete`, { username, key });
 }
 
 async function getTree(username: string, repoName: string, branch: string, treePath: string) {
   try {
-    const response = await axios.get(
-      `${config.gitServer.url}/api/tree/${username}/${repoName}/${encodeURIComponent(branch)}/${encodeURIComponent(
-        treePath
-      )}`
+    const response = await gitServerHttpClient.get(
+      `/api/repo/${username}/${repoName}/tree/${encodeURIComponent(branch)}/${encodeURIComponent(treePath)}`
     );
     return response.data;
   } catch (err) {
@@ -76,8 +59,8 @@ async function getTree(username: string, repoName: string, branch: string, treeP
 
 async function getCommits(username: string, repoName: string, branch: string) {
   try {
-    const response = await axios.get(
-      `${config.gitServer.url}/api/commits/${username}/${repoName}/${encodeURIComponent(branch)}`
+    const response = await gitServerHttpClient.get(
+      `/api/repo/${username}/${repoName}/commits/${encodeURIComponent(branch)}`
     );
     return response.data;
   } catch (err) {
@@ -87,7 +70,7 @@ async function getCommits(username: string, repoName: string, branch: string) {
 
 async function getCommitsBetweenBranches(username: string, repoName: string, base: string, compare: string) {
   try {
-    const response = await axios.get(`${config.gitServer.url}/api/commits/${username}/${repoName}/between`, {
+    const response = await gitServerHttpClient.get(`/api/repo/${username}/${repoName}/commits/between`, {
       params: { base, compare },
     });
     return response.data;
@@ -98,7 +81,7 @@ async function getCommitsBetweenBranches(username: string, repoName: string, bas
 
 async function getCommitsDiffBetweenBranches(username: string, repoName: string, base: string, compare: string) {
   try {
-    const response = await axios.get(`${config.gitServer.url}/api/commits/${username}/${repoName}/diff/between`, {
+    const response = await gitServerHttpClient.get(`/api/repo/${username}/${repoName}/commits/diff/between`, {
       params: { base, compare },
     });
     return response.data;
@@ -108,8 +91,8 @@ async function getCommitsDiffBetweenBranches(username: string, repoName: string,
 }
 async function getCommitsWithDiff(username: string, repoName: string, branch: string) {
   try {
-    const response = await axios.get(
-      `${config.gitServer.url}/api/commits/${username}/${repoName}/${encodeURIComponent(branch)}/with-diff`
+    const response = await gitServerHttpClient.get(
+      `/api/repo/${username}/${repoName}/commits/${encodeURIComponent(branch)}/with-diff`
     );
     return response.data;
   } catch (err) {
@@ -119,8 +102,8 @@ async function getCommitsWithDiff(username: string, repoName: string, branch: st
 
 async function getCommitCount(username: string, repoName: string, branch: string) {
   try {
-    const response = await axios.get(
-      `${config.gitServer.url}/api/commit-count/${username}/${repoName}/${encodeURIComponent(branch)}`
+    const response = await gitServerHttpClient.get(
+      `/api/repo/${username}/${repoName}/commit-count/${encodeURIComponent(branch)}`
     );
     return response.data;
   } catch (err) {
@@ -130,8 +113,8 @@ async function getCommitCount(username: string, repoName: string, branch: string
 
 async function getCommit(username: string, repoName: string, sha: string) {
   try {
-    const response = await axios.get(
-      `${config.gitServer.url}/api/commit/${username}/${repoName}/${encodeURIComponent(sha)}`
+    const response = await gitServerHttpClient.get(
+      `/api/repo/${username}/${repoName}/commit/${encodeURIComponent(sha)}`
     );
     return response.data;
   } catch (err) {
@@ -141,8 +124,8 @@ async function getCommit(username: string, repoName: string, sha: string) {
 
 async function getCommitsSha(username: string, repoName: string, branch: string) {
   try {
-    const response = await axios.get(
-      `${config.gitServer.url}/api/commit/sha/${username}/${repoName}/${encodeURIComponent(branch)}`
+    const response = await gitServerHttpClient.get(
+      `/api/repo/${username}/${repoName}/commit/sha/${encodeURIComponent(branch)}`
     );
     return response.data;
   } catch (err) {
@@ -152,12 +135,10 @@ async function getCommitsSha(username: string, repoName: string, branch: string)
 
 async function mergeCommits(username: string, repoName: string, base: string, compare: string) {
   try {
-    const response = await axios.post(
-      `${config.gitServer.url}/api/commits/merge/${username}/${repoName}`,
+    const response = await gitServerHttpClient.post(
+      `/api/repo/${username}/${repoName}/commits/merge`,
       {},
-      {
-        params: { base, compare },
-      }
+      { params: { base, compare } }
     );
     return response.data;
   } catch (err) {
@@ -167,10 +148,8 @@ async function mergeCommits(username: string, repoName: string, base: string, co
 
 async function getFileHistoryCommits(username: string, repoName: string, branch: string, filePath: string) {
   try {
-    const response = await axios.get(
-      `${config.gitServer.url}/api/commits/${username}/${repoName}/${encodeURIComponent(branch)}/${encodeURIComponent(
-        filePath
-      )}`
+    const response = await gitServerHttpClient.get(
+      `/api/repo/${username}/${repoName}/commits/${encodeURIComponent(branch)}/${encodeURIComponent(filePath)}`
     );
     return response.data;
   } catch (err) {
@@ -180,10 +159,8 @@ async function getFileHistoryCommits(username: string, repoName: string, branch:
 
 async function getBlob(username: string, repoName: string, branch: string, blobPath: string) {
   try {
-    const response = await axios.get(
-      `${config.gitServer.url}/api/blob/${username}/${repoName}/${encodeURIComponent(branch)}/${encodeURIComponent(
-        blobPath
-      )}`,
+    const response = await gitServerHttpClient.get(
+      `/api/repo/${username}/${repoName}/blob/${encodeURIComponent(branch)}/${encodeURIComponent(blobPath)}`,
       { responseType: "arraybuffer" }
     );
     return {
@@ -198,10 +175,8 @@ async function getBlob(username: string, repoName: string, branch: string, blobP
 
 async function getBlobInfo(username: string, repoName: string, branch: string, blobPath: string) {
   try {
-    const response = await axios.get(
-      `${config.gitServer.url}/api/blob-info/${username}/${repoName}/${encodeURIComponent(branch)}/${encodeURIComponent(
-        blobPath
-      )}`
+    const response = await gitServerHttpClient.get(
+      `/api/repo/${username}/${repoName}/blob-info/${encodeURIComponent(branch)}/${encodeURIComponent(blobPath)}`
     );
     return response.data;
   } catch (err) {

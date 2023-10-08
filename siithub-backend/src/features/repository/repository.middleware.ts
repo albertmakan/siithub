@@ -2,13 +2,13 @@ import type { NextFunction, Request, Response } from "express";
 import { ForbiddenException, MissingEntityException } from "../../error-handling/errors";
 import { getUserIdFromRequest } from "../auth/auth.utils";
 import { userService } from "../user/user.service";
-import { repositoryRepo } from "./repository.repo";
 import { idSchema } from "../../utils/zod";
+import { repositoryService } from "./repository.service";
 
 async function authorizeRepositoryOwner(req: Request, res: Response, next: NextFunction) {
   const userId = res.locals.userId || getUserIdFromRequest(req);
 
-  const username: string = req.body.owner || req.params.username;
+  const username: string = res.locals.repository?.owner || req.body.owner || req.params.username;
   const user = username ? await userService.findByUsername(username) : null;
 
   if (userId?.toString() !== user?._id.toString()) {
@@ -21,8 +21,8 @@ async function authorizeRepositoryOwner(req: Request, res: Response, next: NextF
 async function findRepository(req: Request, res: Response, next: NextFunction) {
   const { repositoryId, username, repository } = req.params;
   const repo = await (repositoryId
-    ? repositoryRepo.crud.findOne(idSchema.parse(repositoryId))
-    : repositoryRepo.findByOwnerAndName(username, repository));
+    ? repositoryService.findOneOrThrow(idSchema.parse(repositoryId))
+    : repositoryService.findByOwnerAndName(username, repository));
   if (!repo) {
     next(new MissingEntityException("Repository does not exist."));
   }

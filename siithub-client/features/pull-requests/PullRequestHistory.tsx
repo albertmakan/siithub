@@ -70,7 +70,7 @@ export const PullRequestHistory: FC = () => {
         entity: e,
       })),
     ...(commits || []).map((c) => ({
-      timeStamp: c.date,
+      timeStamp: new Date(c.date * 1000),
       type: "Commit",
       entity: c,
     })),

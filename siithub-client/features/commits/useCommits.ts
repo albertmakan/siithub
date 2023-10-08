@@ -12,7 +12,7 @@ type AuthorInfo = {
 export type Commit = {
   message: string;
   sha: string;
-  date: string;
+  date: number;
   author: AuthorInfo;
 };
 
@@ -87,7 +87,7 @@ export function useCommitCount(repositoryId: Repository["_id"], branch: string, 
   };
 }
 
-export type CommitWithDiff = Commit & {
+export type CommitWithDiff = {
   diff: {
     old: { path: string; content?: string };
     new: { path: string; content?: string };

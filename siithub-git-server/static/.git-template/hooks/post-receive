@@ -1,0 +1,41 @@
+#!/usr/local/bin/node
+
+const { exec } = require("child_process");
+const { createInterface } = require("readline");
+
+const initRef = "0000000000000000000000000000000000000000";
+const refChanges = [];
+
+createInterface({
+  input: process.stdin,
+  terminal: false,
+})
+  .on("line", (line) => {
+    const [oldRef, newRef, refName] = line.split(" ");
+    refChanges.push({ oldRef, newRef, refName });
+  })
+  .on("close", processChanges);
+
+function processChanges() {
+  const { oldRef, newRef } = refChanges[0];
+  exec(
+    `git log --reverse ${oldRef !== initRef ? oldRef + ".." : ""}${newRef} --pretty=format:"%an%n%ae%n%at%n%H%n%s%n"`,
+    (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error: ${stderr}`);
+        return;
+      }
+      const commits = stdout.split("\n\n").map((commit) => {
+        const [name, email, date, sha, message] = commit.split("\n");
+        return { author: { name, email }, date: +date, sha, message };
+      });
+      console.log(commits);
+
+      const cwd = process.cwd();
+      const [owner, repository] = cwd.split(cwd.at(-5)).slice(-3, -1);
+      console.log({ owner, repository });
+    }
+  );
+}
+
+//git config --global init.templatedir '~/.git-template'

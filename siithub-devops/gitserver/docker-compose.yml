@@ -1,0 +1,12 @@
+services:
+  siithub-gitserver:
+    image: gitserver
+    restart: always
+    volumes:
+      - ./git-server-data/repos:/home
+    ports:
+      - "3002:80"
+      - "3022:22"
+    environment:
+      PORT: 80
+      SIITHUB_URL: http://localhost:3001

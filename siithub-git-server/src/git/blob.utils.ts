@@ -1,17 +1,33 @@
-import { Repository } from "nodegit";
-import { homePath } from "../config";
-import { isCommitSha } from "../string.utils";
+import { quote } from "shell-quote";
+import { execCmd } from "../cmd.utils";
+import { execFile } from "child_process";
 
-export async function getBlob(username: string, repoName: string, branch: string, blobPath: string) {
+export async function getBlob(repoPath: string, branch: string, blobPath: string) {
   try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-    const commit = await (isCommitSha(branch) ? repo.getCommit(branch) : repo.getBranchCommit(branch));
-    const treeEntry = await commit.getEntry(blobPath);
-    if (treeEntry.isDirectory()) return null;
-    const blob = await treeEntry.getBlob();
-    return blob;
+    const fileType = await execCmd(`git cat-file -t ${quote([branch])}:${quote([blobPath])}`, repoPath);
+    if (fileType.trim() !== "blob") return null;
+
+    const size = await getFileSize(repoPath, branch, blobPath);
+    const lastChange = await execCmd(
+      `git log -n 1 --pretty="" --numstat ${quote([branch])} -- ${quote([blobPath])}`,
+      repoPath
+    );
+
+    const content: Buffer = await new Promise((res, rej) =>
+      execFile(
+        "git",
+        ["show", `${branch}:${blobPath}`],
+        { cwd: repoPath, encoding: "buffer" },
+        (error, stdout, stderr) => (error ? rej(stderr) : res(stdout))
+      )
+    );
+    return { size, isBinary: lastChange.startsWith("-"), content };
   } catch {
     return null;
   }
+}
+
+export async function getFileSize(repoPath: string, revision: string, filePath: string) {
+  const sizeStr = await execCmd(`git cat-file -s ${quote([revision])}:${quote([filePath])}`, repoPath);
+  return +sizeStr;
 }

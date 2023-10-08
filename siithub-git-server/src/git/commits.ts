@@ -1,231 +1,168 @@
-import { Commit, ConvenientPatch, Merge, Repository, Revwalk, Signature } from "nodegit";
-import { homePath } from "../config";
-import { isCommitSha } from "../string.utils";
+import { quote } from "shell-quote";
+import { execCmd } from "../cmd.utils";
+import { parseContributor, parseGitStats } from "../string.utils";
+import { getFileSize } from "./blob.utils";
 
-export async function getCommits(username: string, repoName: string, branch: string, withStats = false) {
+export async function getCommits(repoPath: string, branch: string, withStats = false) {
+  const cmd = withStats
+    ? `git log --shortstat --pretty=format:"%an%n%ae%n%at%n%H%n%s" ${quote([branch])}`
+    : `git log --pretty=format:"%an%n%ae%n%at%n%H%n%s%n" ${quote([branch])}`;
   try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-    const headCommit = await (isCommitSha(branch) ? repo.getCommit(branch) : repo.getBranchCommit(branch));
-    const walker = repo.createRevWalk();
-    walker.push(headCommit.id());
-    walker.sorting(Revwalk.SORT.TIME);
-    const commits = await walker.getCommits(999999);
+    const log = await execCmd(cmd, repoPath);
+    return log.split("\n\n").map((commit) => {
+      const [name, email, date, sha, message, stats] = commit.split("\n");
+      return {
+        author: { name, email },
+        date: +date,
+        sha,
+        message,
+        stats: withStats ? parseGitStats(stats) : undefined,
+      };
+    });
+  } catch {
+    return null;
+  }
+}
 
-    return Promise.all(
-      commits.map(async (commit) => {
-        const commitData = {
-          message: commit.message(),
-          sha: commit.sha(),
-          date: commit.date(),
-          author: { name: commit.author().name(), email: commit.author().email() },
-        };
-        if (!withStats) return commitData;
-
-        const diff = await commit.getDiff();
-        if (diff.length > 1) return { ...commitData, stats: { add: 0, del: 0, files: 0 } }; //if merge
-        const ds = await diff[0].getStats();
-        const stats = { add: ds.insertions(), del: ds.deletions(), files: ds.filesChanged() };
-        return { ...commitData, stats };
-      })
+export async function getCommitsBetweenBranches(repoPath: string, base: string, compare: string) {
+  try {
+    const log = await execCmd(
+      `git log --pretty=format:"%an%n%ae%n%at%n%H%n%s%n" ${quote([base])}..${quote([compare])}`,
+      repoPath
     );
+    return log.split("\n\n").map((commit) => {
+      const [name, email, date, sha, message] = commit.split("\n");
+      return { author: { name, email }, date: +date, sha, message };
+    });
   } catch {
     return null;
   }
 }
 
-export async function getCommitsBetweenBranches(username: string, repoName: string, base: string, compare: string) {
+export async function getCommitCount(repoPath: string, branch: string) {
   try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-
-    const headCommit = await (isCommitSha(base) ? repo.getCommit(base) : repo.getBranchCommit(base));
-    const headCommitCompare = await (isCommitSha(compare) ? repo.getCommit(compare) : repo.getBranchCommit(compare));
-
-    const walkerHead = repo.createRevWalk();
-    walkerHead.push(headCommit.id());
-    const commitsOnHead = new Set((await walkerHead.fastWalk(999999)).map((id) => id.tostrS()));
-
-    const walkerHeadCompare = repo.createRevWalk();
-    walkerHeadCompare.push(headCommitCompare.id());
-    const commitsOnHeadCompare = await walkerHeadCompare.getCommits(999999);
-
-    const commits = commitsOnHeadCompare?.filter((c) => !commitsOnHead.has(c.id().tostrS()));
-    return commits.map((commit) => ({
-      message: commit.message(),
-      sha: commit.sha(),
-      date: commit.date(),
-      author: { name: commit.author().name(), email: commit.author().email() },
-    }));
+    return +(await execCmd(`git rev-list --count ${quote([branch])}`, repoPath));
   } catch {
     return null;
   }
 }
 
-export async function getCommitCount(username: string, repoName: string, branch: string) {
+export async function getCommitsDiffBetweenBranches(repoPath: string, base: string, compare: string) {
   try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-    const headCommit = await (isCommitSha(branch) ? repo.getCommit(branch) : repo.getBranchCommit(branch));
-    const walker = repo.createRevWalk();
-    walker.push(headCommit.id());
-    walker.sorting(Revwalk.SORT.TIME);
-    return (await walker.fastWalk(999999)).length;
+    const parentCommit = await getCommitsSha(repoPath, base);
+    const commit = await getCommitsSha(repoPath, compare);
+    if (!parentCommit || !commit) return null;
+    return await getDiffData(repoPath, commit, parentCommit);
   } catch {
     return null;
   }
 }
 
-export async function getCommitsDiffBetweenBranches(username: string, repoName: string, base: string, compare: string) {
+export async function getCommit(repoPath: string, sha: string) {
   try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-
-    const commit = await (isCommitSha(compare) ? repo.getCommit(compare) : repo.getBranchCommit(compare));
-    const parentCommit = await (isCommitSha(base) ? repo.getCommit(base) : repo.getBranchCommit(base));
-
-    return await getDiffData(commit, parentCommit);
+    const commit = await getCommitsSha(repoPath, sha);
+    if (!commit) return null;
+    return await getDiffData(repoPath, commit);
   } catch {
     return null;
   }
 }
 
-export async function getCommit(username: string, repoName: string, sha: string) {
-  try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-    const commit = await repo.getCommit(sha);
-    const parentCommits = await commit.getParents(1);
-    return await getDiffData(commit, parentCommits[0]);
-  } catch {
-    return null;
+async function getDiffData(repoPath: string, commit: string, parentCommit?: string) {
+  const numstatCommand = parentCommit
+    ? `git diff --numstat -z ${quote([parentCommit])}..${quote([commit])}`
+    : `git show --pretty=format:"" --numstat -z ${quote([commit])}`;
+  const numstatList = await execCmd(numstatCommand, repoPath);
+  const reg = /(\d+|-)\t(\d+|-)\t(?:\0(.+?)\0)?(.+?)\0/gy;
+  const statRecord: { [fileName: string]: { total_additions: number; total_deletions: number } } = {};
+  let match;
+  while ((match = reg.exec(numstatList)) !== null) {
+    const [, added, deleted, pre, post] = match;
+    statRecord[post] = { total_additions: +added || 0, total_deletions: +deleted || 0 };
   }
-}
-
-async function getDiffData(commit: Commit, parentCommit: Commit) {
-  const commitTree = await commit.getTree();
-  const parentTree = await parentCommit.getTree();
-
-  const diff = await commitTree.diff(parentTree);
-  const patches = await diff.patches();
-
-  return {
-    message: commit.message(),
-    sha: commit.sha(),
-    date: commit.date(),
-    author: { name: commit.author().name(), email: commit.author().email() },
-    diff: await Promise.all(patches.map(async (patch) => getPatchData(patch, commit, parentCommit))),
-  };
-}
-
-async function getPatchData(patch: ConvenientPatch, commit: Commit, parentCommit: Commit) {
-  const large = patch.oldFile().size() > 20000 || patch.newFile().size() > 20000;
-  const oldPath = patch.oldFile().path();
-  const newPath = patch.newFile().path();
-
-  const result: { stats: any; large: boolean; old?: any; new?: any } = {
-    stats: patch.lineStats(),
-    large,
-  };
-
-  try {
-    if (!patch.isAdded()) {
-      const oldtreeEntry = await parentCommit.getEntry(oldPath);
-      result.old = {
-        content: large ? "" : (await oldtreeEntry.getBlob()).toString(),
-        path: oldPath,
+  const diffListCommand = parentCommit
+    ? `git diff --name-status ${quote([parentCommit])}..${quote([commit])}`
+    : `git show --pretty=format:"" --name-status ${quote([commit])}`;
+  const diffList = await execCmd(diffListCommand, repoPath);
+  const patches = diffList
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => {
+      const [change, fileName, renamedTo] = line.split("\t");
+      return {
+        old: change.startsWith("A") ? undefined : { path: fileName, content: "" },
+        new: change.startsWith("D") ? undefined : { path: renamedTo || fileName, content: "" },
+        stats: statRecord[renamedTo || fileName],
+        large: false,
       };
-    }
-  } catch {}
-  try {
-    if (!patch.isDeleted()) {
-      const newTreeEntry = await commit.getEntry(newPath);
-      result.new = {
-        content: large ? "" : (await newTreeEntry.getBlob()).toString(),
-        path: newPath,
-      };
-    }
-  } catch {}
-  return result;
+    });
+  parentCommit ||= commit + "~";
+  for (const patch of patches) {
+    const oldSize = patch.old ? await getFileSize(repoPath, parentCommit, patch.old.path) : 0;
+    const newSize = patch.new ? await getFileSize(repoPath, commit, patch.new.path) : 0;
+    patch.large = oldSize > 20000 || newSize > 20000;
+    if (patch.large) continue;
+
+    if (patch.old)
+      patch.old.content = await execCmd(`git show ${quote([parentCommit])}:${quote([patch.old.path])}`, repoPath);
+    if (patch.new)
+      patch.new.content = await execCmd(`git show ${quote([commit])}:${quote([patch.new.path])}`, repoPath);
+  }
+
+  return { diff: patches };
 }
 
-export async function getFileHistoryCommits(username: string, repoName: string, branch: string, filePath: string) {
+export async function getFileHistoryCommits(repoPath: string, branch: string, filePath: string) {
   try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-    const headCommit = await (isCommitSha(branch) ? repo.getCommit(branch) : repo.getBranchCommit(branch));
-    const walker = repo.createRevWalk();
-    walker.push(headCommit.id());
-    walker.sorting(Revwalk.SORT.TIME);
-    const history = await walker.fileHistoryWalk(filePath, 999999);
-    return history.map((he) => ({
-      message: he.commit.message(),
-      sha: he.commit.sha(),
-      date: he.commit.date(),
-      author: { name: he.commit.author().name(), email: he.commit.author().email() },
-    }));
+    const log = await execCmd(
+      `git log --pretty=format:"%an%n%ae%n%at%n%H%n%s%n" ${quote([branch])} -- ${quote([filePath])}`,
+      repoPath
+    );
+    return log.split("\n\n").map((commit) => {
+      const [name, email, date, sha, message] = commit.split("\n");
+      return { author: { name, email }, date: +date, sha, message };
+    });
   } catch {
     return null;
   }
 }
 
-export async function getLatestCommit(username: string, repoName: string, branch: string, blobPath: string) {
+export async function getLatestCommitAndContributors(repoPath: string, branch: string, blobPath: string) {
   try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-    const headCommit = await (isCommitSha(branch) ? repo.getCommit(branch) : repo.getBranchCommit(branch));
-    const walker = repo.createRevWalk();
-    walker.push(headCommit.id());
-    walker.sorting(Revwalk.SORT.TIME);
-    let history = await walker.fileHistoryWalk(blobPath, 999999);
-    if (!history.length) return {};
-    const commit = history[0].commit;
-    const contributors = history
-      .map((h) => ({ name: h.commit.author().name(), email: h.commit.author().email() }))
-      .filter((value, index, array) => array.findIndex((v) => v.email === value.email) === index);
-    return {
-      message: commit.message(),
-      sha: commit.sha(),
-      date: commit.date(),
-      author: { name: commit.author().name(), email: commit.author().email() },
-      contributors,
-    };
+    const latestCommitLog = await execCmd(
+      `git log -n 1 --pretty=format:"%an%n%ae%n%at%n%H%n%s" ${quote([branch])} -- ${quote([blobPath])}`,
+      repoPath
+    );
+    const [name, email, date, sha, message] = latestCommitLog.split("\n");
+
+    const contribLog = await execCmd(`git shortlog -se ${quote([branch])} -- ${quote([blobPath])}`, repoPath);
+    const contributors = contribLog.split("\n").map(parseContributor).filter(Boolean);
+
+    return { author: { name, email }, date: +date, sha, message, contributors };
   } catch {
     return null;
   }
 }
-export async function getCommitsSha(username: string, repoName: string, target: string) {
-  try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
 
-    const commit = await repo.getBranchCommit(target);
-    return commit.sha();
+export async function getCommitsSha(repoPath: string, revision: string) {
+  try {
+    return (await execCmd(`git rev-parse ${quote([revision])}^{commit}`, repoPath)).trim();
   } catch {
     return null;
   }
 }
-export async function mergeCommits(username: string, repoName: string, base: string, compare: string) {
-  const signature = Signature.now("Siithub", "auto-merge@siithub.com");
-  const repoPath = `${homePath}/${username}/${repoName}`;
-  const repo = await Repository.open(repoPath + "/.git");
 
-  const commit = await repo.getBranchCommit(compare);
-  const parentCommit = await repo.getBranchCommit(base);
-
-  const index = await Merge.commits(repo, parentCommit, commit, undefined);
-  if (index.hasConflicts()) {
+export async function mergeCommits(repoPath: string, base: string, compare: string) {
+  try {
+    const newTree = await execCmd(`git merge-tree --write-tree ${quote([base, compare])}`, repoPath);
+    const newCommit = await execCmd(
+      `git commit-tree ${quote([newTree])} -p ${quote([base])} -p ${quote([compare])}`,
+      repoPath
+    );
+    await execCmd(`git update-ref ${quote([base, newCommit])}`, repoPath);
+    return { base, newCommit };
+  } catch (error) {
+    console.error("Error:", error);
     return null;
   }
-
-  const oid = await index.writeTreeTo(repo);
-  await repo.createCommit("refs/heads/" + base, signature, signature, `Merged ${compare} into ${base}`, oid, [
-    parentCommit,
-    commit,
-  ]);
-
-  return {
-    base: parentCommit.sha(),
-    compare: commit.sha(),
-  };
 }

@@ -92,8 +92,8 @@ async function getContributorInsights(
 async function getCommitsInsights(username: string, repoName: string, branch: string): Promise<CommitsInsights> {
   const commits = await commitService.getCommitsWithDiff(username, repoName, branch);
 
-  const startDate = new Date(commits.at(-1)?.date ?? "");
-  const endDate = new Date(commits.at(0)?.date ?? "");
+  const startDate = new Date((commits.at(-1)?.date ?? 0) * 1000);
+  const endDate = new Date((commits.at(0)?.date ?? 0) * 1000);
   const allWeeks = datesBetween(startDate, endDate, true).map((d) => moment(d).format("yyyy-MM-DD"));
   const dates = datesBetween(startDate, endDate).map((d) => moment(d).format("yyyy-MM-DD"));
 
@@ -101,10 +101,11 @@ async function getCommitsInsights(username: string, repoName: string, branch: st
   const commitDailyCount = new Map<string, number>();
 
   commits.forEach((commit) => {
-    const week = moment(commit.date).startOf("week").format("yyyy-MM-DD");
+    const commitDate = moment.unix(commit.date);
+    const week = commitDate.startOf("week").format("yyyy-MM-DD");
     commitWeeklyCount.set(week, (commitWeeklyCount?.get(week) ?? 0) + 1);
 
-    const date = moment(commit.date).format("yyyy-MM-DD");
+    const date = commitDate.format("yyyy-MM-DD");
     commitDailyCount.set(date, (commitDailyCount?.get(date) ?? 0) + 1);
   });
 
@@ -130,12 +131,14 @@ async function getCodeFrequencyInsights(
   const commitWeeklyCountAdds = new Map<string, number>();
   const commitWeeklyCountDels = new Map<string, number>();
 
-  const allWeeks = datesBetween(new Date(commits.at(-1)?.date ?? ""), new Date(commits.at(0)?.date ?? ""), true).map(
-    (d) => moment(d).format("yyyy-MM-DD")
-  );
+  const allWeeks = datesBetween(
+    new Date((commits.at(-1)?.date ?? 0) * 1000),
+    new Date((commits.at(0)?.date ?? 0) * 1000),
+    true
+  ).map((d) => moment(d).format("yyyy-MM-DD"));
 
   commits.forEach((commit) => {
-    const week = moment(commit.date).startOf("week").format("yyyy-MM-DD");
+    const week = moment.unix(commit.date).startOf("week").format("yyyy-MM-DD");
     commitWeeklyCountAdds.set(week, (commitWeeklyCountAdds?.get(week) ?? 0) + commit.stats.add);
     commitWeeklyCountDels.set(week, (commitWeeklyCountDels?.get(week) ?? 0) + commit.stats.del);
   });
@@ -151,12 +154,12 @@ function getDailyGroupedCount(commits: CommitWithDiff[], startDate?: Date, endDa
   const dailyCount = new Map<string, { adds: number; dels: number; commits: number }>();
 
   const dates = datesBetween(
-    startDate || new Date(commits.at(-1)?.date ?? ""),
-    endDate || new Date(commits.at(0)?.date ?? "")
+    startDate || new Date((commits.at(-1)?.date ?? 0) * 1000),
+    endDate || new Date((commits.at(0)?.date ?? 0) * 1000)
   ).map((d) => moment(d).format("yyyy-MM-DD"));
 
   commits.forEach((commit) => {
-    const dateStr = moment(commit.date).format("yyyy-MM-DD");
+    const dateStr = moment.unix(commit.date).format("yyyy-MM-DD");
     const count = dailyCount.get(dateStr) ?? { adds: 0, dels: 0, commits: 0 };
     count.adds = count.adds + commit.stats.add;
     count.dels = count.dels + commit.stats.del;

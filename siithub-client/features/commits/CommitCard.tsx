@@ -27,7 +27,7 @@ export const CommitCard: FC<CommitCardProps> = ({ commit, username, repoName }) 
           ) : (
             <span className="mr-2 ml-2">{commit.author.name}</span>
           )}
-          committed {moment(commit.date).fromNow()}
+          committed {moment.unix(commit.date).fromNow()}
         </span>
       </div>
       <div className="w-1/12 text-blue-400 text-sm p-2">

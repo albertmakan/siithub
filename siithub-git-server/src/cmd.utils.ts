@@ -1,13 +1,15 @@
 import { exec } from "child_process";
 
-export function execCmd(cmd: string): Promise<string> {
-  return new Promise((res, rej) => {
-    exec(cmd, (err, stdout, stderr) => {
-      if (err) {
-        rej(stderr);
-      } else {
-        res(stdout);
-      }
-    });
-  });
+export function execCmd(cmd: string, cwd?: string): Promise<string> {
+  console.log(cmd, " CWD:", cwd);
+  return new Promise((res, rej) =>
+    exec(cmd, { cwd }, (err, stdout, stderr) => {
+      console.log(stderr);
+      err ? rej(stderr) : res(stdout);
+    })
+  );
+}
+
+export function execCmds(cmds: string[], cwd?: string) {
+  return execCmd(cmds.join(" && "), cwd);
 }

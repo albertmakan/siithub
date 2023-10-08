@@ -45,7 +45,7 @@ const FileContribInfo: FC<FileContribInfoProps> = ({ username, repoName, branch,
           <HashtagLink href={`/${username}/${repoName}/commit/${info.sha}`}>{truncate(info.message, 100)}</HashtagLink>
         </div>
         <div className="text-right col-span-3">
-          Latest commit {info.sha.substring(0, 6)} {moment(info.date).fromNow()}
+          Latest commit {info.sha.substring(0, 6)} {moment.unix(info.date).fromNow()}
         </div>
         <div className="text-right col-span-1">
           <Link
@@ -81,15 +81,15 @@ export const FilePreviewPage: FC<{ branch: string; blobPath: string }> = ({ bran
   const { repository } = useRepositoryContext();
   const { owner, name, _id } = repository as Repository;
 
-  const { result, setResult } = useResult("files");
+  //const { result, setResult } = useResult("files");
   const notification = useNotifications();
-  const { content, size, isBinary, error, isLoading, url } = useFile(_id, branch, blobPath, [result]);
-  const { info } = useFileInfo(_id, branch, blobPath, [result]);
+  const { content, size, isBinary, error, isLoading, url } = useFile(_id, branch, blobPath);
+  const { info } = useFileInfo(_id, branch, blobPath);
 
-  useEffect(() => {
-    if (!result) return;
-    setResult(undefined);
-  }, [result, setResult]);
+  // useEffect(() => {
+  //   if (!result) return;
+  //   setResult(undefined);
+  // }, [result, setResult]);
 
   const FileOptions: FC = () => {
     const lines = typeof content === "string" ? (content.match(/\r\n|\r|\n/g)?.length ?? 0) + 1 : 0;

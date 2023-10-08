@@ -1,9 +1,8 @@
-import axios from "axios";
-import { config } from "../../config";
 import { BadLogicException } from "../../error-handling/errors";
+import { gitServerHttpClient } from "../../utils/axios";
 
 async function createTag(username: string, repoName: string, tagName: string, target: string): Promise<string> {
-  const response = await axios.post(`${config.gitServer.url}/api/tags/${username}/${repoName}`, { tagName, target });
+  const response = await gitServerHttpClient.post(`/api/repo/${username}/${repoName}/tags`, { tagName, target });
 
   if (response.status !== 200) {
     throw new BadLogicException("Error while creating a new tag.");
@@ -12,7 +11,7 @@ async function createTag(username: string, repoName: string, tagName: string, ta
 }
 
 async function deleteTag(username: string, repoName: string, tagName: string): Promise<string> {
-  const response = await axios.delete(`${config.gitServer.url}/api/tags/${username}/${repoName}/${tagName}`);
+  const response = await gitServerHttpClient.delete(`/api/repo/${username}/${repoName}/tags/${tagName}`);
 
   if (response.status !== 200) {
     throw new BadLogicException("Error while deleting an existing tag.");

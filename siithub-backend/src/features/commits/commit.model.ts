@@ -10,7 +10,7 @@ type AuthorInfo = {
 export type Commit = {
   message: string;
   sha: string;
-  date: string;
+  date: number;
   author: AuthorInfo;
 };
 

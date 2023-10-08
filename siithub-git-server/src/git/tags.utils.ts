@@ -1,32 +1,19 @@
-import { Repository } from "nodegit";
-import { homePath } from "../config";
+import { execCmd } from "../cmd.utils";
+import { quote } from "shell-quote";
 
-export async function createTag(username: string, repoName: string, tagName: string, target: string) {
+export async function createTag(repoPath: string, tagName: string, target: string) {
   try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-
-    const commit = await repo.getBranchCommit(target);
-    const tag = await repo.createTag(commit.id(), tagName, "");
-
-    return tag.name();
+    await execCmd(`git tag ${quote([tagName, target])}`, repoPath);
+    return tagName;
   } catch {
     return null;
   }
 }
 
-export async function deleteTag(username: string, repoName: string, tagName: string) {
+export async function deleteTag(repoPath: string, tagName: string) {
   try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-
-    const tag = await repo.getTagByName(tagName);
-    if (!tag) {
-      return null;
-    }
-
-    await repo.deleteTagByName(tagName);
-    return tag;
+    await execCmd(`git tag -d ${quote([tagName])}`, repoPath);
+    return tagName;
   } catch {
     return null;
   }

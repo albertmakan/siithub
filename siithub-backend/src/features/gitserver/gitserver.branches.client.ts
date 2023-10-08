@@ -1,26 +1,19 @@
-import axios from "axios";
-import { config } from "../../config";
 import { BadLogicException } from "../../error-handling/errors";
+import { gitServerHttpClient } from "../../utils/axios";
 
 async function getBranches(username: string, repoName: string): Promise<string[]> {
-  const response = await axios.get(`${config.gitServer.url}/api/branches/${username}/${repoName}`);
+  const response = await gitServerHttpClient.get(`/api/repo/${username}/${repoName}/branches`);
   if (response.status !== 200) {
     throw new BadLogicException("Error while getting repository branches.");
   }
-
   return response.data;
 }
 
 async function createBranch(username: string, repoName: string, source: string, branchName: string): Promise<string> {
-  const response = await axios.post(`${config.gitServer.url}/api/branches/${username}/${repoName}`, {
-    source,
-    branchName,
-  });
-
+  const response = await gitServerHttpClient.post(`/api/repo/${username}/${repoName}/branches`, { source, branchName });
   if (response.status !== 200) {
     throw new BadLogicException("Error while creating a new repository branch.");
   }
-
   return response.data;
 }
 
@@ -30,29 +23,23 @@ async function renameBranch(
   branchName: string,
   newBranchName: string
 ): Promise<string> {
-  const response = await axios.put(
-    `${config.gitServer.url}/api/branches/${username}/${repoName}/${encodeURIComponent(branchName)}`,
-    {
-      newBranchName,
-    }
+  const response = await gitServerHttpClient.put(
+    `/api/repo/${username}/${repoName}/branches/${encodeURIComponent(branchName)}`,
+    { newBranchName }
   );
-
   if (response.status !== 200) {
     throw new BadLogicException("Error while renaming an existing repository branch.");
   }
-
   return response.data;
 }
 
 async function removeBranch(username: string, repoName: string, branchName: string): Promise<string> {
-  const response = await axios.delete(
-    `${config.gitServer.url}/api/branches/${username}/${repoName}/${encodeURIComponent(branchName)}`
+  const response = await gitServerHttpClient.delete(
+    `/api/repo/${username}/${repoName}/branches/${encodeURIComponent(branchName)}`
   );
-
   if (response.status !== 200) {
     throw new BadLogicException("Error while removing an existing repository branch.");
   }
-
   return response.data;
 }
 

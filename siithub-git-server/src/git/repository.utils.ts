@@ -1,36 +1,40 @@
-import { Repository } from "nodegit";
 import fs from "fs";
-import { execCmd } from "../cmd.utils";
+import { execCmd, execCmds } from "../cmd.utils";
 import { createUser } from "../user.utils";
-import { addGroup, addUserToGroup, deleteGroup } from "./group.utils";
-import { homePath } from "../config";
+import { addGroup, deleteGroup } from "../group.utils";
+import { collabFile, homePath } from "../config";
+import { quote } from "shell-quote";
 
 export async function createRepo(username: string, repoName: string, publicRepo = false) {
   if (!fs.existsSync(`${homePath}/${username}`)) {
     await createUser(username);
   }
   const groupName = `${username}-${repoName}`;
-
-  await addGroup(groupName);
-  await addUserToGroup(groupName, username);
+  await addGroup(groupName, username);
 
   const repoPath = `${homePath}/${username}/${repoName}`;
-  if (!fs.existsSync(`${repoPath}/.git`)) {
-    await Repository.init(`${repoPath}/.git`, 1);
 
-    await execCmd(`chown -R ${username}:${groupName} ${repoPath}`);
-    // owner full access | group full access (collabs) | others no access
-    await execCmd(`chmod -R 77${publicRepo ? 5 : 0} ${repoPath}`);
-  }
+  if (fs.existsSync(`${repoPath}/.git`)) return;
+
+  await execCmds([
+    `git init --bare ${repoPath}/.git`,
+    `cd ${repoPath}`,
+    `touch ${collabFile} ${publicRepo ? "public" : ""}`,
+    `chown -R ${username}:${groupName} ${repoPath}`,
+    `chmod -R 77${publicRepo ? 5 : 0} ${repoPath}`, // owner full access | group full access (collabs) | others no access
+    `git config --global --add safe.directory ${repoPath}`,
+  ]);
 }
 
 export async function removeRepo(username: string, repoName: string) {
-  if (!fs.existsSync(`/home/_deleted`)) {
-    await execCmd(`mkdir /home/_deleted`);
+  if (!fs.existsSync(`/home/.deleted`)) {
+    await execCmd(`mkdir /home/.deleted`);
   }
   if (fs.existsSync(`${homePath}/${username}/${repoName}`)) {
-    await execCmd(`cp -r ${homePath}/${username}/${repoName} /home/_deleted`);
-    await execCmd(`rm -r ${homePath}/${username}/${repoName}`);
+    await execCmds([
+      `cp -r ${homePath}/${username}/${repoName} /home/.deleted`,
+      `rm -r ${homePath}/${username}/${repoName}`,
+    ]);
     await deleteGroup(`${username}-${repoName}`);
   }
 }
@@ -47,17 +51,20 @@ export async function createRepoFork(
     await createUser(username);
   }
   const groupName = `${username}-${repoName}`;
-
-  await addGroup(groupName);
-  await addUserToGroup(groupName, username);
+  await addGroup(groupName, username);
 
   const forkedRepoPath = `${homePath}/${fromUsername}/${fromRepositoryName}`;
   const repoPath = `${homePath}/${username}/${repoName}`;
+  const branchOptions = only1Branch ? `-b ${quote([only1Branch])} --single-branch` : "";
 
-  if (only1Branch) await execCmd(`git clone -n -b ${only1Branch} --single-branch ${forkedRepoPath} ${repoPath}`);
-  else await execCmd(`cp -r ${forkedRepoPath} ${repoPath}`);
+  if (fs.existsSync(`${repoPath}/.git`)) return;
 
-  await execCmd(`chown -R ${username}:${groupName} ${repoPath}`);
-  // owner full access | group full access (collabs) | others no access
-  await execCmd(`chmod -R 77${publicRepo ? 5 : 0} ${repoPath}`);
+  await execCmds([
+    `git clone -n ${branchOptions} ${forkedRepoPath} ${repoPath}`,
+    `cd ${repoPath}`,
+    `touch ${collabFile} ${publicRepo ? "public" : ""}`,
+    `chown -R ${username}:${groupName} ${repoPath}`,
+    `chmod -R 77${publicRepo ? 5 : 0} ${repoPath}`,
+    `git config --global --add safe.directory ${repoPath}`,
+  ]);
 }

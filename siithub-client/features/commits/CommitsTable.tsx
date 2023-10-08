@@ -21,14 +21,14 @@ export const CommitsHistory: FC<CommitsHistoryProps> = ({ username, repoName, co
   return (
     <>
       {commits?.map((commit) => {
-        const date = moment(commit.date).format("MMM D, YYYY");
+        const date = moment.unix(commit.date).format("MMM D, YYYY");
 
         const isNewDate = date !== currentDate;
         if (isNewDate) currentDate = date;
         return (
           <Fragment key={commit.sha}>
             {isNewDate && (
-              <div className="p-3 font-semibold">{`Commits on ${moment(commit.date).format("MMM D, YYYY")}`}</div>
+              <div className="p-3 font-semibold">{`Commits on ${moment.unix(commit.date).format("MMM D, YYYY")}`}</div>
             )}
             <CommitCard commit={commit} username={username} repoName={repoName} />
           </Fragment>

@@ -77,7 +77,9 @@ export const DirectoryTable: FC<DirectoryTableProps> = ({ branch, treePath }) =>
                   </td>
                   <td className="p-3 hover:text-blue-400 hover:underline w-2/6">
                     <Link
-                      href={`/${owner}/${name}/${e.isFolder ? "tree" : "blob"}/${encodeURIComponent(branch)}/${e.path}`}
+                      href={`/${owner}/${name}/${e.isFolder ? "tree" : "blob"}/${encodeURIComponent(branch)}/${
+                        treePath ? treePath + "/" : ""
+                      }${e.name}`}
                     >
                       {e.name}
                     </Link>
@@ -88,7 +90,7 @@ export const DirectoryTable: FC<DirectoryTableProps> = ({ branch, treePath }) =>
                     </HashtagLink>
                   </td>
                   <td className="p-3 text-gray-400">
-                    {e.commit.date ? moment(e.commit.date).fromNow() : "Many commits ago"}
+                    {e.commit.date ? moment.unix(e.commit.date).fromNow() : "Many commits ago"}
                   </td>
                 </tr>
               ))

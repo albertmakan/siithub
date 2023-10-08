@@ -5,13 +5,12 @@ import { type Repository } from "../repository/repository.service";
 type Commit = {
   message: string;
   sha: string;
-  date: string;
+  date: number;
   author: string;
 };
 
 type TreeEntry = {
   name: string;
-  path: string;
   isFolder: boolean;
   commit: Commit;
 };

@@ -1,7 +1,7 @@
-import { execCmd } from "../cmd.utils";
+import { execCmd } from "./cmd.utils";
 
-async function addGroup(name: string) {
-  await execCmd(`addgroup -S ${name}`);
+async function addGroup(name: string, firstUser?: string) {
+  await execCmd(`addgroup -S ${name} ${firstUser ? `&& addgroup ${firstUser} ${name}` : ""}`);
 }
 
 async function deleteGroup(name: string) {

@@ -141,7 +141,7 @@ async function searchCommits(searchParam: string, repositoryId: Repository["_id"
   return {
     commits: commits
       .filter((c) => c.message.toLowerCase().includes(searchParam))
-      .sort((c1, c2) => direction * Number(new Date(c2.date)) - direction * Number(new Date(c1.date))),
+      .sort((c1, c2) => direction * c2.date - direction * c1.date),
     repository,
   };
 }

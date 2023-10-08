@@ -1,14 +1,11 @@
-import axios from "axios";
-import { config } from "../../config";
+import { gitServerHttpClient } from "../../utils/axios";
 
 async function addCollaborator(owner: string, repo: string, collaborator: string): Promise<any> {
-  return await axios.post(`${config.gitServer.url}/api/collaborators/${owner}/${repo}`, {
-    collaborator,
-  });
+  return await gitServerHttpClient.post(`/api/repo/${owner}/${repo}/collaborators`, { collaborator });
 }
 
 async function removeCollaborator(owner: string, repo: string, collaborator: string): Promise<any> {
-  return await axios.delete(`${config.gitServer.url}/api/collaborators/${owner}/${repo}/${collaborator}`);
+  return await gitServerHttpClient.delete(`/api/repo/${owner}/${repo}/collaborators/${collaborator}`);
 }
 
 export type GitServerCollaboratorsClient = {

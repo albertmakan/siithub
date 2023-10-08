@@ -1,56 +1,37 @@
-import { Repository } from "nodegit";
-import { homePath } from "../config";
+import { quote } from "shell-quote";
+import { execCmd } from "../cmd.utils";
 
-export async function getBranches(username: string, repoName: string) {
+export async function getBranches(repoPath: string) {
   try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-
-    const branches = await repo.getReferences();
-
-    return branches.filter((b) => b.isBranch()).map((b) => b.name().substring(11));
+    const branches = await execCmd(`git branch --format="%(refname:short)"`, repoPath);
+    return branches.split("\n").filter(Boolean);
   } catch {
     return null;
   }
 }
 
-export async function createBranch(username: string, repoName: string, source: string, branchName: string) {
+export async function createBranch(repoPath: string, source: string, branchName: string) {
   try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-
-    const sourceBranch = await repo.getBranch(source);
-    const lastCommit = await repo.getBranchCommit(sourceBranch);
-
-    const branch = await repo.createBranch(branchName, lastCommit);
-    return branch.name();
+    await execCmd(`git branch ${quote([branchName, source])}`, repoPath);
+    return branchName;
   } catch {
     return null;
   }
 }
 
-export async function renameBranch(username: string, repoName: string, branchName: string, newBranchName: string) {
+export async function renameBranch(repoPath: string, branchName: string, newBranchName: string) {
   try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-
-    const branch = await repo.getBranch(branchName);
-    const renamedBranch = await branch.rename("refs/heads/" + newBranchName, 1, "");
-    return renamedBranch.name();
+    await execCmd(`git branch -m ${quote([branchName, newBranchName])}`, repoPath);
+    return newBranchName;
   } catch {
     return null;
   }
 }
 
-export async function removeBranch(username: string, repoName: string, branchName: string) {
+export async function removeBranch(repoPath: string, branchName: string) {
   try {
-    const repoPath = `${homePath}/${username}/${repoName}`;
-    const repo = await Repository.open(repoPath + "/.git");
-
-    const branch = await repo.getBranch(branchName);
-    branch.delete();
-
-    return branch.name();
+    await execCmd(`git branch -d ${quote([branchName])}`, repoPath);
+    return branchName;
   } catch {
     return null;
   }
