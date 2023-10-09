@@ -74,26 +74,24 @@ export const ProfileLayout: FC<PropsWithChildren> = ({ children }) => {
   const links = getLinks(router, user);
 
   if (error) return <NotFound />;
-  if (!username || !user) return <></>;
+  if (!user) return <></>;
 
   return (
-    <>
-      <div className="flex">
-        <div>
-          <aside className="w-96" aria-label="Sidebar">
-            <div className="overflow-y-auto py-4 px-3 bg-gray-50 rounded">
-              <ProfilePicture username={username} size={300} />
-              <UserInformations user={user} />
+    <div className="flex">
+      <div>
+        <aside className="w-96" aria-label="Sidebar">
+          <div className="overflow-y-auto py-4 px-3 bg-gray-50 rounded">
+            <ProfilePicture user={user} size={300} />
+            <UserInformations user={user} />
 
-              <div className="pt-4 mt-4 space-y-2 border-t border-gray-200" />
+            <div className="pt-4 mt-4 space-y-2 border-t border-gray-200" />
 
-              <VerticalMenu links={links} />
-            </div>
-          </aside>
-        </div>
-        <div className="grow">{children}</div>
+            <VerticalMenu links={links} />
+          </div>
+        </aside>
       </div>
-    </>
+      <div className="grow">{children}</div>
+    </div>
   );
 };
 

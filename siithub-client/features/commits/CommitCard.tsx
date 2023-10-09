@@ -21,7 +21,7 @@ export const CommitCard: FC<CommitCardProps> = ({ commit, username, repoName }) 
         <span className="flex text-sm">
           {commit.author.username ? (
             <>
-              <ProfilePicture username={commit.author.username} size={20} />{" "}
+              <ProfilePicture user={commit.author} size={20} />{" "}
               <span className="mr-2 ml-2">{commit.author.username}</span>
             </>
           ) : (

@@ -1,10 +1,10 @@
 import { type Repository } from "../repository/repository.model";
 
-type AuthorInfo = {
+export type AuthorInfo = {
   name: string;
   email: string;
   username: string;
-  bio: string;
+  pictures?: string[];
 };
 
 export type Commit = {

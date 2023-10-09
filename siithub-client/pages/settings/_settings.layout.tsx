@@ -32,7 +32,7 @@ export const SettingsLayout: FC<PropsWithChildren> = ({ children }) => {
   return (
     <>
       <div className="p-7 text-right">
-        <ProfilePicture username={user?.username ?? ""} size={200} />
+        <ProfilePicture user={user} size={100} />
         <Button>
           <Link href={`/users/${user?.username}`}>Go to your personal profile</Link>
         </Button>

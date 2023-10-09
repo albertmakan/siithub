@@ -142,7 +142,7 @@ export const AuthenticatedLayout: FC<PropsWithChildren> = ({ children }) => {
                         <div>
                           <Menu.Button className="flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                             <span className="sr-only">Open user menu</span>
-                            <ProfilePicture size={30} username={user?.username ?? ""} />
+                            {user && <ProfilePicture user={user} size={30} />}
                           </Menu.Button>
                         </div>
                         <Transition
@@ -192,9 +192,7 @@ export const AuthenticatedLayout: FC<PropsWithChildren> = ({ children }) => {
               <Disclosure.Panel className="md:hidden">
                 <div className="border-t border-gray-700 pt-4 pb-3">
                   <div className="flex items-center px-5">
-                    <div className="rounded-full">
-                      <ProfilePicture size={30} username={user?.username ?? ""} />
-                    </div>
+                    <div className="rounded-full">{user && <ProfilePicture user={user} size={30} />}</div>
                     <div className="ml-3">
                       <div className="text-base font-medium leading-none text-white">{user?.name}</div>
                       <div className="text-sm font-medium leading-none text-gray-400">{user?.email}</div>

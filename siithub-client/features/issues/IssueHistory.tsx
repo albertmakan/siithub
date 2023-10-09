@@ -133,7 +133,7 @@ export const IssueHistory: FC = () => {
         .map((event, i) => (
           <li key={i} className="mb-10 ml-6">
             <span className="flex absolute -left-3 justify-center items-center w-6 h-6 bg-blue-200 rounded-full ring-8 ring-white">
-              <ProfilePicture username={participants[event.by].username ?? ""} size={40} />
+              <ProfilePicture user={participants[event.by]} size={40} />
             </span>
             <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
               <div className="grid grid-cols-12">

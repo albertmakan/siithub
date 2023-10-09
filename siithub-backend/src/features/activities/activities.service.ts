@@ -3,12 +3,9 @@ import { repositoryService } from "../repository/repository.service";
 import { issueService } from "../issue/issue.service";
 import { starService } from "../star/star.service";
 import { userService } from "../user/user.service";
-import { type BaseEvent } from "../../db/base.repo.utils";
-import { type Issue, type IssueCreatedEvent } from "../issue/issue.model";
+import { type IssueCreatedEvent } from "../issue/issue.model";
 import { type Repository } from "../repository/repository.model";
-import { type Star } from "../star/star.model";
 import { type User } from "../user/user.model";
-import { type Collaborator } from "../collaborators/collaborators.model";
 import {
   type NewPullRequestActivity,
   type NewCommentActivity,
@@ -18,31 +15,26 @@ import {
 } from "./activities.models";
 import { type CommentCreatedEvent } from "../common/events/events.model";
 import { pullRequestService } from "../pull-requests/pull-requests.service";
-import { type PullRequest, type PullRequestCreatedEvent } from "../pull-requests/pull-requests.model";
+import { type PullRequestCreatedEvent } from "../pull-requests/pull-requests.model";
 
 async function findActivities(userId: User["_id"], upTill?: Date): Promise<any> {
   const repositories = await getRelevantRepos(userId);
-
   const activities = await Promise.all([
     getStaringActivities(repositories, userId, upTill),
     getNewIssueActivities(repositories, userId, upTill),
     getNewCommentActivities(repositories, userId, upTill),
     getNewPullRequestActivities(repositories, userId, upTill),
-  ]).then(([staring, newIssues, newComments, newPullRequests]) => {
-    return [...staring, ...newIssues, ...newComments, ...newPullRequests].sort(
-      (a1: Activity, a2: Activity) => Number(new Date(a2.timeStamp)) - Number(new Date(a1.timeStamp))
-    );
-  });
-
-  return {
-    activities: await connectWithUsers(activities),
-  };
+  ]).then(([staring, newIssues, newComments, newPullRequests]) =>
+    [...staring, ...newIssues, ...newComments, ...newPullRequests].sort(
+      (a1, a2) => +new Date(a2.timeStamp) - +new Date(a1.timeStamp)
+    )
+  );
+  return { activities: await connectWithUsers(activities) };
 }
 
 async function getRelevantRepos(userId: User["_id"]): Promise<Repository[]> {
   const collaborations = await collaboratorsService.findByUser(userId);
-  const repoIds: Repository["_id"][] = collaborations.map((collaboration: Collaborator) => collaboration.repositoryId);
-
+  const repoIds = collaborations.map((collaboration) => collaboration.repositoryId);
   return await repositoryService.findByIds(repoIds);
 }
 
@@ -51,7 +43,7 @@ async function getStaringActivities(
   userId: User["_id"],
   upTill?: Date
 ): Promise<StaringActivity[]> {
-  const repoIds = repos.map((repo: Repository) => repo._id);
+  const repoIds = repos.map((repo) => repo._id);
   const repositoriesMap = getRepoMap(repos);
 
   const stars = await starService.findByRepoIds(repoIds, {
@@ -59,16 +51,12 @@ async function getStaringActivities(
     ...(upTill ? { date: { $gte: upTill } } : {}),
   });
 
-  return stars.map((star: Star) => {
-    const repo: Repository = repositoriesMap[star.repoId.toString()];
-
+  return stars.map((star) => {
+    const repo = repositoriesMap[star.repoId.toString()];
     return {
       userId: star.userId,
       username: "",
-      repoId: star.repoId,
-      repoOwner: repo.owner,
-      repoName: repo.name,
-      repoDescription: repo.description || "",
+      repo,
       timeStamp: star.date,
       type: "StaringActivity",
     };
@@ -80,7 +68,7 @@ async function getNewIssueActivities(
   userId: User["_id"],
   upTill?: Date
 ): Promise<NewIssueActivity[]> {
-  const repoIds = repos.map((repo: Repository) => repo._id);
+  const repoIds = repos.map((repo) => repo._id);
   const repositoriesMap = getRepoMap(repos);
 
   const newIssues = await issueService.findMany(
@@ -97,19 +85,15 @@ async function getNewIssueActivities(
     { projection: { _id: 1, localId: 1, repositoryId: 1, "events.$": 1 } }
   );
 
-  return newIssues.map((issue: Issue) => {
+  return newIssues.map((issue) => {
     const issueCreated = issue.events[0] as IssueCreatedEvent;
-    const repo: Repository = repositoriesMap[issue.repositoryId.toString()];
-
+    const repo = repositoriesMap[issue.repositoryId.toString()];
     return {
       issueId: issue._id,
       localId: issue.localId,
       userId: issueCreated.by,
       username: "",
-      repoId: issue.repositoryId,
-      repoOwner: repo.owner,
-      repoName: repo.name,
-      repoDescription: repo.description || "",
+      repo,
       title: issueCreated.title,
       timeStamp: issueCreated.timeStamp,
       type: "NewIssueActivity",
@@ -122,7 +106,7 @@ async function getNewCommentActivities(
   userId: User["_id"],
   upTill?: Date
 ): Promise<NewCommentActivity[]> {
-  const repoIds = repos.map((repo: Repository) => repo._id);
+  const repoIds = repos.map((repo) => repo._id);
   const repositoriesMap = getRepoMap(repos);
 
   const newComments = await issueService.findMany(
@@ -159,20 +143,16 @@ async function getNewCommentActivities(
     }
   );
 
-  return newComments.flatMap((issue: Issue) =>
-    issue.events.map((event: BaseEvent) => {
+  return newComments.flatMap((issue) =>
+    issue.events.map((event) => {
       const issueCommented = event as CommentCreatedEvent;
-      const repo: Repository = repositoriesMap[issue.repositoryId.toString()];
-
+      const repo = repositoriesMap[issue.repositoryId.toString()];
       return {
         issueId: issue._id,
         localId: issue.localId,
         userId: issueCommented.by,
         username: "",
-        repoId: issue.repositoryId,
-        repoOwner: repo.owner,
-        repoName: repo.name,
-        repoDescription: repo.description || "",
+        repo,
         title: issue.csm.title || "",
         text: issueCommented.text,
         timeStamp: issueCommented.timeStamp,
@@ -187,7 +167,7 @@ async function getNewPullRequestActivities(
   userId: User["_id"],
   upTill?: Date
 ): Promise<NewPullRequestActivity[]> {
-  const repoIds = repos.map((repo: Repository) => repo._id);
+  const repoIds = repos.map((repo) => repo._id);
   const repositoriesMap = getRepoMap(repos);
 
   const newPullRequests = await pullRequestService.findMany(
@@ -204,19 +184,15 @@ async function getNewPullRequestActivities(
     { projection: { _id: 1, localId: 1, repositoryId: 1, "events.$": 1 } }
   );
 
-  return newPullRequests.map((pullRequest: PullRequest) => {
+  return newPullRequests.map((pullRequest) => {
     const pullRequestCreated = pullRequest.events[0] as PullRequestCreatedEvent;
-    const repo: Repository = repositoriesMap[pullRequest.repositoryId.toString()];
-
+    const repo = repositoriesMap[pullRequest.repositoryId.toString()];
     return {
       pullRequestId: pullRequest._id,
       localId: pullRequest.localId,
       userId: pullRequestCreated.by,
       username: "",
-      repoId: pullRequest.repositoryId,
-      repoOwner: repo.owner,
-      repoName: repo.name,
-      repoDescription: repo.description || "",
+      repo,
       title: pullRequestCreated.title,
       timeStamp: pullRequestCreated.timeStamp,
       type: "NewPullRequestActivity",
@@ -228,22 +204,23 @@ async function connectWithUsers(activities: Activity[]): Promise<Activity[]> {
   const userIds = activities.map((activity) => activity.userId);
   const users = await userService.findManyByIds(userIds);
   const usersMap = getUserMap(users);
-
-  return activities.map((a: Activity) => ({
-    ...a,
-    username: usersMap[a.userId.toString()]?.username,
-  }));
+  activities.forEach((a) => {
+    const user = usersMap[a.userId.toString()];
+    a.username = user?.username;
+    a.pictures = user?.pictures;
+  });
+  return activities;
 }
 
-function getRepoMap(repos: Repository[]): any {
-  return repos.reduce((acc: any, repo: Repository) => {
+function getRepoMap(repos: Repository[]) {
+  return repos.reduce((acc: Record<string, Repository>, repo) => {
     acc[repo._id.toString()] = repo;
     return acc;
   }, {});
 }
 
-function getUserMap(users: User[]): any {
-  return users.reduce((acc: any, user: User) => {
+function getUserMap(users: User[]) {
+  return users.reduce((acc: Record<string, User>, user) => {
     acc[user._id.toString()] = user;
     return acc;
   }, {});

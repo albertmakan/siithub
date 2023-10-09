@@ -1,3 +1,5 @@
+import { type AuthorInfo } from "../commits/commit.model";
+
 export type GroupedCommitCount = {
   date: string;
   commits: number;
@@ -12,7 +14,7 @@ export type ContributorInsights = {
   };
   perAuthor: {
     data: GroupedCommitCount[];
-    author: { username?: string; name: string };
+    author: AuthorInfo;
     commitsTotal: number;
     addsTotal: number;
     delsTotal: number;

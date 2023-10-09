@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { type FC } from "react";
-import { ProfilePicture } from "../../core/components/ProfilePicture";
 import { useForks } from "../repository/useRepositories";
 import { useRepositoryContext } from "../repository/RepositoryContext";
 import { type Repository } from "../repository/repository.service";
@@ -13,7 +12,6 @@ export const ForksInsights: FC = () => {
   return (
     <div className="w-full">
       <div className="flex items-center">
-        <ProfilePicture username={owner} size={16} />
         <Link className="hover:text-blue-500 hover:underline ml-3" href={`/users/${owner}`}>
           {owner}
         </Link>
@@ -27,7 +25,6 @@ export const ForksInsights: FC = () => {
           <svg width="20" height="24" viewBox="0 0 20 24" fill="#d1d5da">
             <path fillRule="evenodd" clipRule="evenodd" d="M10 0V13H20V14H9V0H10Z" />
           </svg>
-          <ProfilePicture username={fork.owner} size={16} />
           <Link className="text-sm font-semibold text-blue-500 hover:underline ml-3" href={`/users/${fork.owner}`}>
             {fork.owner}
           </Link>

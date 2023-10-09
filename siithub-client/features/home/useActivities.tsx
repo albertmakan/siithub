@@ -1,11 +1,11 @@
 import { type Moment } from "moment";
 import { useQuery } from "react-query";
-import { getActivities } from "./activityActions";
+import { Activity, getActivities } from "./activityActions";
 
 export function useActivities(upTill?: Moment) {
   const { data } = useQuery([`activities_${upTill?.format()}`, upTill], () => getActivities(upTill));
 
   return {
-    activities: data?.data?.activities ?? [],
+    activities: (data?.data?.activities ?? []) as Activity[],
   };
 }

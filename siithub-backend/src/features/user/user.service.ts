@@ -6,6 +6,8 @@ import { getRandomString, getSha256Hash } from "../../utils/crypto";
 import { gitServerClient } from "../gitserver/gitserver.client";
 import { Filter } from "mongodb";
 
+const projection = { _id: 1, username: 1, email: 1, name: 1, pictures: 1 } as const;
+
 async function findOneOrThrow(id: User["_id"]): Promise<User> {
   const existingUser = await userRepo.crud.findOne(id);
   if (!existingUser) {
@@ -15,23 +17,15 @@ async function findOneOrThrow(id: User["_id"]): Promise<User> {
 }
 
 async function findMany(filters?: Filter<User>): Promise<User[]> {
-  return await userRepo.crud.findMany(filters, { projection: { username: 1, name: 1 } });
+  return await userRepo.crud.findMany(filters, { projection });
 }
 
 async function findManyByIds(ids: User["_id"][], filters: Filter<User> = {}): Promise<User[]> {
-  return await (
-    await userRepo.crud.findManyCursor(
-      { _id: { $in: ids }, ...filters },
-      { projection: { _id: 1, username: 1, email: 1, name: 1 } }
-    )
-  ).toArray();
+  return await userRepo.crud.findMany({ _id: { $in: ids }, ...filters }, { projection });
 }
 
 async function findManyByEmails(emails: string[]): Promise<User[]> {
-  return await userRepo.crud.findMany(
-    { email: { $in: emails } },
-    { projection: { username: 1, name: 1, email: 1, bio: 1 } }
-  );
+  return await userRepo.crud.findMany({ email: { $in: emails } }, { projection });
 }
 
 async function findByUsername(username: string): Promise<User | null> {
@@ -57,7 +51,6 @@ function removePassword(f: any) {
 function getHashedPassword(password: string) {
   const salt = getRandomString(16);
   const passwordHash = getSha256Hash(password + salt);
-
   return { salt, passwordHash };
 }
 
@@ -100,10 +93,16 @@ async function updatePassword(
   if (passwordHash !== user.passwordAccount?.passwordHash) {
     throw new BadLogicException("Old password is incorrect");
   }
-
   return await userRepo.crud.update(id, {
     passwordAccount: getHashedPassword(passwordUpdate.newPassword),
   });
+}
+
+async function updateProfilePicture(id: User["_id"], pictureKey: string): Promise<User | null> {
+  const user = await findOneOrThrow(id);
+  const pictures = user.pictures ?? [];
+  pictures.push(pictureKey);
+  return await userRepo.crud.update(id, { pictures });
 }
 
 export type UserService = {
@@ -117,6 +116,7 @@ export type UserService = {
   create(user: UserCreate): Promise<User | null>;
   updateProfile(id: User["_id"], profileUpdate: UserUpdate): Promise<User | null>;
   updatePassword(id: User["_id"], passwordUpdate: { oldPassword: string; newPassword: string }): Promise<User | null>;
+  updateProfilePicture(id: User["_id"], pictureKey: string): Promise<User | null>;
 };
 
 const userService: UserService = {
@@ -130,6 +130,7 @@ const userService: UserService = {
   create: removePassword(createUser),
   updateProfile: removePassword(updateProfile),
   updatePassword: removePassword(updatePassword),
+  updateProfilePicture: removePassword(updateProfilePicture),
 };
 
 export { userService };

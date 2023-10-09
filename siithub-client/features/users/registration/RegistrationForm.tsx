@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { type FC, useRef } from "react";
 import { InputField } from "../../../core/components/InputField";
 import { AreaField } from "../../../core/components/AreaField";
 import { Button } from "../../../core/components/Button";
@@ -10,11 +10,13 @@ import { useAction } from "../../../core/hooks/useAction";
 import { useZodValidatedFrom } from "../../../core/hooks/useZodValidatedForm";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { uploadDefaultImage } from "../profile/uploadPicture";
 
 export const RegistrationForm: FC = () => {
   const notifications = useNotifications();
   const router = useRouter();
   const { setResult } = useResult("users");
+  const canvasref = useRef<HTMLCanvasElement | null>(null);
 
   const {
     register: registrationForm,
@@ -23,7 +25,8 @@ export const RegistrationForm: FC = () => {
   } = useZodValidatedFrom<CreateUser>(createUserSchema);
 
   const createUserAction = useAction<CreateUser>(createUser, {
-    onSuccess: () => {
+    onSuccess: ({ user, token }) => {
+      if (canvasref.current && user.username) uploadDefaultImage(canvasref.current, user.username, token);
       notifications.success("You have successfully created a new account.");
       setResult({ status: ResultStatus.Ok, type: "CREATE_USER" });
     },
@@ -40,59 +43,54 @@ export const RegistrationForm: FC = () => {
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit(onCreateUserAction)}>
-        <div className="overflow-hidden shadow sm:rounded-md">
-          <div className="bg-white px-4 py-5 sm:p-6">
-            <div className="grid grid-cols-6 gap-6">
-              <div className="col-span-6">
-                <InputField
-                  label="Username"
-                  formElement={registrationForm("username")}
-                  errorMessage={errors?.username?.message}
-                />
-              </div>
-
-              <div className="col-span-6">
-                <InputField
-                  type="password"
-                  label="Password"
-                  formElement={registrationForm("password")}
-                  errorMessage={errors?.password?.message}
-                />
-              </div>
-
-              <div className="col-span-6">
-                <InputField label="Name" formElement={registrationForm("name")} errorMessage={errors?.name?.message} />
-              </div>
-
-              <div className="col-span-6">
-                <InputField
-                  label="Email"
-                  formElement={registrationForm("email")}
-                  errorMessage={errors?.email?.message}
-                />
-              </div>
-
-              <div className="col-span-6">
-                <AreaField label="Bio" formElement={registrationForm("bio")} />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-12 bg-gray-50 sm:px-6 px-2 py-2">
-            <div className="col-span-6 text-left">
-              <Button type="button">
-                <Link href="/auth">Login</Link>
-              </Button>
+    <form onSubmit={handleSubmit(onCreateUserAction)}>
+      <div className="overflow-hidden shadow sm:rounded-md">
+        <div className="bg-white px-4 py-5 sm:p-6">
+          <div className="grid grid-cols-6 gap-6">
+            <div className="col-span-6">
+              <InputField
+                label="Username"
+                formElement={registrationForm("username")}
+                errorMessage={errors?.username?.message}
+              />
             </div>
 
-            <div className="col-span-6 text-right">
-              <Button>Save</Button>
+            <div className="col-span-6">
+              <InputField
+                type="password"
+                label="Password"
+                formElement={registrationForm("password")}
+                errorMessage={errors?.password?.message}
+              />
+            </div>
+
+            <div className="col-span-6">
+              <InputField label="Name" formElement={registrationForm("name")} errorMessage={errors?.name?.message} />
+            </div>
+
+            <div className="col-span-6">
+              <InputField label="Email" formElement={registrationForm("email")} errorMessage={errors?.email?.message} />
+            </div>
+
+            <div className="col-span-6">
+              <AreaField label="Bio" formElement={registrationForm("bio")} />
             </div>
           </div>
         </div>
-      </form>
-    </>
+
+        <div className="grid grid-cols-12 bg-gray-50 sm:px-6 px-2 py-2">
+          <div className="col-span-6 text-left">
+            <Button type="button">
+              <Link href="/auth">Login</Link>
+            </Button>
+          </div>
+
+          <div className="col-span-6 text-right">
+            <Button>Save</Button>
+          </div>
+        </div>
+      </div>
+      <canvas ref={canvasref} />
+    </form>
   );
 };

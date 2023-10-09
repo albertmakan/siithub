@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { useState, type FC, ChangeEvent } from "react";
 import { AreaField } from "../../../core/components/AreaField";
 import { Button } from "../../../core/components/Button";
 import { InputField } from "../../../core/components/InputField";
@@ -8,67 +8,68 @@ import { useNotifications } from "../../../core/hooks/useNotifications";
 import { useZodValidatedFrom } from "../../../core/hooks/useZodValidatedForm";
 import { extractErrorMessage } from "../../../core/utils/errors";
 import { profileBodySchema, type UpdateProfile, updateProfile } from "./userActions";
+import { CirclularImage, ProfilePicture } from "../../../core/components/ProfilePicture";
+import { User } from "../user.model";
+import { uploadImage } from "./uploadPicture";
 
-
-type PersonalInfoFormProps = {
-  user: UpdateProfile,
-}
-
-export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({ user }) => {
+export const PersonalInfoForm: FC<{ user: User }> = ({ user }) => {
   const notifications = useNotifications();
-  const { setResult } = useResult('users');
-  const { register: profileForm, handleSubmit, formState: { errors } } = useZodValidatedFrom<UpdateProfile>(profileBodySchema, user);
+  const { setResult } = useResult("users");
+  const {
+    register: profileForm,
+    handleSubmit,
+    formState: { errors },
+  } = useZodValidatedFrom<UpdateProfile>(profileBodySchema, user);
+  const [selectedFile, setSelectedFile] = useState<File | null>();
+  const [url, setUrl] = useState("");
 
   const updateProfileAction = useAction<UpdateProfile>(updateProfile, {
     onSuccess: () => {
-      notifications.success('You have successfully updated your profile.');
-      setResult({ status: ResultStatus.Ok, type: 'UPDATE_USER' });
+      if (selectedFile) uploadImage(selectedFile, user.username);
+      notifications.success("You have successfully updated your profile.");
+      setResult({ status: ResultStatus.Ok, type: "UPDATE_USER" });
     },
     onError: (error: any) => {
       notifications.error(extractErrorMessage(error));
-      setResult({ status: ResultStatus.Error, type: 'UPDATE_USER' });
-    }
+      setResult({ status: ResultStatus.Error, type: "UPDATE_USER" });
+    },
   });
 
+  const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.item(0);
+    setSelectedFile(file);
+    setUrl(file ? URL.createObjectURL(file) : "");
+  };
+
   return (
-    <>
-      <form onSubmit={handleSubmit(updateProfileAction)}>
-        <div className="overflow-hidden shadow sm:rounded-md">
-          <div className="bg-white px-4 py-5 sm:p-6">
-            <div className="">
-              <div className="p-2">
-                <InputField
-                  label="Name"
-                  formElement={profileForm("name")}
-                  errorMessage={errors?.name?.message}
-                />
-              </div>
-              <div className="p-2">
-                <InputField
-                  label="Email"
-                  type="email"
-                  formElement={profileForm("email")}
-                  errorMessage={errors?.email?.message}
-                />
-              </div>
-              <div className="p-2">
-                <AreaField
-                  label="Bio"
-                  formElement={profileForm("bio")}
-                  rows={5}
-                  errorMessage={errors?.bio?.message}
-                />
-              </div>
-              
+    <form onSubmit={handleSubmit(updateProfileAction)}>
+      <div className="overflow-hidden shadow sm:rounded-md">
+        <div className="bg-white px-4 py-5 sm:p-6 flex">
+          <div className="w-3/4">
+            <div className="p-2">
+              <InputField label="Name" formElement={profileForm("name")} errorMessage={errors?.name?.message} />
+            </div>
+            <div className="p-2">
+              <InputField
+                label="Email"
+                type="email"
+                formElement={profileForm("email")}
+                errorMessage={errors?.email?.message}
+              />
+            </div>
+            <div className="p-2">
+              <AreaField label="Bio" formElement={profileForm("bio")} rows={5} errorMessage={errors?.bio?.message} />
             </div>
           </div>
-          
-          <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
-            <Button>Update profile</Button>
+          <div className="w-1/4 pl-8">
+            {url ? <CirclularImage url={url} size={200} /> : <ProfilePicture user={user} size={200} />}
+            <input type="file" accept="image/*" onChange={onFileChange} />
           </div>
         </div>
-      </form>
-
-    </>
+        <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
+          <Button>Update profile</Button>
+        </div>
+      </div>
+    </form>
   );
-}
+};

@@ -13,7 +13,9 @@ import {
 import "express-async-errors";
 import { userGithubService } from "./user-github.service";
 import { asOptionalField, idSchema } from "../../utils/zod";
-import { getUserIdFromRequest } from "../auth/auth.utils";
+import { getImage, uploadImage } from "../../utils/imageStorage";
+import { authorize } from "../auth/auth.middleware";
+import { generateJWT } from "../../utils/jwt";
 
 const router = Router();
 
@@ -56,7 +58,20 @@ const createUserBodySchema = z.object({
 
 router.post("/", async (req: Request, res: Response) => {
   const createUser = createUserBodySchema.parse(req.body);
-  res.send(await userService.create(createUser));
+  const user = await userService.create(createUser);
+  const token = generateJWT({ id: user?._id, type: user?.type });
+  res.send({ user, token });
+});
+
+router.post("/profile-image", authorize(), uploadImage.single("image"), async (req: Request, res: Response) => {
+  const key = (req.file as any)?.key;
+  res.send(await userService.updateProfilePicture(res.locals.userId, key));
+});
+
+router.get("/profile-image/:key", async (req: Request, res: Response) => {
+  const blob = await getImage(req.params.key);
+  res.type("blob");
+  (blob as any)?.pipe(res);
 });
 
 const updateProfileBodySchema = z.object({
@@ -65,10 +80,9 @@ const updateProfileBodySchema = z.object({
   bio: z.string().default(""),
 });
 
-router.put("/", async (req: Request, res: Response) => {
-  const id = getUserIdFromRequest(req);
+router.put("/", authorize(), async (req: Request, res: Response) => {
   const updateUser = updateProfileBodySchema.parse(req.body);
-  res.send(await userService.updateProfile(id, updateUser));
+  res.send(await userService.updateProfile(res.locals.userId, updateUser));
 });
 
 const passwordBodySchema = z.object({
@@ -76,10 +90,9 @@ const passwordBodySchema = z.object({
   newPassword: passwordSchema,
 });
 
-router.put("/change-password", async (req: Request, res: Response) => {
-  const id = getUserIdFromRequest(req);
+router.put("/change-password", authorize(), async (req: Request, res: Response) => {
   const passwordUpdate = passwordBodySchema.parse(req.body);
-  await userService.updatePassword(id, passwordUpdate);
+  await userService.updatePassword(res.locals.userId, passwordUpdate);
   res.send();
 });
 
@@ -87,15 +100,13 @@ const changeGithubAccountBodySchema = z.object({
   username: z.string().regex(GITHUB_ACCOUNT, "Github username should be valid."),
 });
 
-router.put("/github", async (req: Request, res: Response) => {
-  const id = getUserIdFromRequest(req);
+router.put("/github", authorize(), async (req: Request, res: Response) => {
   const githubAccount = changeGithubAccountBodySchema.parse(req.body);
-  res.send(await userGithubService.update(id, githubAccount));
+  res.send(await userGithubService.update(res.locals.userId, githubAccount));
 });
 
-router.delete("/github", async (req: Request, res: Response) => {
-  const id = getUserIdFromRequest(req);
-  res.send(await userGithubService.delete(id));
+router.delete("/github", authorize(), async (req: Request, res: Response) => {
+  res.send(await userGithubService.delete(res.locals.userId));
 });
 
 export { createUserBodySchema, changeGithubAccountBodySchema, router as userRoutes };

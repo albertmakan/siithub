@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useQuery } from "react-query";
 import { type Repository } from "../repository/repository.service";
+import { type AuthorInfo } from "../commits/useCommits";
 
 export type PulseInsights = {
   totalPrs: number;
@@ -40,7 +41,7 @@ export type ContributorInsights = {
   };
   perAuthor: {
     data: GroupedCommitCount[];
-    author: { username?: string; name: string };
+    author: AuthorInfo;
     commitsTotal: number;
     addsTotal: number;
     delsTotal: number;

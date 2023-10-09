@@ -2,11 +2,11 @@ import axios from "axios";
 import { useQuery } from "react-query";
 import { type Repository } from "../repository/repository.service";
 
-type AuthorInfo = {
+export type AuthorInfo = {
   name: string;
   email: string;
   username: string;
-  bio: string;
+  pictures?: string[];
 };
 
 export type Commit = {

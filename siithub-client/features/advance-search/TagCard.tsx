@@ -27,7 +27,7 @@ export const TagCard: FC<TagCardProps> = ({ tag }) => {
             </div>
           </div>
           <div className="flex items-center text-gray-700">
-            <ProfilePicture size={14} username={user?.username ?? ""} />
+            <ProfilePicture user={user} size={14} />
             <span className="ml-1">
               <Link href={`/users/${user?.username}`}>{user?.username}</Link> created{" "}
               <span className="font-medium">{tag.version}</span> {moment(tag.timeStamp).fromNow()}

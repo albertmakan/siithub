@@ -178,17 +178,16 @@ export const PullRequestHistory: FC = () => {
   return (
     <ol className="relative border-l border-gray-200">
       {entities?.map((e, i) => {
-        const username =
-          e.type === "Commit" ? (e.entity as Commit).author.username : participants[e.entity.by]?.username;
+        const user = e.type === "Commit" ? (e.entity as Commit).author : participants[e.entity.by];
         return (
           <li key={i} className="mb-10 ml-6">
             <span className="flex absolute -left-3 justify-center items-center w-6 h-6 bg-blue-200 rounded-full ring-8 ring-white">
-              <ProfilePicture username={username ?? ""} size={40} />
+              <ProfilePicture user={user} size={40} />
             </span>
             <div className="pb-2">
               <div className="grid grid-cols-12">
                 <div className="col-span-10 text-left ">
-                  {username}{" "}
+                  {user.username}{" "}
                   {e.type === "Commit" ? <CommitRow commit={e.entity as Commit} /> : <EventText event={e.entity} />}
                 </div>
 

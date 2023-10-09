@@ -1,6 +1,5 @@
-import { type FC, useEffect } from "react";
+import { type FC } from "react";
 import NotFound from "../../core/components/NotFound";
-import { useResult } from "../../core/contexts/Result";
 import { useFile } from "./useFile";
 import { Spinner } from "../../core/components/Spinner";
 import Link from "next/link";
@@ -33,7 +32,7 @@ const FileContribInfo: FC<FileContribInfoProps> = ({ username, repoName, branch,
           <span className="flex font-semibold ">
             {info.author.username ? (
               <>
-                <ProfilePicture username={info.author.username} size={20} />{" "}
+                <ProfilePicture user={info.author} size={20} />{" "}
                 <Link href={`/users/${info.author.username}`} className="mr-2 ml-2">
                   {info.author.username}
                 </Link>
@@ -81,15 +80,9 @@ export const FilePreviewPage: FC<{ branch: string; blobPath: string }> = ({ bran
   const { repository } = useRepositoryContext();
   const { owner, name, _id } = repository as Repository;
 
-  //const { result, setResult } = useResult("files");
   const notification = useNotifications();
   const { content, size, isBinary, error, isLoading, url } = useFile(_id, branch, blobPath);
   const { info } = useFileInfo(_id, branch, blobPath);
-
-  // useEffect(() => {
-  //   if (!result) return;
-  //   setResult(undefined);
-  // }, [result, setResult]);
 
   const FileOptions: FC = () => {
     const lines = typeof content === "string" ? (content.match(/\r\n|\r|\n/g)?.length ?? 0) + 1 : 0;

@@ -43,7 +43,7 @@ export const ContributorsInsights: FC = () => {
           <div key={i} className="w-[47%] h-64 border rounded-md bg-slate-50 flex flex-col">
             <div className="flex justify-between w-full border-b p-3 mb-2 bg-slate-200">
               <div className="flex gap-2">
-                <ProfilePicture username={author.username ?? " "} />
+                <ProfilePicture user={author} />
                 <div className="flex flex-col gap-2">
                   <div>{author.username || author.name}</div>
                   <div className="flex gap-3 items-center text-xs">

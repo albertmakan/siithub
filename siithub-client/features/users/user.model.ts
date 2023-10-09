@@ -1,24 +1,25 @@
 export enum UserType {
   Developer,
-  Admin
+  Admin,
 }
 
 export type PasswordAccount = {
-  passwordHash: string,
-  salt: string
+  passwordHash: string;
+  salt: string;
 };
 
 export type GithubAccount = {
-  username: string
+  username: string;
 };
 
 export type User = {
-  _id: string
-  username: string,
-  name: string,
-  email: string,
-  bio: string,
-  type: UserType,
-  passwordAccount?: PasswordAccount,
-  githubAccount?: GithubAccount
+  _id: string;
+  username: string;
+  name: string;
+  email: string;
+  bio: string;
+  type: UserType;
+  passwordAccount?: PasswordAccount;
+  githubAccount?: GithubAccount;
+  pictures?: string[];
 };

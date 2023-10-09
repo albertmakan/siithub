@@ -1,19 +1,65 @@
+import Image from "next/image";
 import { type FC } from "react";
-
-type ProfilePictureProps = {
-  username: string;
-  size?: number;
-};
+import { type User } from "../../features/users/user.model";
+import { imagesPath } from "../../features/users/profile/uploadPicture";
 
 const colors = ["#E02424", "#E3A008", "#0E9F6E", "#1C64F2", "#5850EC", "#7E3AF2", "#D61F69"] as const;
 const white = "#E5E7EB" as const;
 
-export const ProfilePicture: FC<ProfilePictureProps> = ({ username, size = 50 }) => {
+function hashCode(name: string) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash << 5) - hash + name.charCodeAt(i);
+    hash &= hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+}
+
+function getColorAndPixels(username: string) {
   const color = colors[username.charCodeAt(0) % colors.length];
   const n = (username.charCodeAt(username.length - 1) % 4) + 6;
   const hash = hashCode(username);
   let c = 0;
   const pixels = Array.from({ length: 15 }, (_, i) => i < n).sort(() => 2 * (hash << c++) - 1);
+  return { color, pixels };
+}
+
+const mirroredPixels = [
+  // x, y, i
+  [0, 0, 0],
+  [1, 0, 1],
+  [2, 0, 2],
+  [3, 0, 1],
+  [4, 0, 0],
+  [0, 1, 3],
+  [1, 1, 4],
+  [2, 1, 5],
+  [3, 1, 4],
+  [4, 1, 3],
+  [0, 2, 6],
+  [1, 2, 7],
+  [2, 2, 8],
+  [3, 2, 7],
+  [4, 2, 6],
+  [0, 3, 9],
+  [1, 3, 10],
+  [2, 3, 11],
+  [3, 3, 10],
+  [4, 3, 9],
+  [0, 4, 12],
+  [1, 4, 13],
+  [2, 4, 14],
+  [3, 4, 13],
+  [4, 4, 12],
+] as const;
+
+type ProfilePictureSVGProps = {
+  username: string;
+  size?: number;
+};
+
+export const ProfilePictureSVG: FC<ProfilePictureSVGProps> = ({ username, size = 50 }) => {
+  const { color, pixels } = getColorAndPixels(username);
   const Pixel: FC<{ x: number; y: number; i: number }> = ({ x, y, i }) => (
     <rect y={y} x={x} width={1} height={1} fill={pixels[i] ? color : white} />
   );
@@ -23,42 +69,54 @@ export const ProfilePicture: FC<ProfilePictureProps> = ({ username, size = 50 })
         <rect width={5} height={5} rx={3} fill="white" />
       </mask>
       <g mask="url(#mask0)">
-        <Pixel y={0} x={0} i={0} />
-        <Pixel y={0} x={1} i={1} />
-        <Pixel y={0} x={2} i={2} />
-        <Pixel y={0} x={3} i={1} />
-        <Pixel y={0} x={4} i={0} />
-        <Pixel y={1} x={0} i={3} />
-        <Pixel y={1} x={1} i={4} />
-        <Pixel y={1} x={2} i={5} />
-        <Pixel y={1} x={3} i={4} />
-        <Pixel y={1} x={4} i={3} />
-        <Pixel y={2} x={0} i={6} />
-        <Pixel y={2} x={1} i={7} />
-        <Pixel y={2} x={2} i={8} />
-        <Pixel y={2} x={3} i={7} />
-        <Pixel y={2} x={4} i={6} />
-        <Pixel y={3} x={0} i={9} />
-        <Pixel y={3} x={1} i={10} />
-        <Pixel y={3} x={2} i={11} />
-        <Pixel y={3} x={3} i={10} />
-        <Pixel y={3} x={4} i={9} />
-        <Pixel y={4} x={0} i={12} />
-        <Pixel y={4} x={1} i={13} />
-        <Pixel y={4} x={2} i={14} />
-        <Pixel y={4} x={3} i={13} />
-        <Pixel y={4} x={4} i={12} />
+        {mirroredPixels.map(([x, y, i], key) => (
+          <Pixel x={x} y={y} i={i} key={key} />
+        ))}
       </g>
     </svg>
   );
 };
 
-function hashCode(name: string) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    let character = name.charCodeAt(i);
-    hash = (hash << 5) - hash + character;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return Math.abs(hash);
+export function drawProfilePicture(canvas: HTMLCanvasElement, username: string, size = 300) {
+  canvas.width = size;
+  canvas.height = size;
+  const margin = size / 12;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  ctx.fillStyle = white;
+  ctx.fillRect(0, 0, size, size);
+  const { color, pixels } = getColorAndPixels(username);
+  const pixelSize = size / 6;
+  ctx.fillStyle = color;
+  mirroredPixels.forEach(([x, y, i]) => {
+    if (pixels[i]) ctx.fillRect(margin + x * pixelSize, margin + y * pixelSize, pixelSize, pixelSize);
+  });
 }
+
+type CirclularImageProps = {
+  url: string;
+  size?: number;
+};
+
+export const CirclularImage: FC<CirclularImageProps> = ({ url, size = 50 }) => (
+  <Image
+    src={url}
+    alt="User"
+    width={size}
+    height={size}
+    style={{ width: size, height: size }}
+    className="rounded-full object-cover"
+  />
+);
+
+type ProfilePictureProps = {
+  user: Pick<User, "pictures" | "username">;
+  size?: number;
+};
+
+export const ProfilePicture: FC<ProfilePictureProps> = ({ user, size = 50 }) =>
+  user.pictures?.length ? (
+    <CirclularImage url={imagesPath + user.pictures.at(-1)} size={size} />
+  ) : (
+    <ProfilePictureSVG username={user.username} size={size} />
+  );

@@ -15,6 +15,7 @@ export type AuthUser = {
   name: string;
   email: string;
   type: AuthUserType;
+  pictures?: string[];
 };
 
 type AuthContextType = {
@@ -90,7 +91,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 
     axios
       .get("/api/users/u/" + getUserIdFromToken())
-      .then((response: any) => {
+      .then((response) => {
         const auth = { user: response.data as AuthUser, token: getToken() + "" };
         _authDispatcher(onLogin(auth));
         setIsInitialized(true);

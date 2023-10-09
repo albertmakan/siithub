@@ -37,7 +37,7 @@ const CommentCard: FC<CommentCardProps> = ({ comment }) => {
     <div className="p-4">
       <div className="flex space-x-2">
         <span className="flex -left-3 justify-center items-center w-6 h-6 bg-blue-200 rounded-full ring-8 ring-white">
-          <ProfilePicture username={user?.username ?? ""} size={40} />
+          <ProfilePicture user={user} size={40} />
         </span>
         <span>
           {user?.name} {moment(commentCreated.timeStamp).fromNow()}
@@ -55,18 +55,16 @@ const PlaceholderWriteComment = () => {
   const { user } = useAuthContext();
 
   return (
-    <>
-      <div className="flex space-x-2 p-2 justify-center items-center">
-        <span className="flex -left-3 justify-center items-center w-6 h-6 bg-blue-200 rounded-full ring-6">
-          <ProfilePicture username={user?.username ?? ""} size={32} />
-        </span>
-        <input
-          className={"mt-1 w-[95%] border rounded-md border-gray-300 shadow-sm pl-2"}
-          value={"Write comment..."}
-          readOnly={true}
-        />
-      </div>
-    </>
+    <div className="flex space-x-2 p-2 justify-center items-center">
+      <span className="flex -left-3 justify-center items-center w-6 h-6 bg-blue-200 rounded-full ring-6">
+        {user && <ProfilePicture user={user} size={32} />}
+      </span>
+      <input
+        className={"mt-1 w-[95%] border rounded-md border-gray-300 shadow-sm pl-2"}
+        value={"Write comment..."}
+        readOnly={true}
+      />
+    </div>
   );
 };
 

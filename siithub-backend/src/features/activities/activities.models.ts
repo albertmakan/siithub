@@ -7,10 +7,8 @@ type Activity = {
   type: string;
   userId: User["_id"];
   username: string;
-  repoId: Repository["_id"];
-  repoOwner: string;
-  repoName: string;
-  repoDescription: string;
+  pictures?: string[];
+  repo: Repository;
   timeStamp: Date;
 };
 
