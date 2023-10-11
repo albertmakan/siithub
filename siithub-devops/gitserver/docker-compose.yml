@@ -10,3 +10,15 @@ services:
     environment:
       PORT: 80
       SIITHUB_URL: http://localhost:3001
+
+  mongo:
+    image: mongo
+    container_name: mongo_db
+    restart: always
+    volumes:
+      - ./mongo-data:/data/db
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password

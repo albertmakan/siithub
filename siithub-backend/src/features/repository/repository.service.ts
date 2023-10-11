@@ -48,7 +48,7 @@ async function createRepository(repository: RepositoryCreate): Promise<Repositor
   const repo = await repositoryRepo.crud.add(repository);
   if (!repo) throw new BadLogicException("Failed to create repository.");
 
-  await collaboratorsService.add({ repositoryId: repo._id, userId: existingUser._id }, false);
+  await collaboratorsService.add({ repositoryId: repo._id, userId: existingUser._id, verified: true });
 
   await labelSeeder.seedDefaultLabels(repo._id);
 
@@ -139,7 +139,7 @@ async function forkRepository(
   });
   if (!repoFork) throw new BadLogicException("Failed to create repository.");
 
-  await collaboratorsService.add({ repositoryId: repoFork._id, userId }, false);
+  await collaboratorsService.add({ repositoryId: repoFork._id, userId, verified: true });
   await labelSeeder.seedDefaultLabels(repoFork._id);
   await increaseCounterValue(repo._id, "forks");
 

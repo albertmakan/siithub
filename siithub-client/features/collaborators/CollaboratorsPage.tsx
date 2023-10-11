@@ -41,7 +41,9 @@ export const CollaboratorsPage: FC = () => {
       </div>
 
       <Modal title="Add Collaborator" isOpen={isOpen} onClose={() => setIsOpen(false)}>
-        <CollaboratorsForm />
+        <div className="pt-10 pb-20">
+          <CollaboratorsForm />
+        </div>
       </Modal>
 
       <div className="hidden sm:block" aria-hidden="true">

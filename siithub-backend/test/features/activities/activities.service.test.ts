@@ -102,26 +102,32 @@ describe("ActivitiesService", () => {
       (await collaboratorsRepository.crud.add({
         userId: users[0]._id,
         repositoryId: repositories[0]._id,
+        verified: true,
       })) as Collaborator,
       (await collaboratorsRepository.crud.add({
         userId: users[0]._id,
         repositoryId: repositories[1]._id,
+        verified: true,
       })) as Collaborator,
       (await collaboratorsRepository.crud.add({
         userId: users[1]._id,
         repositoryId: repositories[0]._id,
+        verified: true,
       })) as Collaborator,
       (await collaboratorsRepository.crud.add({
         userId: users[1]._id,
         repositoryId: repositories[1]._id,
+        verified: true,
       })) as Collaborator,
       (await collaboratorsRepository.crud.add({
         userId: users[1]._id,
         repositoryId: repositories[2]._id,
+        verified: true,
       })) as Collaborator,
       (await collaboratorsRepository.crud.add({
         userId: users[2]._id,
         repositoryId: repositories[2]._id,
+        verified: true,
       })) as Collaborator,
     ];
   }

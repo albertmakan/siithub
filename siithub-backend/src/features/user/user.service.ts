@@ -5,6 +5,7 @@ import { clearPropertiesOfResultWrapper } from "../../utils/wrappers";
 import { getRandomString, getSha256Hash } from "../../utils/crypto";
 import { gitServerClient } from "../gitserver/gitserver.client";
 import { Filter } from "mongodb";
+import { verifyEmail } from "../../utils/email";
 
 const projection = { _id: 1, username: 1, email: 1, name: 1, pictures: 1 } as const;
 
@@ -54,7 +55,7 @@ function getHashedPassword(password: string) {
   return { salt, passwordHash };
 }
 
-async function createUser(user: UserCreate): Promise<User | null> {
+async function createUser(user: UserCreate, verify = false): Promise<User | null> {
   const userWithSameUsername = await userRepo.findByUsername(user.username);
   if (userWithSameUsername) {
     throw new DuplicateException("Username is already taken.", user);
@@ -73,7 +74,13 @@ async function createUser(user: UserCreate): Promise<User | null> {
   user.passwordAccount = getHashedPassword(user.password);
   user.password = "";
 
-  await gitServerClient.createUser(user.username);
+  try {
+    await gitServerClient.createUser(user.username);
+  } catch (error) {
+    throw new BadLogicException("Failed to create user");
+  }
+
+  if (verify) verifyEmail(user.email);
 
   return await userRepo.crud.add(user);
 }
@@ -113,7 +120,7 @@ export type UserService = {
   findMany(filters?: Filter<User>): Promise<User[]>;
   findManyByEmails(emails: string[]): Promise<User[]>;
   findManyByIds(ids: User["_id"][], filters?: Filter<User>): Promise<User[]>;
-  create(user: UserCreate): Promise<User | null>;
+  create(user: UserCreate, verify?: boolean): Promise<User | null>;
   updateProfile(id: User["_id"], profileUpdate: UserUpdate): Promise<User | null>;
   updatePassword(id: User["_id"], passwordUpdate: { oldPassword: string; newPassword: string }): Promise<User | null>;
   updateProfilePicture(id: User["_id"], pictureKey: string): Promise<User | null>;

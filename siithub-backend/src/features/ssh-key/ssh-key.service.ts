@@ -1,9 +1,5 @@
 import { type ObjectId } from "mongodb";
-import {
-  BadLogicException,
-  DuplicateException,
-  MissingEntityException,
-} from "../../error-handling/errors";
+import { BadLogicException, DuplicateException, MissingEntityException } from "../../error-handling/errors";
 import { gitServerClient } from "../gitserver/gitserver.client";
 import { userService } from "../user/user.service";
 import type { SshKey, SshKeyCreate, SshKeyUpdate } from "./ssh-key.model";
@@ -14,7 +10,7 @@ async function findOneOrThrow(id: SshKey["_id"] | string): Promise<SshKey> {
   if (!sshKey) {
     throw new MissingEntityException("SshKey with given id does not exist.");
   }
-  return sshKey as SshKey;
+  return sshKey;
 }
 
 async function createSshKey(sshKey: SshKeyCreate): Promise<SshKey | null> {
@@ -23,10 +19,7 @@ async function createSshKey(sshKey: SshKeyCreate): Promise<SshKey | null> {
     owner: sshKey.owner,
   });
   if (sshKeysWithSameName.length) {
-    throw new DuplicateException(
-      "SshKey with same name already exists.",
-      sshKey
-    );
+    throw new DuplicateException("SshKey with same name already exists.", sshKey);
   }
 
   const existingUser = await userService.findByUsername(sshKey.owner);
@@ -43,24 +36,15 @@ async function createSshKey(sshKey: SshKeyCreate): Promise<SshKey | null> {
   return await sshKeyRepo.crud.add(sshKey);
 }
 
-async function updateSshKey(
-  keyId: string,
-  sshKey: SshKeyUpdate
-): Promise<SshKey | null> {
+async function updateSshKey(keyId: string, sshKey: SshKeyUpdate): Promise<SshKey | null> {
   const foundSshKey = await findOneOrThrow(keyId);
 
   const sshKeysWithSameName = await sshKeyRepo.crud.findMany({
     name: sshKey.name,
     owner: sshKey.owner,
   });
-  if (
-    sshKeysWithSameName.length &&
-    sshKeysWithSameName[0]._id !== foundSshKey._id
-  ) {
-    throw new DuplicateException(
-      "SshKey with same name already exists.",
-      sshKey
-    );
+  if (sshKeysWithSameName.length && sshKeysWithSameName[0]._id !== foundSshKey._id) {
+    throw new DuplicateException("SshKey with same name already exists.", sshKey);
   }
 
   const existingUser = await userService.findByUsername(sshKey.owner);
@@ -69,11 +53,7 @@ async function updateSshKey(
   }
 
   try {
-    await gitServerClient.updateSshKey(
-      existingUser.username,
-      foundSshKey.value,
-      sshKey.value
-    );
+    await gitServerClient.updateSshKey(existingUser.username, foundSshKey.value, sshKey.value);
   } catch (error) {
     throw new BadLogicException("Failed to create sshKey in the file system.");
   }
@@ -90,10 +70,7 @@ async function deleteSshKey(keyId: string): Promise<SshKey | null> {
   }
 
   try {
-    await gitServerClient.removeSshKey(
-      existingUser.username,
-      foundSshKey.value
-    );
+    await gitServerClient.removeSshKey(existingUser.username, foundSshKey.value);
   } catch (error) {
     throw new BadLogicException("Failed to create sshKey in the file system.");
   }
@@ -104,10 +81,7 @@ async function deleteSshKey(keyId: string): Promise<SshKey | null> {
 export type SshKeyService = {
   findOneOrThrow(id: SshKey["_id"] | string): Promise<SshKey>;
   create(sshKey: SshKeyCreate): Promise<SshKey | null>;
-  update(
-    keyId: ObjectId | string,
-    sshKey: SshKeyCreate
-  ): Promise<SshKey | null>;
+  update(keyId: ObjectId | string, sshKey: SshKeyCreate): Promise<SshKey | null>;
   delete(keyId: string): Promise<SshKey | null>;
 };
 

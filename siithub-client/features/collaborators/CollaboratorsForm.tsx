@@ -9,6 +9,7 @@ import { type AddCollaborator, addCollaborator } from "./collaboratorAction";
 import { type User } from "../users/user.model";
 import { getUsers } from "../users/registration/createUser";
 import { useRepositoryContext } from "../repository/RepositoryContext";
+import { ProfilePicture } from "../../core/components/ProfilePicture";
 
 export const CollaboratorsForm: FC = () => {
   const repoId = useRepositoryContext().repository?._id ?? "";
@@ -29,9 +30,17 @@ export const CollaboratorsForm: FC = () => {
     },
   });
 
-  const loadOptions = (inputValue: string, callback: (options: { value: string; label: string }[]) => void) => {
+  const loadOptions = (inputValue: string, callback: (options: { value: string; label: JSX.Element }[]) => void) => {
     getUsers(inputValue).then((resp) => {
-      const userOptions = (resp?.data as User[]).map((u) => ({ value: u._id, label: u.name }));
+      const userOptions = (resp?.data as User[]).map((u) => ({
+        value: u._id,
+        label: (
+          <span className="flex items-center">
+            <ProfilePicture user={u} size={25} />
+            <span className="ml-3">{u.name}</span>
+          </span>
+        ),
+      }));
       callback(userOptions);
     });
   };

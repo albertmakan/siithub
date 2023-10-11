@@ -58,7 +58,7 @@ const createUserBodySchema = z.object({
 
 router.post("/", async (req: Request, res: Response) => {
   const createUser = createUserBodySchema.parse(req.body);
-  const user = await userService.create(createUser);
+  const user = await userService.create(createUser, true);
   const token = generateJWT({ id: user?._id, type: user?.type });
   res.send({ user, token });
 });

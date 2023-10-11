@@ -27,7 +27,7 @@ router.get("/starred-by/:username", async (req: Request, res: Response) => {
   res.send(await repositoryService.findByIds(stars.map((s) => s.repoId)));
 });
 
-router.get("/r/:username/:repository", findRepository, isAllowedToAccessRepo(true), async (_, res: Response) => {
+router.get("/r/:username/:repository", findRepository, isAllowedToAccessRepo(true, false), async (_, res: Response) => {
   res.send(await repositoryService.resolveForkedFrom(res.locals.repository as Repository));
 });
 

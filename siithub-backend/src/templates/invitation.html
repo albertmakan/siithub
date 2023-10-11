@@ -1,0 +1,39 @@
+<body style="font-family: Arial, sans-serif">
+  <h2 style="text-align: center">SiitHub</h2>
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid black">
+    <div style="margin: 20px 0">
+      <h2 style="text-align: center">
+        @{{owner}} has invited you to collaborate on the {{owner}}/{{repository}} repository
+      </h2>
+      <hr />
+      <p>
+        You can accept or decline this invitation. You can also visit <a href="{{ownerLink}}">@{{owner}}</a> to learn a
+        bit more about them.
+      </p>
+      <div style="text-align: center">
+        <a
+          style="
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+          "
+          href="{{invitationLink}}"
+          >View invitation</a
+        >
+      </div>
+      <p>
+        <b>Note:</b> This invitation was intended for {{userEmail}}. If you were not expecting this invitation, you can
+        ignore this email.
+      </p>
+      <hr />
+      <p>Getting an error or empty page? Make sure you're signed in as <b>{{user}}</b>.</p>
+      <p>
+        Button not working? Copy and paste this link into your browser: <br />
+        {{invitationLink}}
+      </p>
+    </div>
+  </div>
+</body>

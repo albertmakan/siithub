@@ -11,7 +11,7 @@ starRoutes.get("/all", isAllowedToAccessRepo(true), async (_, res: Response) => 
   res.send(await userService.findManyByIds(stars.map((s) => s.userId)));
 });
 
-starRoutes.get("/", isAllowedToAccessRepo(true), async (_, res: Response) => {
+starRoutes.get("/", isAllowedToAccessRepo(true, false), async (_, res: Response) => {
   res.send(await starService.findByUserIdAndRepoId(res.locals.userId, res.locals.repository._id));
 });
 

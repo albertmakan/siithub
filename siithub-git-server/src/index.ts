@@ -35,8 +35,11 @@ app.post("/api/users", async (req: Request, res: Response) => {
     res.status(400).send();
     return;
   }
-  await createUser(username);
-
+  try {
+    await createUser(username);
+  } catch (error) {
+    res.status(500).send();
+  }
   res.send({ status: "ok" });
 });
 
@@ -46,8 +49,11 @@ app.post("/api/repositories", async (req: Request, res: Response) => {
     res.status(400).send();
     return;
   }
-  await createRepo(username, repositoryName, type === "public");
-
+  try {
+    await createRepo(username, repositoryName, type === "public");
+  } catch (error) {
+    res.status(500).send();
+  }
   res.send({ status: "ok" });
 });
 
@@ -57,8 +63,11 @@ app.post("/api/repositories/fork", async (req: Request, res: Response) => {
     res.status(400).send();
     return;
   }
-  await createRepoFork(username, repositoryName, fromUsername, fromRepositoryName, type === "public", only1Branch);
-
+  try {
+    await createRepoFork(username, repositoryName, fromUsername, fromRepositoryName, type === "public", only1Branch);
+  } catch (error) {
+    res.status(500).send();
+  }
   res.send({ status: "ok" });
 });
 
@@ -68,8 +77,11 @@ app.put("/api/repositories/delete", async (req: Request, res: Response) => {
     res.status(400).send();
     return;
   }
-  await removeRepo(username, repositoryName);
-
+  try {
+    await removeRepo(username, repositoryName);
+  } catch (error) {
+    res.status(500).send();
+  }
   res.send({ status: "ok" });
 });
 
@@ -79,8 +91,11 @@ app.post("/api/key", async (req: Request, res: Response) => {
     res.status(400).send();
     return;
   }
-  await addKey(username, key);
-
+  try {
+    await addKey(username, key);
+  } catch (error) {
+    res.status(500).send();
+  }
   res.send({ status: "ok" });
 });
 
@@ -90,9 +105,12 @@ app.put("/api/key", async (req: Request, res: Response) => {
     res.status(400).send();
     return;
   }
-  await removeKey(username, oldKey);
-  await addKey(username, key);
-
+  try {
+    await removeKey(username, oldKey);
+    await addKey(username, key);
+  } catch (error) {
+    res.status(500).send();
+  }
   res.send({ status: "ok" });
 });
 
@@ -102,8 +120,11 @@ app.put("/api/key/delete", async (req: Request, res: Response) => {
     res.status(400).send();
     return;
   }
-  await removeKey(username, key);
-
+  try {
+    await removeKey(username, key);
+  } catch (error) {
+    res.status(500).send();
+  }
   res.send({ status: "ok" });
 });
 
@@ -114,9 +135,12 @@ app.post("/api/repo/:username/:repository/collaborators", async (req: Request, r
     res.status(400).send();
     return;
   }
-  await addUserToGroup(`${username}-${repository}`, collaborator);
-  await execCmd(`echo "${collaborator}" >> ${collabFile}`, `${homePath}/${username}/${repository}`);
-
+  try {
+    await addUserToGroup(`${username}-${repository}`, collaborator);
+    await execCmd(`echo "${collaborator}" >> ${collabFile}`, `${homePath}/${username}/${repository}`);
+  } catch (error) {
+    res.status(500).send();
+  }
   res.send({ status: "ok" });
 });
 
@@ -126,12 +150,15 @@ app.delete("/api/repo/:username/:repository/collaborators/:collaborator", async 
     res.status(400).send();
     return;
   }
-  await deleteUserFromGroup(`${username}-${repository}`, collaborator);
-  await execCmd(
-    `grep -v "^${collaborator}$" ${collabFile} > temp && mv temp ${collabFile}`,
-    `${homePath}/${username}/${repository}`
-  );
-
+  try {
+    await deleteUserFromGroup(`${username}-${repository}`, collaborator);
+    await execCmd(
+      `grep -v "^${collaborator}$" ${collabFile} > temp && mv temp ${collabFile}`,
+      `${homePath}/${username}/${repository}`
+    );
+  } catch (error) {
+    console.error(error);
+  }
   res.send({ status: "ok" });
 });
 

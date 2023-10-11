@@ -8,6 +8,7 @@ type RemoveCollaborator = AddCollaborator;
 type Collaborator = AddCollaborator & {
   _id: string;
   repositoryId: Repository["_id"];
+  verified: boolean;
   user: User;
 };
 
@@ -24,5 +25,13 @@ function removeCollaborator(repositoryId: Repository["_id"]) {
     axios.delete(`/api/repositories/${repositoryId}/collaborators/${collaborator.userId}`);
 }
 
-export { searchCollaborators, addCollaborator, removeCollaborator };
+function verifyCollaborator(repositoryId: Repository["_id"]) {
+  return () => axios.put(`/api/repositories/${repositoryId}/collaborators/verify`);
+}
+
+function getCollaborator(repositoryId: Repository["_id"]) {
+  return axios.get(`/api/repositories/${repositoryId}/collaborators/me`);
+}
+
+export { searchCollaborators, addCollaborator, removeCollaborator, verifyCollaborator, getCollaborator };
 export type { AddCollaborator, RemoveCollaborator, Collaborator };

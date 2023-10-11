@@ -39,6 +39,7 @@ describe("CollaboratorsService", () => {
       const addCollaborator: CollaboratorAdd = {
         userId,
         repositoryId: new ObjectId(),
+        verified: false,
       };
 
       const addCollaboratorAction = async () => service.add(addCollaborator);
@@ -50,6 +51,7 @@ describe("CollaboratorsService", () => {
       const addCollaborator: CollaboratorAdd = {
         userId: new ObjectId(),
         repositoryId,
+        verified: false,
       };
 
       const addCollaboratorAction = async () => service.add(addCollaborator);
@@ -61,6 +63,7 @@ describe("CollaboratorsService", () => {
       const addCollaborator: CollaboratorAdd = {
         userId,
         repositoryId,
+        verified: false,
       };
 
       await service.add(addCollaborator);
@@ -74,6 +77,7 @@ describe("CollaboratorsService", () => {
       const addCollaborator: CollaboratorAdd = {
         userId,
         repositoryId,
+        verified: false,
       };
 
       const addedCollaborator = await service.add(addCollaborator);
@@ -90,7 +94,7 @@ describe("CollaboratorsService", () => {
         repositoryId,
       };
 
-      const removeCollaboratorAction = async () => service.remove(removeCollaborator);
+      const removeCollaboratorAction = async () => service.remove(removeCollaborator, userId);
 
       await expect(removeCollaboratorAction).rejects.toThrowError("User is not collaborating on the given repository.");
     });
@@ -99,13 +103,14 @@ describe("CollaboratorsService", () => {
       const addCollaborator: CollaboratorAdd = {
         userId,
         repositoryId,
+        verified: false,
       };
 
       await service.add(addCollaborator);
 
       const removeCollaborator = addCollaborator as CollaboratorRemove;
 
-      const removedCollaborator = await service.remove(removeCollaborator);
+      const removedCollaborator = await service.remove(removeCollaborator, userId);
 
       expect(removedCollaborator).not.toBeNull();
       expect(removedCollaborator).toHaveProperty("_id");
