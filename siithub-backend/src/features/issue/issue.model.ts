@@ -70,6 +70,8 @@ export type IssueUpdatedEvent = BaseEvent & {
 export type IssueReopenedEvent = BaseEvent & {};
 export type IssueClosedEvent = BaseEvent & {};
 
+export type IssueReferencedEvent = BaseEvent & { message: string; sha: string };
+
 export function handleAllFor(issue: Issue, events: BaseEvent[]) {
   events.forEach((e) => handleFor(issue, e));
 }

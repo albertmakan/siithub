@@ -1,14 +1,9 @@
 import multer from "multer";
 import multerS3 from "multer-s3";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { awsConfig } from "./config";
 
-const s3 = new S3Client({
-  credentials: {
-    accessKeyId: process.env.ACCESS_KEY ?? "",
-    secretAccessKey: process.env.SECRET_ACCESS_KEY ?? "",
-  },
-  region: process.env.REGION,
-});
+const s3 = new S3Client(awsConfig);
 
 const bucket = process.env.BUCKET ?? "";
 

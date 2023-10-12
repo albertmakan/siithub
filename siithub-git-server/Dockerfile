@@ -16,7 +16,7 @@ COPY --from=build app/package.json ./
 RUN npm i --only=production
 COPY --from=build app/dist ./
 
-COPY --from=build app/static ./
+COPY --from=build app/scripts ./
 RUN git config --global init.templatedir '/app/.git-template'
 RUN chmod +x ./startup.sh
 

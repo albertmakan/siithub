@@ -1,15 +1,10 @@
 import { SESClient, SendEmailCommand, VerifyEmailIdentityCommand } from "@aws-sdk/client-ses";
-import { type User } from "../features/user/user.model";
-import { type Repository } from "../features/repository/repository.model";
-import { fillTemplate, getHTMLTemplate } from "../templates/utils";
+import { type User } from "../../features/user/user.model";
+import { type Repository } from "../../features/repository/repository.model";
+import { fillTemplate, getHTMLTemplate } from "../../templates/utils";
+import { awsConfig } from "./config";
 
-const SES = new SESClient({
-  credentials: {
-    accessKeyId: process.env.ACCESS_KEY ?? "",
-    secretAccessKey: process.env.SECRET_ACCESS_KEY ?? "",
-  },
-  region: process.env.REGION,
-});
+const SES = new SESClient(awsConfig);
 
 export const sendInvitationMail = async (user: User, repo: Repository) => {
   const command = new SendEmailCommand({

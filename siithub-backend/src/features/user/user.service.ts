@@ -5,7 +5,7 @@ import { clearPropertiesOfResultWrapper } from "../../utils/wrappers";
 import { getRandomString, getSha256Hash } from "../../utils/crypto";
 import { gitServerClient } from "../gitserver/gitserver.client";
 import { Filter } from "mongodb";
-import { verifyEmail } from "../../utils/email";
+import { verifyEmail } from "../../utils/aws/email";
 
 const projection = { _id: 1, username: 1, email: 1, name: 1, pictures: 1 } as const;
 

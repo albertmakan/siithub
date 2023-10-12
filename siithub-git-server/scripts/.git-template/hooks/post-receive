@@ -1,0 +1,4 @@
+source /app/aws-env.sh
+while read oldrev newrev refname; do
+  node /app/src/sender.js "$PWD" "$oldrev" "$newrev" "$refname"
+done

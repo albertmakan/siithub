@@ -9,7 +9,10 @@ services:
       - "3022:22"
     environment:
       PORT: 80
-      SIITHUB_URL: http://localhost:3001
+      ACCESS_KEY: AKIAQVU4V4B5H5YSLC7Y
+      SECRET_ACCESS_KEY: x
+      REGION: eu-central-1
+      QUEUE_URL: https://sqs.eu-central-1.amazonaws.com/046499487866/siithub-queue
 
   mongo:
     image: mongo
@@ -21,4 +24,4 @@ services:
       - 27017:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
+  MONGO_INITDB_ROOT_PASSWORD: password

@@ -13,7 +13,7 @@ import {
 import "express-async-errors";
 import { userGithubService } from "./user-github.service";
 import { asOptionalField, idSchema } from "../../utils/zod";
-import { getImage, uploadImage } from "../../utils/imageStorage";
+import { getImage, uploadImage } from "../../utils/aws/imageStorage";
 import { authorize } from "../auth/auth.middleware";
 import { generateJWT } from "../../utils/jwt";
 

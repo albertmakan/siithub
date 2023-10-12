@@ -6,7 +6,7 @@ import { repositoryService } from "../repository/repository.service";
 import { userService } from "../user/user.service";
 import { collaboratorsRepo } from "./collaborators.repo";
 import { gitServerClient } from "../gitserver/gitserver.client";
-import { sendInvitationMail } from "../../utils/email";
+import { sendInvitationMail } from "../../utils/aws/email";
 
 async function findByRepository(repositoryId: Repository["_id"]): Promise<Collaborator[]> {
   return await collaboratorsRepo.findByRepository(repositoryId);

@@ -6,9 +6,7 @@ export function useMilestones(repositoryId: Repository["_id"], open?: boolean, d
   const { data, error } = useQuery(
     [`milestones_${repositoryId}`, open, ...dependencies],
     () => getRepositoryMilestones(repositoryId, open),
-    {
-      enabled: dependencies.reduce((acc, d) => acc && !d, true),
-    }
+    { enabled: dependencies.reduce((acc, d) => acc && !d, true) && !!repositoryId }
   );
   return {
     milestones: data?.data as Milestone[],
@@ -20,9 +18,7 @@ export function useMilestone(repositoryId: Repository["_id"], localId: number, d
   const { data, error } = useQuery(
     [`milestones_${repositoryId}_${localId}`, ...dependencies],
     () => getMilestone(repositoryId, localId),
-    {
-      enabled: dependencies?.reduce((acc, dep) => acc && !dep, true),
-    }
+    { enabled: dependencies?.reduce((acc, dep) => acc && !dep, true) && !!repositoryId }
   );
   return {
     milestone: data?.data as Milestone,

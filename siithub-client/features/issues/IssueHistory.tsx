@@ -13,6 +13,7 @@ import { useCollaborators } from "../collaborators/useCollaborators";
 import { useRepositoryContext } from "../repository/RepositoryContext";
 import { type Repository } from "../repository/repository.service";
 import Link from "next/link";
+import { HashtagLink } from "../../core/components/HashtagLink";
 
 const eventTypesToExclude = ["UserReactedEvent", "UserUnreactedEvent"];
 
@@ -121,6 +122,15 @@ export const IssueHistory: FC = () => {
         ).by;
         return <>deleted comment from {participants[commentById].name}</>;
       }
+      case "IssueReferencedEvent":
+        return (
+          <>
+            added a commit that referenced this issue{" "}
+            <div className="text-sm ml-3">
+              <HashtagLink href={`/${owner}/${name}/commit/${event.sha}`}>{event.message}</HashtagLink>
+            </div>
+          </>
+        );
       default:
         return <></>;
     }
@@ -130,26 +140,29 @@ export const IssueHistory: FC = () => {
     <ol className="relative border-l border-gray-200">
       {issue?.events
         .filter((e) => e._id && !eventTypesToExclude.includes(e.type))
-        .map((event, i) => (
-          <li key={i} className="mb-10 ml-6">
-            <span className="flex absolute -left-3 justify-center items-center w-6 h-6 bg-blue-200 rounded-full ring-8 ring-white">
-              <ProfilePicture user={participants[event.by]} size={40} />
-            </span>
-            <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-              <div className="grid grid-cols-12">
-                <div className="col-span-10 text-left ">
-                  {participants[event.by].username} <EventText event={event} />
-                </div>
+        .map((event, i) => {
+          const user = participants[event.by];
+          return (
+            <li key={i} className="mb-10 ml-6">
+              <span className="flex absolute -left-3 justify-center items-center bg-blue-200 rounded-full ring-8 ring-white">
+                <ProfilePicture user={user} size={30} />
+              </span>
+              <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="grid grid-cols-12">
+                  <div className="col-span-10 text-left ">
+                    <b>{user.username}</b> <EventText event={event} />
+                  </div>
 
-                <div className="col-span-2 text-right">
-                  <time className="mb-1 text-xs font-normal text-gray-400 sm:order-last sm:mb-0">
-                    {moment(event.timeStamp).fromNow()}
-                  </time>
+                  <div className="col-span-2 text-right">
+                    <time className="mb-1 text-xs font-normal text-gray-400 sm:order-last sm:mb-0">
+                      {moment(event.timeStamp).fromNow()}
+                    </time>
+                  </div>
                 </div>
               </div>
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
     </ol>
   );
 };

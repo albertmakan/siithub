@@ -4,6 +4,7 @@ import { apiRoutes } from "./api.routes";
 import { config } from "./config";
 import { getConnection } from "./db/mongo.utils";
 import { ErrorHandler } from "./error-handling/error-handler";
+import { sqsConsumer } from "./utils/aws/queue";
 
 const app: Express = express();
 
@@ -20,5 +21,6 @@ app
 
 app.listen(config.port, () => {
   getConnection();
+  sqsConsumer.start();
   console.log(`⚡️[server]: Server is running at https://localhost:${config.port}`);
 });

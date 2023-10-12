@@ -10,6 +10,7 @@ import {
   handleFor,
   type IssueWithParticipants,
   IssueState,
+  IssueReferencedEvent,
 } from "./issue.model";
 import { issueRepo } from "./issue.repo";
 import { type Repository } from "../repository/repository.model";
@@ -18,6 +19,8 @@ import { IssuesQuery } from "./issue.query";
 import { milestoneService } from "../milestone/milestone.service";
 import { type User } from "../user/user.model";
 import type { LabelAssignedEvent, MilestoneAssignedEvent, UserAssignedEvent } from "../common/events/events.model";
+import { Commit, PushInfo } from "../commits/commit.model";
+import { commitService } from "../commits/commit.service";
 
 async function findOne(id: Issue["_id"]): Promise<Issue | null> {
   return await issueRepo.crud.findOne(id);
@@ -141,6 +144,40 @@ async function resolveParticipants(issues: Issue[]): Promise<IssueWithParticipan
   });
 }
 
+async function processPushInfo(info: PushInfo) {
+  const repository = await repositoryService.findByOwnerAndName(info.username, info.repository);
+  if (!repository) return;
+  await commitService.resolveAuthors(info.commits);
+  const refCommits: Map<number, Set<Commit>> = new Map();
+  const re = /#I(\d+)/g;
+  for (const commit of info.commits) {
+    let match;
+    while ((match = re.exec(commit.message))) {
+      const id = +match[1];
+      if (refCommits.has(id)) refCommits.get(id)?.add(commit);
+      else refCommits.set(id, new Set([commit]));
+    }
+  }
+  const referencedIssues = await findMany({ repositoryId: repository._id, localId: { $in: [...refCommits.keys()] } });
+  for (const issue of referencedIssues) {
+    const commits = [...(refCommits.get(issue.localId) ?? [])].sort((c1, c2) => c1.date - c2.date);
+    for (const commit of commits) {
+      if (!commit.author._id) continue;
+      const event: IssueReferencedEvent = {
+        _id: new ObjectId(),
+        streamId: issue._id,
+        by: commit.author._id,
+        timeStamp: new Date(commit.date * 1000),
+        type: "IssueReferencedEvent",
+        message: commit.message,
+        sha: commit.sha,
+      };
+      issue.events.push(event);
+    }
+    await issueRepo.crud.update(issue._id, issue);
+  }
+}
+
 export type IssueService = {
   findOne(id: Issue["_id"]): Promise<Issue | null>;
   findOneOrThrow(id: Issue["_id"]): Promise<Issue>;
@@ -152,6 +189,7 @@ export type IssueService = {
   validateEventFor(event: BaseEvent): Promise<void>;
   findByRepositoryIdAndLocalId(repositoryId: Repository["_id"], localId: number): Promise<Issue>;
   resolveParticipants(issues: Issue[]): Promise<IssueWithParticipants[]>;
+  processPushInfo(info: PushInfo): Promise<any>;
 };
 
 const issueService: IssueService = {
@@ -165,6 +203,7 @@ const issueService: IssueService = {
   validateEventFor,
   findByRepositoryIdAndLocalId,
   resolveParticipants,
+  processPushInfo,
 };
 
 export { issueService, validateEventFor };
