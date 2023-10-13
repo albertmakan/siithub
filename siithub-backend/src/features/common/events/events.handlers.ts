@@ -21,6 +21,7 @@ import { CommentState } from "./events.model";
 import { BadLogicException } from "../../../error-handling/errors";
 import { canCommentBeModified, compareIds, findComment, findLastEvent } from "./utils";
 import { ObjectId } from "mongodb";
+import { logger } from "../../../utils/aws/logger";
 
 type Lableable = AggregateRoot<{ labels?: Label["_id"][] }>;
 
@@ -30,6 +31,9 @@ function labelAssignedEventHandler({ csm, events }: Lableable, event: BaseEvent)
     compareIds(e?.labelId, labelAssigned?.labelId)
   );
   if (lastLabelEvent?.type === "LabelAssignedEvent") {
+    logger.warn(
+      `Label is already assigned to the Issue - IssueId[${event.streamId}], LabelId[${labelAssigned.labelId}]`
+    );
     throw new BadLogicException("Label is already assigned to the Issue.", event);
   }
 
@@ -42,6 +46,9 @@ function labelUnassignedEventHandler({ csm, events }: Lableable, event: BaseEven
     compareIds(e?.labelId, labelUnassigned?.labelId)
   );
   if (!lastLabelEvent || lastLabelEvent?.type === "LabelUnassignedEvent") {
+    logger.warn(
+      `Label cannot be unassigned from the Issue - IssueId[${event.streamId}], LabelId[${labelUnassigned.labelId}]`
+    );
     throw new BadLogicException("Label cannot be unassigned from the Issue.", event);
   }
 
@@ -58,6 +65,9 @@ function milestoneAssignedEventHandler({ csm, events }: Checkpointable, event: B
     compareIds(e?.milestoneId, milestoneAssigned?.milestoneId)
   );
   if (lastMilestoneEvent?.type === "MilestoneAssignedEvent") {
+    logger.warn(
+      `Milestone is already assigned to the Issue - IssueId[${event.streamId}], MilestoneId[${milestoneAssigned.milestoneId}]`
+    );
     throw new BadLogicException("Milestone is already assigned to the Issue.", event);
   }
 
@@ -70,6 +80,9 @@ function milestoneUnassignedEventHandler({ csm, events }: Checkpointable, event:
     compareIds(e?.milestoneId, milestoneUnassigned?.milestoneId)
   );
   if (!lastMilestoneEvent || lastMilestoneEvent?.type === "MilestoneUnassignedEvent") {
+    logger.warn(
+      `Milestone cannot be unassigned from the Issue - IssueId[${event.streamId}], MilestoneId[${milestoneUnassigned.milestoneId}]`
+    );
     throw new BadLogicException("Milestone cannot be unassigned from the Issue.", event);
   }
 
@@ -86,6 +99,7 @@ function userAssignedEventHandler({ csm, events }: Assignable, event: BaseEvent)
     compareIds(e?.userId, userAssigned?.userId)
   );
   if (lastUserEvent?.type === "UserAssignedEvent") {
+    logger.warn(`User is already assigned to the Issue - IssueId[${event.streamId}], UserId[${userAssigned.userId}]`);
     throw new BadLogicException("User is already assigned to the Issue.", event);
   }
 
@@ -98,6 +112,9 @@ function userUnassignedEventHandler({ csm, events }: Assignable, event: BaseEven
     compareIds(e?.userId, userUnassigned?.userId)
   );
   if (!lastUserEvent || lastUserEvent?.type === "UserUnassignedEvent") {
+    logger.warn(
+      `User cannot be unassigned from the Issue - IssueId[${event.streamId}], UserId[${userUnassigned.userId}]`
+    );
     throw new BadLogicException("User cannot be unassigned from the Issue.", event);
   }
 
@@ -124,6 +141,7 @@ function commentUpdatedEventHandler({ csm, events }: Commentable, event: BaseEve
   const commentUpdated = event as CommentUpdatedEvent;
 
   if (!canCommentBeModified({ events }, commentUpdated.commentId)) {
+    logger.warn(`Comment cannot be updated - IssueId[${event.streamId}], CommentId[${commentUpdated.commentId}]`);
     throw new BadLogicException("Comment cannot be updated.", event);
   }
 
@@ -135,6 +153,7 @@ function commentHiddenEventHandler({ csm, events }: Commentable, event: BaseEven
   const commentHidden = event as CommentHiddenEvent;
 
   if (!canCommentBeModified({ events }, commentHidden.commentId)) {
+    logger.warn(`Comment cannot be hidden - IssueId[${event.streamId}], CommentId[${commentHidden.commentId}]`);
     throw new BadLogicException("Comment cannot be hidden.", event);
   }
 
@@ -145,6 +164,7 @@ function commentHiddenEventHandler({ csm, events }: Commentable, event: BaseEven
 function commentDeletedEventHandler({ csm, events }: Commentable, event: BaseEvent) {
   const commentDeleted = event as CommentDeletedEvent;
   if (!canCommentBeModified({ events }, commentDeleted.commentId)) {
+    logger.warn(`Comment cannot be deleted - IssueId[${event.streamId}], CommentId[${commentDeleted.commentId}]`);
     throw new BadLogicException("Comment cannot be deleted.", event);
   }
 
@@ -165,11 +185,15 @@ function userReactedEventHandler({ csm, events }: Reactable, event: BaseEvent) {
   );
 
   if (lastReactionEvent?.type === "UserReactedEvent") {
+    logger.warn(`Reaction cannot be added - IssueId[${event.streamId}], CommentId[${userReacted.commentId}]`);
     throw new BadLogicException("Reaction cannot be added.", event);
   }
 
   const comment = findComment({ csm }, userReacted.commentId);
   if (!comment || comment.state !== CommentState.Existing) {
+    logger.warn(
+      `Reaction cannot be added because comment does not exist - IssueId[${event.streamId}], CommentId[${userReacted.commentId}]`
+    );
     throw new BadLogicException("Reaction cannot be added because comment does not exist.", event);
   }
 
@@ -187,12 +211,16 @@ function userUnreactedEventHandler({ csm, events }: Reactable, event: BaseEvent)
   );
 
   if (!lastReactionEvent || lastReactionEvent?.type === "UserUnreactedEvent") {
+    logger.warn(`Reaction cannot be removed - IssueId[${event.streamId}], CommentId[${userUnreacted.commentId}]`);
     throw new BadLogicException("Reaction cannot be removed.", event);
   }
 
   const comment = findComment({ csm }, userUnreacted.commentId);
   if (comment.state !== CommentState.Existing) {
-    throw new BadLogicException("Reaction cannot be added because comment does not exist.");
+    logger.warn(
+      `Reaction cannot be removed because comment does not exist - IssueId[${event.streamId}], CommentId[${userUnreacted.commentId}]`
+    );
+    throw new BadLogicException("Reaction cannot be removed because comment does not exist.");
   }
 
   comment.reactions[userUnreacted.code] = comment.reactions[userUnreacted.code] - 1;

@@ -1,6 +1,7 @@
 import { labelService } from "./label.service";
 import { type Label } from "./label.model";
 import { type Repository } from "../repository/repository.model";
+import { logger } from "../../utils/aws/logger";
 
 async function seedDefaultLabels(repositoryId: Repository["_id"]) {
   const labels = [
@@ -53,9 +54,10 @@ async function seedDefaultLabels(repositoryId: Repository["_id"]) {
     try {
       createdLabels.push((await labelService.create(label)) as Label);
     } catch (error) {
-      console.log(error);
+      logger.error(`Failed to add default label - RepoId[${repositoryId}] Label[${label.name}]`);
     }
   }
+  logger.info(`Default labels are added (${createdLabels.length}/${labels.length}) - RepoId[${repositoryId}]`);
 
   return createdLabels;
 }

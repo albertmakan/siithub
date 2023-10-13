@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   MissingEntityException,
 } from "../../error-handling/errors";
+import { logger } from "../../utils/aws/logger";
 import { asyncFilter } from "../../utils/filter";
 import { Branch } from "../branches/branches.models";
 import { branchesService } from "../branches/branches.service";
@@ -23,6 +24,7 @@ async function getRelevantRepos(userId: User["_id"]): Promise<Repository[]> {
 async function findOneOrThrow(id: Repository["_id"]): Promise<Repository> {
   const repository = await repositoryRepo.crud.findOne(id);
   if (!repository) {
+    logger.warn(`Repository not found - RepoId[${id}]`);
     throw new MissingEntityException("Repository with given id does not exist.");
   }
   return repository;
@@ -31,50 +33,47 @@ async function findOneOrThrow(id: Repository["_id"]): Promise<Repository> {
 async function createRepository(repository: RepositoryCreate): Promise<Repository> {
   const repositoriesWithSameName = await findByOwnerAndName(repository.owner, repository.name);
   if (repositoriesWithSameName) {
+    logger.warn(`Repository with same name already exists - Repo[${repository.owner}/${repository.name}]`);
     throw new DuplicateException("Repository with same name already exists.", repository);
   }
-
-  const existingUser = await userService.findByUsername(repository.owner);
-  if (!existingUser) {
-    throw new MissingEntityException("User does not exist.", repository.owner);
-  }
+  const existingUser = await userService.findByUsernameOrThrow(repository.owner);
 
   try {
     await gitServerClient.createRepository(existingUser.username, repository.name, repository.type);
   } catch (error) {
+    logger.error(`Failed to create repository in the file system - Repo[${repository.owner}/${repository.name}]`);
     throw new BadLogicException("Failed to create repository in the file system.");
   }
 
   const repo = await repositoryRepo.crud.add(repository);
-  if (!repo) throw new BadLogicException("Failed to create repository.");
+  if (!repo) {
+    logger.error(`Failed to create repository - Repo[${repository.owner}/${repository.name}]`);
+    throw new BadLogicException("Failed to create repository.");
+  }
+  logger.info(`Repository is created - Repo[${repository.owner}/${repository.name}]`);
 
   await collaboratorsService.add({ repositoryId: repo._id, userId: existingUser._id, verified: true });
-
   await labelSeeder.seedDefaultLabels(repo._id);
 
   return repo;
 }
 
 async function deleteRepository(owner: string, name: string): Promise<Repository | null> {
-  const repository = await findByOwnerAndName(owner, name);
-  if (!repository) {
-    throw new MissingEntityException("Repository does not exist.");
-  }
-
-  const existingUser = await userService.findByUsername(repository.owner);
-  if (!existingUser) {
-    throw new MissingEntityException("User does not exist.", repository.owner);
-  }
+  const repository = await findByOwnerAndNameOrThrow(owner, name);
+  const existingUser = await userService.findByUsernameOrThrow(repository.owner);
 
   try {
     await gitServerClient.deleteRepository(existingUser.username, repository.name);
   } catch (error) {
+    logger.error(`Failed to delete repository in the file system - Repo[${repository.owner}/${repository.name}]`);
     throw new BadLogicException("Failed to delete repository in the file system.");
   }
 
   if (repository.forkedFrom) await decreaseCounterValue(repository.forkedFrom, "forks");
 
-  return await repositoryRepo.crud.delete(repository._id);
+  const deletedRepo = await repositoryRepo.crud.delete(repository._id);
+  logger.info(`Repository is deleted - Repo[${repository.owner}/${repository.name}]`);
+  return deletedRepo;
 }
 
 async function findByOwnerAndName(owner: string, name: string): Promise<Repository | null> {
@@ -83,9 +82,17 @@ async function findByOwnerAndName(owner: string, name: string): Promise<Reposito
   return repo;
 }
 
+async function findByOwnerAndNameOrThrow(owner: string, name: string): Promise<Repository> {
+  const repository = await findByOwnerAndName(owner, name);
+  if (!repository) {
+    logger.warn(`Repository not found - Repo[${owner}/${name}]`);
+    throw new MissingEntityException("Repository does not exist.");
+  }
+  return repository;
+}
+
 async function search(owner: string, term: string): Promise<Repository[]> {
-  const user = await userService.findByUsername(owner);
-  if (!user) throw new MissingEntityException("User not found");
+  const user = await userService.findByUsernameOrThrow(owner);
   return (await getRelevantRepos(user._id)).filter((x) => !term || x.name.toLowerCase().includes(term.toLowerCase()));
 }
 
@@ -94,6 +101,7 @@ async function increaseCounterValue(id: Repository["_id"], thing: CounterType): 
   const counters = repo.counters ?? { [thing]: 0 };
   counters[thing] = counters[thing] + 1 || 1;
   await repositoryRepo.crud.update(id, { counters });
+  logger.info(`Increased ${thing} count - Repo[${repo.owner}/${repo.name}]`);
   return counters[thing];
 }
 
@@ -102,6 +110,7 @@ async function decreaseCounterValue(id: Repository["_id"], thing: "stars" | "for
   const counters = repo.counters ?? { [thing]: 0 };
   counters[thing] = counters[thing] - 1 || 0;
   await repositoryRepo.crud.update(id, { counters });
+  logger.info(`Decreased ${thing} count - Repo[${repo.owner}/${repo.name}]`);
   return counters[thing];
 }
 
@@ -113,20 +122,33 @@ async function forkRepository(
   { repoName, repoOwner, name, description, only1Branch }: RepositoryForkCreate,
   userId: User["_id"]
 ): Promise<Repository> {
-  const repo = await findByOwnerAndName(repoOwner, repoName);
-  if (!repo) throw new MissingEntityException("Repository does not exist.");
+  const repo = await findByOwnerAndNameOrThrow(repoOwner, repoName);
   const user = await userService.findOneOrThrow(userId);
-  if (repo.owner === user.username) throw new BadLogicException("You cannot fork your own repository.");
+  if (repo.owner === user.username) {
+    logger.warn(`Cannot fork own repository - Repo[${repoOwner}/${repoName}], Username[${user.username}]`);
+    throw new BadLogicException("You cannot fork your own repository.");
+  }
   const collab = await collaboratorsService.findByRepositoryAndUser(repo._id, userId);
-  if (repo.type !== "public" && !collab) throw new ForbiddenException("You cannot fork this repository.");
+  if (repo.type !== "public" && !collab) {
+    logger.warn(
+      `Cannot fork private repository, not a collaborator - Repo[${repoOwner}/${repoName}], Username[${user.username}]`
+    );
+    throw new ForbiddenException("You cannot fork this repository.");
+  }
   const existingFork = await findFork(user.username, repo._id);
-  if (existingFork) throw new BadLogicException("You already have forked this repository.");
+  if (existingFork) {
+    logger.warn(`Already forked repository - Repo[${repoOwner}/${repoName}], Username[${user.username}]`);
+    throw new BadLogicException("You already have forked this repository.");
+  }
   const repoWithSameName = await findByOwnerAndName(user.username, name);
-  if (repoWithSameName) throw new DuplicateException("Repository with same name already exists.");
-
+  if (repoWithSameName) {
+    logger.warn(`Repository with same name already exists - Repo[${user.username}/${name}]`);
+    throw new DuplicateException("Repository with same name already exists.");
+  }
   try {
     await gitServerClient.createRepositoryFork(user.username, name, repoOwner, repoName, repo.type, only1Branch);
   } catch (error) {
+    logger.error(`Failed to create repository fork in the file system - Repo[${user.username}/${name}]`);
     throw new BadLogicException("Failed to create repository in the file system.");
   }
 
@@ -137,7 +159,11 @@ async function forkRepository(
     description,
     forkedFrom: repo._id,
   });
-  if (!repoFork) throw new BadLogicException("Failed to create repository.");
+  if (!repoFork) {
+    logger.error(`Failed to create repository - Repo[${user.username}/${name}]`);
+    throw new BadLogicException("Failed to create repository.");
+  }
+  logger.info(`Repository fork is created - Repo[${user.username}/${name}]`);
 
   await collaboratorsService.add({ repositoryId: repoFork._id, userId, verified: true });
   await labelSeeder.seedDefaultLabels(repoFork._id);
@@ -178,12 +204,15 @@ async function tryCreateDefaultBranch(repository: Repository) {
   const branchName = ["main", "master", "develop"].find((b) => allBranches.includes(b));
   const defaultBranch = branchName ?? allBranches[0];
   await repositoryRepo.crud.update(repository._id, { defaultBranch });
+  logger.info(`Created default branch - Repo[${repository.owner}/${repository.name}]`);
 }
 
 async function changeDefaultBranch(id: Repository["_id"], defaultBranch: Branch) {
   const repo = await findOneOrThrow(id);
   await branchesService.findOneOrThrow(repo.owner, repo.name, defaultBranch);
-  return await repositoryRepo.crud.update(id, { defaultBranch });
+  const updatedRepo = await repositoryRepo.crud.update(id, { defaultBranch });
+  logger.info(`Updated default branch - Repo[${repo.owner}/${repo.name}]`);
+  return updatedRepo;
 }
 
 export type RepositoryService = {
@@ -191,6 +220,7 @@ export type RepositoryService = {
   create(repository: RepositoryCreate): Promise<Repository>;
   delete(owner: string, name: string): Promise<Repository | null>;
   findByOwnerAndName(owner: string, name: string): Promise<Repository | null>;
+  findByOwnerAndNameOrThrow(owner: string, name: string): Promise<Repository>;
   increaseCounterValue(id: Repository["_id"], thing: CounterType): Promise<number>;
   search(owner: string, term?: string): Promise<Repository[]>;
   decreaseCounterValue(id: Repository["_id"], thing: "stars" | "forks"): Promise<number>;
@@ -209,6 +239,7 @@ const repositoryService: RepositoryService = {
   create: createRepository,
   delete: deleteRepository,
   findByOwnerAndName,
+  findByOwnerAndNameOrThrow,
   increaseCounterValue,
   search,
   findByIds,

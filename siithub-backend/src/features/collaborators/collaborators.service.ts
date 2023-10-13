@@ -7,6 +7,7 @@ import { userService } from "../user/user.service";
 import { collaboratorsRepo } from "./collaborators.repo";
 import { gitServerClient } from "../gitserver/gitserver.client";
 import { sendInvitationMail } from "../../utils/aws/email";
+import { logger } from "../../utils/aws/logger";
 
 async function findByRepository(repositoryId: Repository["_id"]): Promise<Collaborator[]> {
   return await collaboratorsRepo.findByRepository(repositoryId);
@@ -28,6 +29,7 @@ async function addCollaborator(collaborator: CollaboratorAdd, sendMail = false):
 
   const existingCollaborator = await findByRepositoryAndUser(repositoryId, userId);
   if (existingCollaborator) {
+    logger.warn(`User is already collaborator on the given repository - UserId[${userId}], RepoId[${repositoryId}]`);
     throw new BadLogicException("User is already collaborator on the given repository.");
   }
 
@@ -35,6 +37,7 @@ async function addCollaborator(collaborator: CollaboratorAdd, sendMail = false):
   const user = await userService.findOneOrThrow(userId);
 
   const newCollab = await collaboratorsRepo.crud.add(collaborator);
+  logger.info(`Collaborator is added - User[${user.username}], Repo[${repository.owner}/${repository.name}]`);
 
   if (newCollab && !newCollab.verified && sendMail) sendInvitationMail(user, repository);
 
@@ -44,6 +47,9 @@ async function addCollaborator(collaborator: CollaboratorAdd, sendMail = false):
 async function verifyCollaborator(repositoryId: Repository["_id"], userId: User["_id"]): Promise<Collaborator | null> {
   const existingCollaborator = await findByRepositoryAndUser(repositoryId, userId);
   if (!existingCollaborator) {
+    logger.warn(
+      `User is not invited to collaborate on the given repository - UserId[${userId}], RepoId[${repositoryId}]`
+    );
     throw new MissingEntityException("User is not invited to collaborate on the given repository.");
   }
   if (existingCollaborator.verified) return existingCollaborator;
@@ -53,10 +59,14 @@ async function verifyCollaborator(repositoryId: Repository["_id"], userId: User[
 
   existingCollaborator.verified = true;
   await collaboratorsRepo.crud.update(existingCollaborator._id, existingCollaborator);
+  logger.info(`Collaborator is verified - User[${user.username}], Repo[${repository.owner}/${repository.name}]`);
 
   try {
     await gitServerClient.addCollaborator(repository.owner, repository.name, user.username);
   } catch (error) {
+    logger.error(
+      `Failed to add collaborator on gitserver - User[${user.username}], Repo[${repository.owner}/${repository.name}]`
+    );
     throw new BadLogicException("Failed to add collaborator");
   }
 
@@ -74,27 +84,42 @@ async function removeCollaborator(
   const ownerUserId = (await userService.findByUsername(repository.owner))?._id + "";
 
   if (userToRemoveId === ownerUserId) {
+    logger.warn(
+      `The owner tried to remove itself - UserId[${userToRemoveId}], Repo[${repository.owner}/${repository.name}]`
+    );
     throw new BadLogicException("The owner cannot be removed");
   }
   const removerUserId = removerId + "";
   if (removerUserId !== userToRemoveId && removerUserId !== ownerUserId) {
+    logger.warn(
+      `The user is not allowed to remove this collaborator - RemoverId[${removerUserId}], UserId[${userToRemoveId}], Repo[${repository.owner}/${repository.name}]`
+    );
     throw new ForbiddenException("You are not allowed to remove this collaborator");
   }
 
   const existingCollaborator = await findByRepositoryAndUser(repositoryId, userId);
   if (!existingCollaborator) {
+    logger.warn(
+      `User is not collaborating on the given repository - UserId[${userToRemoveId}], Repo[${repository.owner}/${repository.name}]`
+    );
     throw new BadLogicException("User is not collaborating on the given repository.");
   }
 
   const userToRemove = await userService.findOneOrThrow(userId);
 
+  const removed = await collaboratorsRepo.crud.delete(existingCollaborator._id);
+  logger.info(`Collaborator is removed - User[${userToRemove.username}], Repo[${repository.owner}/${repository.name}]`);
+
   try {
     await gitServerClient.removeCollaborator(repository.owner, repository.name, userToRemove.username);
   } catch (error) {
+    logger.error(
+      `Failed to remove collaborator on gitserver - User[${userToRemove.username}], Repo[${repository.owner}/${repository.name}]`
+    );
     throw new BadLogicException("Failed to remove collaborator");
   }
 
-  return await collaboratorsRepo.crud.delete(existingCollaborator._id);
+  return removed;
 }
 
 async function resolveUsers(collaborators: Collaborator[], name: string) {

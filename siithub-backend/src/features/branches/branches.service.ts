@@ -1,4 +1,5 @@
 import { BadLogicException, MissingEntityException } from "../../error-handling/errors";
+import { logger } from "../../utils/aws/logger";
 import { gitServerClient } from "../gitserver/gitserver.client";
 import { type Branch } from "./branches.models";
 
@@ -16,6 +17,7 @@ async function findOne(username: string, repoName: string, branchName: string): 
 async function findOneOrThrow(username: string, repoName: string, branchName: string): Promise<Branch> {
   const branch = await findOne(username, repoName, branchName);
   if (!branch) {
+    logger.warn(`Branch not found - Branch[${branchName}], Repo[${username}/${repoName}]`);
     throw new MissingEntityException(`Branch ${branchName} does not exist.`);
   }
   return branch;
@@ -26,10 +28,14 @@ async function createBranch(username: string, repoName: string, source: string, 
 
   const existingBranch = await findOne(username, repoName, branchName);
   if (existingBranch) {
+    logger.warn(
+      `Cannot create branch because it already exists - Branch[${branchName}], Repo[${username}/${repoName}]`
+    );
     throw new BadLogicException(`Branch ${branchName} already exist.`);
   }
-
-  return await gitServerClient.createBranch(username, repoName, source, branchName);
+  const branch = await gitServerClient.createBranch(username, repoName, source, branchName);
+  logger.info(`Branch is created - Branch[${branchName}], Repo[${username}/${repoName}]`);
+  return branch;
 }
 
 async function renameBranch(
@@ -42,16 +48,22 @@ async function renameBranch(
 
   const existingBranch = await findOne(username, repoName, newBranchName);
   if (existingBranch) {
+    logger.warn(
+      `Cannot rename branch because it already exists - Branch[${branchName}], Repo[${username}/${repoName}]`
+    );
     throw new BadLogicException(`Branch ${newBranchName} already exist.`);
   }
-
-  return await gitServerClient.renameBranch(username, repoName, branchName, newBranchName);
+  const branch = await gitServerClient.renameBranch(username, repoName, branchName, newBranchName);
+  logger.info(`Branch is renamed - Branch[${branchName} -> ${newBranchName}], Repo[${username}/${repoName}]`);
+  return branch;
 }
 
 async function removeBranch(username: string, repoName: string, branchName: string): Promise<Branch> {
   await findOneOrThrow(username, repoName, branchName);
 
-  return await gitServerClient.removeBranch(username, repoName, branchName);
+  const branch = await gitServerClient.removeBranch(username, repoName, branchName);
+  logger.info(`Branch is deleted - Branch[${branchName}], Repo[${username}/${repoName}]`);
+  return branch;
 }
 
 export type BranchesService = {

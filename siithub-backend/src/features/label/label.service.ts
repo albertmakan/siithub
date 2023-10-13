@@ -1,6 +1,6 @@
 import { DuplicateException, MissingEntityException } from "../../error-handling/errors";
+import { logger } from "../../utils/aws/logger";
 import type { Repository } from "../repository/repository.model";
-import { repositoryService } from "../repository/repository.service";
 import type { Label, LabelCreate, LabelUpdate } from "./label.model";
 import { labelRepo } from "./label.repo";
 
@@ -19,6 +19,7 @@ async function findByNameAndRepositoryId(name: string, repositoryId: Repository[
 async function findOneOrThrow(id: Label["_id"]): Promise<Label> {
   const label = await labelRepo.crud.findOne(id);
   if (!label) {
+    logger.warn(`Label not found - LabelId[${id}]`);
     throw new MissingEntityException("Label with given id does not exist.");
   }
   return label;
@@ -31,12 +32,12 @@ async function searchByName(name: string, repositoryId: Repository["_id"]): Prom
 async function createLabel(label: LabelCreate): Promise<Label | null> {
   const labelWithSameName = await labelRepo.findByNameAndRepositoryId(label.name, label.repositoryId);
   if (labelWithSameName) {
+    logger.warn(`Label with same name already exists - LabelName[${label.name}], RepoId[${label.repositoryId}]`);
     throw new DuplicateException("Label with same name already exists.", label);
   }
-
-  await repositoryService.findOneOrThrow(label.repositoryId);
-
-  return await labelRepo.crud.add(label);
+  const createdLabel = (await labelRepo.crud.add(label)) as Label;
+  logger.info(`Label is created - LabelId[${createdLabel._id}], RepoId[${label.repositoryId}]`);
+  return createdLabel;
 }
 
 async function updateLabel(label: LabelUpdate): Promise<Label | null> {
@@ -44,6 +45,7 @@ async function updateLabel(label: LabelUpdate): Promise<Label | null> {
 
   const labelWithSameName = await labelRepo.findByNameAndRepositoryId(label.name, label.repositoryId);
   if (labelWithSameName && labelWithSameName._id + "" !== existingLabel._id + "") {
+    logger.warn(`Label with same name already exists - LabelName[${label.name}], RepoId[${label.repositoryId}]`);
     throw new DuplicateException("Label with same name already exists.", label);
   }
 
@@ -51,13 +53,17 @@ async function updateLabel(label: LabelUpdate): Promise<Label | null> {
   existingLabel.description = label.description;
   existingLabel.name = label.name;
 
-  return await labelRepo.crud.update(label._id, existingLabel);
+  const updatedLabel = await labelRepo.crud.update(label._id, existingLabel);
+  logger.info(`Label is updated - LabelId[${label._id}], RepoId[${label.repositoryId}]`);
+  return updatedLabel;
 }
 
 async function deleteLabel(id: Label["_id"]): Promise<Label | null> {
   const existingLabel = await findOneOrThrow(id);
 
-  return await labelRepo.crud.delete(existingLabel._id);
+  const deletedLabel = await labelRepo.crud.delete(existingLabel._id);
+  logger.info(`Label is deleted - LabelId[${id}], RepoId[${existingLabel.repositoryId}]`);
+  return deletedLabel;
 }
 
 export type LabelService = {

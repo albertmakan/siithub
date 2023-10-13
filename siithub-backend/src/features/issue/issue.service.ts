@@ -21,6 +21,7 @@ import { type User } from "../user/user.model";
 import type { LabelAssignedEvent, MilestoneAssignedEvent, UserAssignedEvent } from "../common/events/events.model";
 import { Commit, PushInfo } from "../commits/commit.model";
 import { commitService } from "../commits/commit.service";
+import { logger } from "../../utils/aws/logger";
 
 async function findOne(id: Issue["_id"]): Promise<Issue | null> {
   return await issueRepo.crud.findOne(id);
@@ -33,6 +34,7 @@ async function findByRepositoryId(repositoryId: Repository["_id"]): Promise<Issu
 async function findByRepositoryIdAndLocalId(repositoryId: Repository["_id"], localId: number): Promise<Issue> {
   const issue = await issueRepo.findByRepositoryIdAndLocalId(repositoryId, localId);
   if (!issue) {
+    logger.warn(`Issue not found - RepoId[${repositoryId}], LocalId[#I${localId}]`);
     throw new MissingEntityException("Issue with given id does not exist.");
   }
   return issue;
@@ -50,6 +52,7 @@ async function searchByQuery(query: IssuesQuery, repositoryId: Repository["_id"]
 async function findOneOrThrow(id: Issue["_id"]): Promise<Issue> {
   const issue = await issueRepo.crud.findOne(id);
   if (!issue) {
+    logger.warn(`Issue not found - IssueId[${id}]`);
     throw new MissingEntityException("Issue with given id does not exist.");
   }
   return issue;
@@ -63,6 +66,7 @@ async function createIssue({ events, repositoryId }: IssueCreate): Promise<Issue
     repositoryId,
     localId,
   })) as Issue;
+  logger.info(`Issue is created - RepoId[${repositoryId}], LocalId[#I${localId}]`);
 
   return await updateEventsFor(createdIssue, events);
 }
@@ -77,8 +81,9 @@ async function updateEventsFor(issue: Issue, events: BaseEvent[]) {
   for (const event of events) {
     await handleEvent(issue, event);
   }
-
-  return await issueRepo.crud.update(issue._id, issue);
+  const updatedIssue = await issueRepo.crud.update(issue._id, issue);
+  logger.info(`Issue is updated - RepoId[${issue.repositoryId}], LocalId[#I${issue.localId}]`);
+  return updatedIssue;
 }
 
 async function handleEvent(issue: Issue, event: BaseEvent): Promise<void> {
@@ -175,6 +180,7 @@ async function processPushInfo(info: PushInfo) {
       issue.events.push(event);
     }
     await issueRepo.crud.update(issue._id, issue);
+    logger.info(`Issue is updated with commits - RepoId[${issue.repositoryId}], LocalId[#I${issue.localId}]`);
   }
 }
 

@@ -4,6 +4,7 @@ import { repositoryService } from "../repository/repository.service";
 import type { User } from "../user/user.model";
 import type { Star } from "./star.model";
 import { starRepo } from "./star.repo";
+import { logger } from "../../utils/aws/logger";
 
 async function findByRepoId(repoId: Repository["_id"]): Promise<Star[]> {
   return await starRepo.crud.findMany({ repoId }, { projection: { repoId: 0 } });
@@ -36,6 +37,7 @@ async function addStar(userId: User["_id"], repoId: Repository["_id"]): Promise<
   }
   const star = await starRepo.crud.add({ userId, repoId, date: new Date() });
   await repositoryService.increaseCounterValue(repoId, "stars");
+  logger.info(`Star is added - UserId[${userId}], RepoId[${repoId}]`);
   return star;
 }
 
@@ -46,6 +48,7 @@ async function removeStar(userId: User["_id"], repoId: Repository["_id"]): Promi
   }
   const star = await starRepo.crud.delete(existingStar._id);
   await repositoryService.decreaseCounterValue(repoId, "stars");
+  logger.info(`Star is removed - UserId[${userId}], RepoId[${repoId}]`);
   return star;
 }
 
