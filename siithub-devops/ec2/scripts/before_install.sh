@@ -1,5 +1,5 @@
 #!/bin/bash
-DIR="/home/ec2-user/siithub"
+DIR="/home/ubuntu/siithub"
 if [ -d "$DIR" ]; then
   echo "${DIR} exists"
 else
