@@ -46,7 +46,7 @@ services:
       QUEUE_URL: ${QUEUE_URL}
       LOG_GROUP: ${LOG_GROUP}
       BUCKET: ${BUCKET}
-      CLIENT_URL: http://localhost:3000
+      CLIENT_URL: https://master.d33sooh4xcz8rt.amplifyapp.com
     depends_on:
       - mongo
       - siithub-git-server
