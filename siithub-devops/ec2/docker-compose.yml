@@ -5,8 +5,8 @@ services:
     volumes:
       - /mnt/efs/fs1/repos:/home
     ports:
-      - 3002:80
-      - 3022:22
+      - "3002:80"
+      - "3022:22"
     environment:
       PORT: 80
       ACCESS_KEY: ${ACCESS_KEY}
@@ -20,7 +20,7 @@ services:
     volumes:
       - /mnt/efs/fs1/mongo-data:/data/db
     ports:
-      - 27017:27017
+      - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
@@ -29,7 +29,7 @@ services:
     build: ../../siithub-backend
     restart: always
     ports:
-      - 3001:80
+      - "3001:80"
     environment:
       PORT: 80
       TOKEN_SECRET: ${TOKEN_SECRET}
