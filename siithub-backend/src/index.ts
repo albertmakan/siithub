@@ -5,6 +5,7 @@ import { config } from "./config";
 import { getConnection } from "./db/mongo.utils";
 import { ErrorHandler } from "./error-handling/error-handler";
 import { sqsConsumer } from "./utils/aws/queue";
+import cors from "cors";
 
 const app: Express = express();
 
@@ -14,6 +15,7 @@ const errorHandler = (error: Error, request: Request, response: Response, next: 
 };
 
 app
+  .use(cors())
   .use(express.json({ limit: "10mb" }))
   .use(express.urlencoded({ limit: "10mb" }))
   .use("/api", apiRoutes)

@@ -1,0 +1,18 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /home/ubuntu/siithub
+hooks:
+  ApplicationStop:
+    - location: siithub-devops/ec2/scripts/application_stop.sh
+      timeout: 300
+      runas: ubuntu
+  ApplicationStart:
+    - location: siithub-devops/ec2/scripts/application_start.sh
+      timeout: 300
+      runas: ubuntu
+  BeforeInstall:
+    - location: siithub-devops/ec2/scripts/before_install.sh
+      timeout: 300
+      runas: ubuntu

@@ -21,6 +21,7 @@ import { findRepository } from "./features/repository/repository.middleware";
 import { authorize } from "./features/auth/auth.middleware";
 
 export const apiRoutes = Router()
+  .use("/", (_, res) => res.send({ message: `Hello from Siithub! (${new Date()})` }))
   .use("/users", userRoutes)
   .use("/auth", authRoutes)
   .use("/ssh-keys", sshKeyRoutes)

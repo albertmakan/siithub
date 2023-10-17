@@ -1,0 +1,52 @@
+services:
+  siithub-git-server:
+    build: ../../siithub-git-server
+    restart: always
+    volumes:
+      - /mnt/efs/fs1/repos:/home
+    ports:
+      - 3002:80
+      - 3022:22
+    environment:
+      PORT: 80
+      ACCESS_KEY: ${ACCESS_KEY}
+      SECRET_ACCESS_KEY: ${SECRET_ACCESS_KEY}
+      REGION: ${REGION}
+      QUEUE_URL: ${QUEUE_URL}
+
+  mongo:
+    image: mongo
+    restart: always
+    volumes:
+      - /mnt/efs/fs1/mongo-data:/data/db
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+
+  siithub-backend:
+    build: ../../siithub-backend
+    restart: always
+    ports:
+      - 3001:80
+    environment:
+      PORT: 80
+      TOKEN_SECRET: ${TOKEN_SECRET}
+      GITSERVER_URL: http://localhost:3002
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_SECRET: ${GITHUB_SECRET}
+      MONGODB_URL: mongodb://mongo:${MONGODB_PORT}/
+      MONGODB_USERNAME: ${MONGODB_USERNAME}
+      MONGODB_PASSWORD: ${MONGODB_PASSWORD}
+      MONGODB_DATABASE: ${MONGODB_DATABASE}
+      ACCESS_KEY: ${ACCESS_KEY}
+      SECRET_ACCESS_KEY: ${SECRET_ACCESS_KEY}
+      REGION: ${REGION}
+      QUEUE_URL: ${QUEUE_URL}
+      LOG_GROUP: ${LOG_GROUP}
+      BUCKET: ${BUCKET}
+      CLIENT_URL: http://localhost:3000
+    depends_on:
+      - mongo
+      - siithub-git-server

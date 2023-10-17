@@ -1,3 +1,7 @@
+import dotenv from "dotenv";
+
+dotenv.config();
+
 export const awsConfig = {
   credentials: {
     accessKeyId: process.env.ACCESS_KEY ?? "",
