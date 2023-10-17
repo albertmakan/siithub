@@ -1,6 +1,6 @@
 version: 1
 applications:
-  - appRoot: /
+  - appRoot: siithub-client
     env:
       variables:
         BACKEND_URL: http://ec2-51-20-117-250.eu-north-1.compute.amazonaws.com:3001
