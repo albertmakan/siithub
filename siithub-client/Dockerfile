@@ -20,7 +20,11 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
-ENV BACKEND_URL=http://http-proxy:80/backend
+ENV BACKEND_HOST=http-proxy
+ENV BACKEND_PORT=80
+ENV BACKEND_PROTOCOL=http
+ENV BACKEND_BASE=backend
+ENV SSH_PORT=22
 
 RUN npm run build
 

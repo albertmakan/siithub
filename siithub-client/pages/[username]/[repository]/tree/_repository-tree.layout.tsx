@@ -6,6 +6,7 @@ import { CommitsIcon } from "../../../../features/commits/CommitsIcon";
 import { useCommitCount } from "../../../../features/commits/useCommits";
 import { useRepositoryContext } from "../../../../features/repository/RepositoryContext";
 import { type Repository } from "../../../../features/repository/repository.service";
+import { CloneButton } from "../../../../features/repository/CloneButton";
 
 export const RepositoryTreeLayout: FC<PropsWithChildren> = ({ children }) => {
   const router = useRouter();
@@ -30,6 +31,7 @@ export const RepositoryTreeLayout: FC<PropsWithChildren> = ({ children }) => {
             {count} commits
           </Link>
         </div>
+        <CloneButton />
       </div>
 
       {children}

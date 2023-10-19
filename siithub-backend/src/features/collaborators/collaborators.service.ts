@@ -36,10 +36,18 @@ async function addCollaborator(collaborator: CollaboratorAdd, sendMail = false):
   const repository = await repositoryService.findOneOrThrow(repositoryId);
   const user = await userService.findOneOrThrow(userId);
 
+  if (!collaborator.verified && sendMail) {
+    try {
+      await sendInvitationMail(user, repository);
+    } catch (error) {
+      logger.error(`Failed to send invitation mail - User[${user.username}], Email[${user.email}]`);
+      throw new BadLogicException("Failed to send invitation mail.");
+    }
+    logger.error(`Invitation mail sent - User[${user.username}], Email[${user.email}]`);
+  }
+
   const newCollab = await collaboratorsRepo.crud.add(collaborator);
   logger.info(`Collaborator is added - User[${user.username}], Repo[${repository.owner}/${repository.name}]`);
-
-  if (newCollab && !newCollab.verified && sendMail) sendInvitationMail(user, repository);
 
   return newCollab;
 }
