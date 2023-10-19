@@ -3,10 +3,8 @@ applications:
   - appRoot: siithub-client
     env:
       variables:
-        BACKEND_HOST: ec2-51-20-117-250.eu-north-1.compute.amazonaws.com
-        BACKEND_PORT: 3001
-        BACKEND_PROTOCOL: http
-        SSH_PORT: 3022
+        BACKEND_URL: http://ec2-51-20-117-250.eu-north-1.compute.amazonaws.com:3001
+        NEXT_PUBLIC_SSH_URL: ec2-51-20-117-250.eu-north-1.compute.amazonaws.com:3022/home
     frontend:
       phases:
         preBuild:

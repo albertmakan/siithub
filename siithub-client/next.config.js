@@ -1,11 +1,7 @@
 /** @type {import('next').NextConfig} */
 require("dotenv").config;
 
-const backendHost = process.env.BACKEND_HOST || "localhost";
-const backendPort = process.env.BACKEND_PORT || "3001";
-const backendProtocol = process.env.BACKEND_PROTOCOL || "http";
-const backendBase = process.env.BACKEND_BASE || "";
-const backendUrl = `${backendProtocol}://${backendHost}:${backendPort}/${backendBase}`;
+const backendUrl = process.env.BACKEND_URL || "http://localhost:3001";
 
 const nextConfig = {
   reactStrictMode: false,

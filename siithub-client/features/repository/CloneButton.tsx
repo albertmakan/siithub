@@ -4,17 +4,18 @@ import { useRepositoryContext } from "./RepositoryContext";
 import { type Repository } from "./repository.service";
 import { ClipboardDocumentIcon, CodeBracketIcon } from "@heroicons/react/24/outline";
 import { useNotifications } from "../../core/hooks/useNotifications";
+import { type AuthUser, useAuthContext } from "../../core/contexts/Auth";
 
-require("dotenv").config;
-const backendHost = process.env.BACKEND_HOST || "localhost";
-const sshPort = process.env.SSH_PORT || "22";
+const SSH_URL = process.env.NEXT_PUBLIC_SSH_URL || "localhost:22/home";
 
 export const CloneButton: FC = () => {
   const { repository } = useRepositoryContext();
   const { owner, name } = repository as Repository;
+  const myUsername = (useAuthContext()?.user as AuthUser)?.username;
 
   const notification = useNotifications();
-  const sshUrl = `ssh://${backendHost}:${sshPort}/home/${owner}/${name}`;
+
+  const sshUrl = `ssh://${myUsername}@${SSH_URL}/${owner}/${name}`;
 
   return (
     <Menu as="div" className="relative ml-3">
