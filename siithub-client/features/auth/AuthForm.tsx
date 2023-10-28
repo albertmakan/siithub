@@ -37,8 +37,6 @@ export const AuthForm: FC = () => {
     },
   });
 
-  const githubCallbackPage = `${window.location.origin}/auth/github-callback`;
-
   return (
     <form onSubmit={handleSubmit(authenticateAction)}>
       <div className="overflow-hidden shadow sm:rounded-md">
@@ -66,7 +64,7 @@ export const AuthForm: FC = () => {
             or login with{" "}
             <Link
               className="font-medium text-indigo-600 hover:text-indigo-500"
-              href={`https://github.com/login/oauth/authorize?response_type=code&client_id=fac8103c08404fb3370f&scope=user:email%20read:user&state=vrDTS-C5hFu_l8QcZJwTqWYd0d_pBcznFQ_YfuOSXfg%3D&redirect_uri=${githubCallbackPage}`}
+              href={`https://github.com/login/oauth/authorize?response_type=code&client_id=cc95aa6727cf32bbabc7&scope=user:email%20read:user&state=vrDTS-C5hFu_l8QcZJwTqWYd0d_pBcznFQ_YfuOSXfg%3D`}
             >
               GitHub
             </Link>
