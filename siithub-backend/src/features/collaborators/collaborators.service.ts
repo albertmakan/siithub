@@ -29,7 +29,7 @@ async function addCollaborator(collaborator: CollaboratorAdd, sendMail = false):
 
   const existingCollaborator = await findByRepositoryAndUser(repositoryId, userId);
   if (existingCollaborator) {
-    logger.warn(`User is already collaborator on the given repository - UserId[${userId}], RepoId[${repositoryId}]`);
+    logger.warn("User is already collaborator", { userId, repoId: repositoryId });
     throw new BadLogicException("User is already collaborator on the given repository.");
   }
 
@@ -40,14 +40,14 @@ async function addCollaborator(collaborator: CollaboratorAdd, sendMail = false):
     try {
       await sendInvitationMail(user, repository);
     } catch (error) {
-      logger.error(`Failed to send invitation mail - User[${user.username}], Email[${user.email}]`);
+      logger.error("Failed to send invitation mail", { user: user.username, email: user.email });
       throw new BadLogicException("Failed to send invitation mail.");
     }
-    logger.error(`Invitation mail sent - User[${user.username}], Email[${user.email}]`);
+    logger.info("Invitation mail sent", { user: user.username, email: user.email });
   }
 
   const newCollab = await collaboratorsRepo.crud.add(collaborator);
-  logger.info(`Collaborator is added - User[${user.username}], Repo[${repository.owner}/${repository.name}]`);
+  logger.info("Collaborator is added", { user: user.username, repo: `${repository.owner}/${repository.name}` });
 
   return newCollab;
 }
@@ -55,9 +55,7 @@ async function addCollaborator(collaborator: CollaboratorAdd, sendMail = false):
 async function verifyCollaborator(repositoryId: Repository["_id"], userId: User["_id"]): Promise<Collaborator | null> {
   const existingCollaborator = await findByRepositoryAndUser(repositoryId, userId);
   if (!existingCollaborator) {
-    logger.warn(
-      `User is not invited to collaborate on the given repository - UserId[${userId}], RepoId[${repositoryId}]`
-    );
+    logger.warn("User is not invited to collaborate", { userId, repoId: repositoryId });
     throw new MissingEntityException("User is not invited to collaborate on the given repository.");
   }
   if (existingCollaborator.verified) return existingCollaborator;
@@ -67,14 +65,15 @@ async function verifyCollaborator(repositoryId: Repository["_id"], userId: User[
 
   existingCollaborator.verified = true;
   await collaboratorsRepo.crud.update(existingCollaborator._id, existingCollaborator);
-  logger.info(`Collaborator is verified - User[${user.username}], Repo[${repository.owner}/${repository.name}]`);
+  logger.info("Collaborator is verified", { user: user.username, repo: `${repository.owner}/${repository.name}` });
 
   try {
     await gitServerClient.addCollaborator(repository.owner, repository.name, user.username);
   } catch (error) {
-    logger.error(
-      `Failed to add collaborator on gitserver - User[${user.username}], Repo[${repository.owner}/${repository.name}]`
-    );
+    logger.error("Failed to add collaborator on gitserver", {
+      user: user.username,
+      repo: `${repository.owner}/${repository.name}`,
+    });
     throw new BadLogicException("Failed to add collaborator");
   }
 
@@ -92,38 +91,46 @@ async function removeCollaborator(
   const ownerUserId = (await userService.findByUsername(repository.owner))?._id + "";
 
   if (userToRemoveId === ownerUserId) {
-    logger.warn(
-      `The owner tried to remove itself - UserId[${userToRemoveId}], Repo[${repository.owner}/${repository.name}]`
-    );
+    logger.warn("The owner tried to remove itself", {
+      userId: userToRemoveId,
+      repo: `${repository.owner}/${repository.name}`,
+    });
     throw new BadLogicException("The owner cannot be removed");
   }
   const removerUserId = removerId + "";
   if (removerUserId !== userToRemoveId && removerUserId !== ownerUserId) {
-    logger.warn(
-      `The user is not allowed to remove this collaborator - RemoverId[${removerUserId}], UserId[${userToRemoveId}], Repo[${repository.owner}/${repository.name}]`
-    );
+    logger.warn("The user is not allowed to remove this collaborator", {
+      removerId: removerUserId,
+      userId: userToRemoveId,
+      repo: `${repository.owner}/${repository.name}`,
+    });
     throw new ForbiddenException("You are not allowed to remove this collaborator");
   }
 
   const existingCollaborator = await findByRepositoryAndUser(repositoryId, userId);
   if (!existingCollaborator) {
-    logger.warn(
-      `User is not collaborating on the given repository - UserId[${userToRemoveId}], Repo[${repository.owner}/${repository.name}]`
-    );
+    logger.warn("User is not collaborating on the given repository", {
+      userId: userToRemoveId,
+      repo: `${repository.owner}/${repository.name}`,
+    });
     throw new BadLogicException("User is not collaborating on the given repository.");
   }
 
   const userToRemove = await userService.findOneOrThrow(userId);
 
   const removed = await collaboratorsRepo.crud.delete(existingCollaborator._id);
-  logger.info(`Collaborator is removed - User[${userToRemove.username}], Repo[${repository.owner}/${repository.name}]`);
+  logger.info("Collaborator is removed", {
+    user: userToRemove.username,
+    repo: `${repository.owner}/${repository.name}`,
+  });
 
   try {
     await gitServerClient.removeCollaborator(repository.owner, repository.name, userToRemove.username);
   } catch (error) {
-    logger.error(
-      `Failed to remove collaborator on gitserver - User[${userToRemove.username}], Repo[${repository.owner}/${repository.name}]`
-    );
+    logger.error("Failed to remove collaborator on gitserver", {
+      user: userToRemove.username,
+      repo: `${repository.owner}/${repository.name}`,
+    });
     throw new BadLogicException("Failed to remove collaborator");
   }
 

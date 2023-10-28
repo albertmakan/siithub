@@ -1,13 +1,14 @@
 import express from "express";
-import type { Express, NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { apiRoutes } from "./api.routes";
 import { config } from "./config";
 import { getConnection } from "./db/mongo.utils";
 import { ErrorHandler } from "./error-handling/error-handler";
 import { sqsConsumer } from "./utils/aws/queue";
 import cors from "cors";
+import { logger } from "./utils/aws/logger";
 
-const app: Express = express();
+const app = express();
 
 const errorHandler = (error: Error, request: Request, response: Response, next: NextFunction) => {
   ErrorHandler.forResponse(response).handleError(error);
@@ -25,4 +26,5 @@ app.listen(config.port, () => {
   getConnection();
   sqsConsumer.start();
   console.log(`⚡️[server]: Server is running at https://localhost:${config.port}`);
+  logger.info("Server restarted");
 });

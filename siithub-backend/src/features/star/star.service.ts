@@ -37,7 +37,7 @@ async function addStar(userId: User["_id"], repoId: Repository["_id"]): Promise<
   }
   const star = await starRepo.crud.add({ userId, repoId, date: new Date() });
   await repositoryService.increaseCounterValue(repoId, "stars");
-  logger.info(`Star is added - UserId[${userId}], RepoId[${repoId}]`);
+  logger.info("Star is added", { userId, repoId });
   return star;
 }
 
@@ -48,7 +48,7 @@ async function removeStar(userId: User["_id"], repoId: Repository["_id"]): Promi
   }
   const star = await starRepo.crud.delete(existingStar._id);
   await repositoryService.decreaseCounterValue(repoId, "stars");
-  logger.info(`Star is removed - UserId[${userId}], RepoId[${repoId}]`);
+  logger.info("Star is removed", { userId, repoId });
   return star;
 }
 

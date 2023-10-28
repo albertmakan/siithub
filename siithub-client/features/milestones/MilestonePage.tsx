@@ -38,7 +38,10 @@ export const MilestonePage: FC<{ localId: number }> = ({ localId }) => {
 
   return (
     <>
-      <p className="text-3xl">{milestone.title}</p>
+      <div>
+        <span className="text-3xl">{milestone.title}</span>
+        <span className="text-xl ml-2 text-gray-400">#M{milestone.localId}</span>
+      </div>
       <div className="w-96 bg-gray-300 rounded-full h-2.5 mb-2">
         <div className="bg-green-500 h-2.5 rounded-full my-2" style={{ width: `${completed}%` }} />
       </div>

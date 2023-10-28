@@ -95,6 +95,7 @@ export const MilestonesPage: FC = () => {
                     >
                       {milestone.title}
                     </Link>
+                    <span className="text-xl ml-2 text-gray-400">#M{milestone.localId}</span>
                     <div className="text-base font-semibold flex items-center">
                       <CalendarIcon className="h-5 w-5 mr-1" />
                       {milestone.dueDate ? `Due by ${moment(milestone.dueDate).format("MMM D, YYYY")}` : "No due date"}

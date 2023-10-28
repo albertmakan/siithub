@@ -25,7 +25,7 @@ async function findByRepositoryId(repositoryId: Repository["_id"], isOpen = true
 async function findByRepositoryIdAndLocalId(repositoryId: Repository["_id"], localId: number): Promise<Milestone> {
   const milestone = await milestoneRepo.findByRepositoryIdAndLocalId(repositoryId, localId);
   if (!milestone) {
-    logger.warn(`Milestone not found - RepoId[${repositoryId}], LocalId[#M${localId}]`);
+    logger.warn("Milestone not found", { repoId: repositoryId, localId: `#M${localId}` });
     throw new MissingEntityException("Milestone with given id does not exist.");
   }
   return milestone;
@@ -38,7 +38,7 @@ async function findByTitleAndRepositoryId(title: string, repositoryId: Repositor
 async function findOneOrThrow(id: Milestone["_id"]): Promise<Milestone> {
   const milestone = await findOne(id);
   if (!milestone) {
-    logger.warn(`Milestone not found - MilestoneId[${id}]`);
+    logger.warn("Milestone not found", { milestoneId: id });
     throw new MissingEntityException("Milestone with given id does not exist.");
   }
   return milestone;
@@ -47,9 +47,7 @@ async function findOneOrThrow(id: Milestone["_id"]): Promise<Milestone> {
 async function createMilestone(milestone: MilestoneCreate): Promise<Milestone | null> {
   const milestoneWithSameName = await findByTitleAndRepositoryId(milestone.title, milestone.repositoryId);
   if (milestoneWithSameName) {
-    logger.warn(
-      `Milestone with same title already exists - Title[${milestone.title}], RepoId[${milestone.repositoryId}]`
-    );
+    logger.warn("Milestone with same title already exists", { title: milestone.title, repoId: milestone.repositoryId });
     throw new DuplicateException("Milestone with same title already exists.", milestone);
   }
   milestone.isOpen = true;
@@ -57,7 +55,7 @@ async function createMilestone(milestone: MilestoneCreate): Promise<Milestone | 
   milestone.issuesInfo = { open: 0, closed: 0, lastUpdated: new Date() };
 
   const createdMilestone = (await milestoneRepo.crud.add(milestone)) as Milestone;
-  logger.info(`Milestone is created - RepoId[${milestone.repositoryId}], LocalId[#M${milestone.localId}]`);
+  logger.info("Milestone is created", { repoId: milestone.repositoryId, localId: `#M${milestone.localId}` });
   return createdMilestone;
 }
 
@@ -66,9 +64,7 @@ async function updateMilestone(milestone: MilestoneUpdate): Promise<Milestone | 
 
   const milestoneWithSameName = await findByTitleAndRepositoryId(milestone.title, milestone.repositoryId);
   if (milestoneWithSameName && milestoneWithSameName._id + "" !== existingMilestone._id + "") {
-    logger.warn(
-      `Milestone with same title already exists - Title[${milestone.title}], RepoId[${milestone.repositoryId}]`
-    );
+    logger.warn("Milestone with same title already exists", { title: milestone.title, repoId: milestone.repositoryId });
     throw new DuplicateException("Milestone with same title already exists.", milestone);
   }
   existingMilestone.dueDate = milestone.dueDate;
@@ -76,14 +72,14 @@ async function updateMilestone(milestone: MilestoneUpdate): Promise<Milestone | 
   existingMilestone.title = milestone.title;
 
   const updatedMilestone = await milestoneRepo.crud.update(existingMilestone._id, existingMilestone);
-  logger.info(`Milestone is updated - RepoId[${milestone.repositoryId}], LocalId[#M${milestone.localId}]`);
+  logger.info("Milestone is updated", { repoId: milestone.repositoryId, localId: `#M${milestone.localId}` });
   return updatedMilestone;
 }
 
 async function deleteMilestone(repositoryId: Repository["_id"], localId: number): Promise<Milestone | null> {
   const existingMilestone = await findByRepositoryIdAndLocalId(repositoryId, localId);
   const deletedMilestone = await milestoneRepo.crud.delete(existingMilestone._id);
-  logger.info(`Milestone is deleted - RepoId[${repositoryId}], LocalId[#M${localId}]`);
+  logger.info("Milestone is deleted", { repoId: repositoryId, localId: `#M${localId}` });
   return deletedMilestone;
 }
 
@@ -94,7 +90,7 @@ async function changeStatus(
 ): Promise<Milestone | null> {
   const existingMilestone = await findByRepositoryIdAndLocalId(repositoryId, localId);
   const updatedMilestone = await milestoneRepo.crud.update(existingMilestone._id, { isOpen: open } as MilestoneUpdate);
-  logger.info(`Milestone is ${open ? "opened" : "closed"} - RepoId[${repositoryId}], LocalId[#M${localId}]`);
+  logger.info(`Milestone is ${open ? "opened" : "closed"}`, { repoId: repositoryId, localId: `#M${localId}` });
   return updatedMilestone;
 }
 
@@ -128,9 +124,10 @@ async function handleIssueEvent(id: Milestone["_id"], event: BaseEvent, isOpen: 
   issuesInfo.lastUpdated = new Date();
 
   await milestoneRepo.crud.update(id, { issuesInfo } as MilestoneUpdate);
-  logger.info(
-    `Milestone is updated with issue event - RepoId[${milestone.repositoryId}], LocalId[#M${milestone.localId}]`
-  );
+  logger.info("Milestone is updated with issue event", {
+    repoId: milestone.repositoryId,
+    localId: `#M${milestone.localId}`,
+  });
 }
 
 export type MilestoneService = {

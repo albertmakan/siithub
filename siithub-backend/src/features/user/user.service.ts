@@ -13,7 +13,7 @@ const projection = { _id: 1, username: 1, email: 1, name: 1, pictures: 1 } as co
 async function findOneOrThrow(id: User["_id"]): Promise<User> {
   const existingUser = await userRepo.crud.findOne(id);
   if (!existingUser) {
-    logger.warn(`User not found - UserId[${id}]`);
+    logger.warn("User not found", { userId: id });
     throw new MissingEntityException("User with given id does not exist.");
   }
   return existingUser;
@@ -38,7 +38,7 @@ async function findByUsername(username: string): Promise<User | null> {
 async function findByUsernameOrThrow(username: string): Promise<User> {
   const existingUser = await userRepo.findByUsername(username);
   if (!existingUser) {
-    logger.warn(`User not found - Username[${username}]`);
+    logger.warn("User not found", { username });
     throw new MissingEntityException("User with given username does not exist.");
   }
   return existingUser;
@@ -61,14 +61,14 @@ function getHashedPassword(password: string) {
 async function createUser(user: UserCreate, verify = false): Promise<User | null> {
   const userWithSameUsername = await userRepo.findByUsername(user.username);
   if (userWithSameUsername) {
-    logger.warn(`Username is already taken - Username[${user.username}]`);
+    logger.warn("Username is already taken", { username: user.username });
     throw new DuplicateException("Username is already taken.", user);
   }
 
   if (user.githubUsername) {
     const userWithSameGithubUsername = await userRepo.findByGithubUsername(user.githubUsername);
     if (userWithSameGithubUsername) {
-      logger.warn(`Github username is already taken - GithubUsername[${user.githubUsername}]`);
+      logger.warn("Github username is already taken", { githubUsername: user.githubUsername });
       throw new DuplicateException("Github username is already taken.", user);
     }
     user.githubAccount = { username: user.githubUsername };
@@ -80,17 +80,17 @@ async function createUser(user: UserCreate, verify = false): Promise<User | null
   try {
     await gitServerClient.createUser(user.username);
   } catch (error) {
-    logger.error(`Failed to create user on gitserver - Username[${user.username}]`);
+    logger.error("Failed to create user on gitserver", { username: user.username });
     throw new BadLogicException("Failed to create user");
   }
 
   if (verify) {
     verifyEmail(user.email);
-    logger.info(`Verify email sent - Email[${user.email}]`);
+    logger.info("Verify email sent", { email: user.email });
   }
 
   const createdUser = await userRepo.crud.add(user);
-  logger.info(`User is created - Username[${user.username}]`);
+  logger.info("User is created", { username: user.username });
   return createdUser;
 }
 
@@ -98,7 +98,7 @@ async function updateProfile(id: User["_id"], profileUpdate: UserUpdate): Promis
   const user = await findOneOrThrow(id);
   const { name, bio, email } = profileUpdate;
   const updatedUser = await userRepo.crud.update(id, { name, bio, email });
-  logger.info(`User profile is updated - Username[${user.username}]`);
+  logger.info("User profile is updated", { username: user.username });
   return updatedUser;
 }
 
@@ -109,13 +109,13 @@ async function updatePassword(
   const user = await findOneOrThrow(id);
   const passwordHash = getSha256Hash(passwordUpdate.oldPassword + user.passwordAccount?.salt);
   if (passwordHash !== user.passwordAccount?.passwordHash) {
-    logger.warn(`Old password is incorrect - Username[${user.username}]`);
+    logger.warn("Old password is incorrect", { username: user.username });
     throw new BadLogicException("Old password is incorrect");
   }
   const updatedUser = await userRepo.crud.update(id, {
     passwordAccount: getHashedPassword(passwordUpdate.newPassword),
   });
-  logger.info(`User password is updated - Username[${user.username}]`);
+  logger.info("User password is updated", { username: user.username });
   return updatedUser;
 }
 
@@ -124,7 +124,7 @@ async function updateProfilePicture(id: User["_id"], pictureKey: string): Promis
   const pictures = user.pictures ?? [];
   pictures.push(pictureKey);
   const updatedUser = await userRepo.crud.update(id, { pictures });
-  logger.info(`User picture is updated - Username[${user.username}], Picture[${pictureKey}]`);
+  logger.info("User picture is updated", { username: user.username, picture: pictureKey });
   return updatedUser;
 }
 

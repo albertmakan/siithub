@@ -5,8 +5,6 @@ import { findLastEvent } from "../common/utils";
 import { PRIcon } from "./PRIcon";
 import { HashtagLink } from "../../core/components/HashtagLink";
 
-type PullRequestHeaderProps = {};
-
 const AdditionalText = ({ pullRequest }: { pullRequest: PullRequest }) => {
   const prCreated = findLastEvent(pullRequest.events, (e: any) => e.type === "PullRequestCreatedEvent");
 
@@ -65,7 +63,7 @@ export const PRStatusPreview = ({ pullRequest }: { pullRequest: PullRequest }) =
   return <PreviewComponent pullRequest={pullRequest} text={"Merged"} color={"#8957e5"} />;
 };
 
-export const PullRequestHeader: FC<PullRequestHeaderProps> = ({}) => {
+export const PullRequestHeader: FC = () => {
   const { pullRequest } = usePullRequestContext();
   const {
     localId,
@@ -77,7 +75,7 @@ export const PullRequestHeader: FC<PullRequestHeaderProps> = ({}) => {
         <span className="text-3xl font-medium">
           <HashtagLink>{title}</HashtagLink>
         </span>{" "}
-        <span className="text-3xl text-gray-600">#{localId}</span>
+        <span className="text-3xl text-gray-600">#P{localId}</span>
       </div>
       <div className="flex space-x-2 mt-2">
         <div>

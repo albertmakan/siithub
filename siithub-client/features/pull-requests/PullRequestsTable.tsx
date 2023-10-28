@@ -18,12 +18,12 @@ const AdditionalText = ({ pullRequest }: { pullRequest: PullRequest }) => {
 
   return pullRequest.csm.isClosed ? (
     <>
-      #{pullRequest.localId} opened {moment(prCreated?.timeStamp).fromNow()} by{" "}
+      #P{pullRequest.localId} opened {moment(prCreated?.timeStamp).fromNow()} by{" "}
       {pullRequest.participants[prCreated?.by]?.username}
     </>
   ) : (
     <>
-      #{pullRequest.localId} by {pullRequest.participants[prClosed?.by]?.username} was{" "}
+      #P{pullRequest.localId} by {pullRequest.participants[prClosed?.by]?.username} was{" "}
       {pullRequest.csm.state === PullRequestState.Merged ? "merged" : "canceled"}{" "}
       {moment(prCreated?.timeStamp).fromNow()}
     </>

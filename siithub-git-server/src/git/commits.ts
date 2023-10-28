@@ -24,10 +24,12 @@ export async function getCommits(repoPath: string, branch: string, withStats = f
   }
 }
 
-export async function getCommitsBetweenBranches(repoPath: string, base: string, compare: string) {
+export async function getCommitsBetweenRevisions(repoPath: string, base: string, compare: string, reverse = false) {
   try {
     const log = await execCmd(
-      `git log --pretty=format:"%an%n%ae%n%at%n%H%n%s%n" ${quote([base])}..${quote([compare])}`,
+      `git log ${reverse ? "--reverse" : ""} --pretty=format:"%an%n%ae%n%at%n%H%n%s%n" ${
+        base ? quote([base]) + ".." : ""
+      }${quote([compare])}`,
       repoPath
     );
     return log.split("\n\n").map((commit) => {

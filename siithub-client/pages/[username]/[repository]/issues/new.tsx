@@ -1,10 +1,10 @@
 import { IssueContextProvider } from "../../../../features/issues/IssueContext";
 import { IssuePage } from "../../../../features/issues/IssuePage";
 
-const Labels = () => (
+const NewIssue = () => (
   <IssueContextProvider>
     <IssuePage />
   </IssueContextProvider>
 );
 
-export default Labels;
+export default NewIssue;

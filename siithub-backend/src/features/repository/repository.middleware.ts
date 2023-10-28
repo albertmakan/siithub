@@ -14,7 +14,7 @@ async function authorizeRepositoryOwner(req: Request, res: Response, next: NextF
   const user = username ? await userService.findByUsername(username) : null;
 
   if (userId?.toString() !== user?._id.toString()) {
-    logger.warn(`Not the owner - UserId[${userId}], Repo[${username}/${repoName}]`);
+    logger.warn("Not the owner", { userId, repo: `${username}/${repoName}` });
     next(new ForbiddenException("You are not authorized to access someone else's repository."));
   }
 

@@ -50,6 +50,7 @@ export const IssuesTable: FC<{ issues: Issue[] }> = ({ issues }) => {
                     <span className="text-xl mr-2">
                       <HashtagLink>{issue.csm.title}</HashtagLink>
                     </span>
+                    <span className="text-xl mr-2 text-gray-400">#I{issue.localId}</span>
                     <span>
                       {issue.csm.labels?.map((lId) => {
                         const label = labels?.find((l) => l._id === lId);

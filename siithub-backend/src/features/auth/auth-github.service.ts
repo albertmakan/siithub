@@ -15,17 +15,14 @@ async function authenticate(auth: GithubAuth): Promise<AuthenticatedUser | null>
 
   const user = await userService.findByGithubUsername(githubAccount.login);
   if (!user) {
-    logger.warn(`Authorized GitHub account does not belong to any user account - Account[${githubAccount.login}]`);
+    logger.warn("Authorized GitHub account does not belong to any user account", { account: githubAccount.login });
     throw new MissingEntityException("Authorized GitHub account does not belong to any user account.", githubAccount);
   }
 
-  logger.info(`User authenticated with GitHub - Username[${user.username}]`);
+  logger.info("User authenticated with GitHub", { username: user.username });
   return {
     user: removePassword(user),
-    token: generateJWT({
-      id: user["_id"],
-      type: user.type,
-    }),
+    token: generateJWT({ id: user["_id"], type: user.type }),
   };
 }
 

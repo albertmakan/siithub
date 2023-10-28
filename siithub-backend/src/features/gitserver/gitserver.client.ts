@@ -54,7 +54,7 @@ async function getTree(username: string, repoName: string, branch: string, treeP
     );
     return response.data;
   } catch (err) {
-    logger.error(`Failed to get tree - Tree[${branch}/${treePath}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to get tree", { tree: `${branch}/${treePath}`, repo: `${username}/${repoName}` });
     throw new MissingEntityException("Folder not found");
   }
 }
@@ -66,7 +66,7 @@ async function getCommits(username: string, repoName: string, branch: string) {
     );
     return response.data;
   } catch (err) {
-    logger.error(`Failed to get commits - Rev[${branch}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to get commits", { rev: branch, repo: `${username}/${repoName}` });
     throw new MissingEntityException("Commits not found");
   }
 }
@@ -78,7 +78,7 @@ async function getCommitsBetweenBranches(username: string, repoName: string, bas
     });
     return response.data;
   } catch (err) {
-    logger.error(`Failed to get commits - Base[${base}], Compare[${compare}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to get commits", { base, compare, repo: `${username}/${repoName}` });
     throw new MissingEntityException("Commits not found");
   }
 }
@@ -90,7 +90,7 @@ async function getCommitsDiffBetweenBranches(username: string, repoName: string,
     });
     return response.data;
   } catch (err) {
-    logger.error(`Failed to get diff - Base[${base}], Compare[${compare}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to get diff", { base, compare, repo: `${username}/${repoName}` });
     throw new MissingEntityException("Commits not found");
   }
 }
@@ -101,7 +101,7 @@ async function getCommitsWithDiff(username: string, repoName: string, branch: st
     );
     return response.data;
   } catch (err) {
-    logger.error(`Failed to get commits with stats - Rev[${branch}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to get commits with stats", { rev: branch, repo: `${username}/${repoName}` });
     throw new MissingEntityException("Commits not found");
   }
 }
@@ -113,7 +113,7 @@ async function getCommitCount(username: string, repoName: string, branch: string
     );
     return response.data;
   } catch (err) {
-    logger.error(`Failed to get commit-count - Rev[${branch}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to get commit-count", { rev: branch, repo: `${username}/${repoName}` });
     throw new MissingEntityException("Commits not found");
   }
 }
@@ -125,7 +125,7 @@ async function getCommit(username: string, repoName: string, sha: string) {
     );
     return response.data;
   } catch (err) {
-    logger.error(`Failed to get commit - Rev[${sha}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to get commit", { rev: sha, repo: `${username}/${repoName}` });
     throw new MissingEntityException("Commit not found");
   }
 }
@@ -137,7 +137,7 @@ async function getCommitsSha(username: string, repoName: string, branch: string)
     );
     return response.data;
   } catch (err) {
-    logger.error(`Failed to get commit-sha - Rev[${branch}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to get commit-sha", { rev: branch, repo: `${username}/${repoName}` });
     throw new MissingEntityException("Sha not found");
   }
 }
@@ -151,7 +151,7 @@ async function mergeCommits(username: string, repoName: string, base: string, co
     );
     return response.data;
   } catch (err) {
-    logger.error(`Failed to merge - Base[${base}], Compare[${compare}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to merge", { base, compare, repo: `${username}/${repoName}` });
     return null;
   }
 }
@@ -163,7 +163,7 @@ async function getFileHistoryCommits(username: string, repoName: string, branch:
     );
     return response.data;
   } catch (err) {
-    logger.error(`Failed to get file history - Rev[${branch}], Path[${filePath}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to get file history", { rev: branch, path: filePath, repo: `${username}/${repoName}` });
     throw new MissingEntityException("Commits not found");
   }
 }
@@ -180,7 +180,7 @@ async function getBlob(username: string, repoName: string, branch: string, blobP
       data: response.data,
     };
   } catch (err) {
-    logger.error(`Failed to get file - Rev[${branch}], Path[${blobPath}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to get file", { rev: branch, path: blobPath, repo: `${username}/${repoName}` });
     throw new MissingEntityException("File not found");
   }
 }
@@ -192,7 +192,7 @@ async function getBlobInfo(username: string, repoName: string, branch: string, b
     );
     return response.data;
   } catch (err) {
-    logger.error(`Failed to get file info - Rev[${branch}], Path[${blobPath}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to get file info", { rev: branch, path: blobPath, repo: `${username}/${repoName}` });
     throw new MissingEntityException("File not found");
   }
 }

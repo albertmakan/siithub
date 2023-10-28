@@ -11,22 +11,19 @@ async function authenticate(credentials: Credentials): Promise<AuthenticatedUser
 
   const userWithSameUsername = await userService.findByUsername(username);
   if (!userWithSameUsername) {
-    logger.warn(`Cannot authenticate user because it is not found - Username[${username}]`);
+    logger.warn("Cannot authenticate user because it is not found", { username });
     throw new AuthenticationException("The combination of username and password does not match any existing account.");
   }
   const passwordHash = getSha256Hash(password + userWithSameUsername.passwordAccount?.salt);
   if (passwordHash !== userWithSameUsername.passwordAccount?.passwordHash) {
-    logger.warn(`Cannot authenticate user because password is wrong - Username[${username}]`);
+    logger.warn("Cannot authenticate user because password is wrong", { username });
     throw new AuthenticationException("The combination of username and password does not match any existing account.");
   }
 
-  logger.info(`User authenticated - Username[${username}]`);
+  logger.info("User authenticated", { username });
   return {
     user: removePassword(userWithSameUsername),
-    token: generateJWT({
-      id: userWithSameUsername["_id"],
-      type: userWithSameUsername.type,
-    }),
+    token: generateJWT({ id: userWithSameUsername["_id"], type: userWithSameUsername.type }),
   };
 }
 

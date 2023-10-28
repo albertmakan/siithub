@@ -15,7 +15,7 @@ async function findByVersionAndRepositoryId(version: string, repositoryId: Repos
 async function findByVersionAndRepositoryIdOrThrow(version: string, repositoryId: Repository["_id"]): Promise<Tag> {
   const tag = await tagsRepo.findByVersionAndRepositoryId(version, repositoryId);
   if (!tag) {
-    logger.warn(`Tag not found - Version[${version}], RepoId[${repositoryId}]`);
+    logger.warn("Tag not found", { version, repoId: repositoryId });
     throw new MissingEntityException("Tag with given version does not exist in that repository.");
   }
   return tag;
@@ -36,9 +36,7 @@ async function countByRepositoryId(repositoryId: Repository["_id"]): Promise<num
 async function createTag(createTag: TagCreate): Promise<Tag | null> {
   const tagWithSameVersion = await findByVersionAndRepositoryId(createTag.version, createTag.repositoryId);
   if (tagWithSameVersion) {
-    logger.warn(
-      `Tag with same version already exists - Version[${createTag.version}], RepoId[${createTag.repositoryId}]`
-    );
+    logger.warn("Tag with same version already exists", { version: createTag.version, repoId: createTag.repositoryId });
     throw new DuplicateException("Tag with same version already exists.", createTag);
   }
 
@@ -49,7 +47,7 @@ async function createTag(createTag: TagCreate): Promise<Tag | null> {
   const tag = createTag as Tag;
   const sha = await gitServerClient.getCommitsSha(owner, name, createTag.branch);
   if (!sha) {
-    logger.warn(`Cannot create tag on branch - Branch[${createTag.branch}], Repo[${owner}/${name}]`);
+    logger.warn("Cannot create tag on branch", { branch: createTag.branch, repo: `${owner}/${name}` });
     throw new BadLogicException("There is no branch with commits.");
   }
 
@@ -62,12 +60,12 @@ async function createTag(createTag: TagCreate): Promise<Tag | null> {
     if (latestTag) {
       latestTag.isLatest = false;
       await tagsRepo.crud.update(latestTag._id, latestTag);
-      logger.info(`Updated latest tag - Version[${latestTag.version}], Repo[${owner}/${name}]`);
+      logger.info("Updated latest tag", { version: latestTag.version, repo: `${owner}/${name}` });
     }
   }
 
   const newTag = await tagsRepo.crud.add(tag);
-  logger.info(`Tag is created - Version[${tag.version}], Repo[${owner}/${name}]`);
+  logger.info("Tag is created", { version: tag.version, repo: `${owner}/${name}` });
   return newTag;
 }
 
@@ -78,7 +76,7 @@ async function deleteTag(version: string, repositoryId: Repository["_id"]): Prom
   await gitServerClient.deleteTag(owner, name, tag.version);
 
   const deletedTag = await tagsRepo.crud.delete(tag._id);
-  logger.info(`Tag is deleted - Version[${version}], Repo[${owner}/${name}]`);
+  logger.info("Tag is deleted", { version, repo: `${owner}/${name}` });
   return deletedTag;
 }
 

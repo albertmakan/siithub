@@ -14,7 +14,7 @@ export function isAllowedToAccessRepo(allowPublicAccess = false, onlyVerified = 
     }
     if (allowAccess) next();
     else {
-      logger.warn(`Not a collaborator - UserId[${res.locals.userId}], Repo[${owner}/${name}]`);
+      logger.warn("Not a collaborator", { userId: res.locals.userId, repo: `${owner}/${name}` });
       next(new ForbiddenException("You are not collaborating on the repository."));
     }
   };

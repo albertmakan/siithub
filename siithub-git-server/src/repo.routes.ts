@@ -8,7 +8,7 @@ import {
   getCommit,
   getCommitCount,
   getCommits,
-  getCommitsBetweenBranches,
+  getCommitsBetweenRevisions,
   getCommitsDiffBetweenBranches,
   getCommitsSha,
   getFileHistoryCommits,
@@ -101,7 +101,7 @@ router.delete("/branches/:branchName", async (req: Request, res: Response) => {
 
 router.get("/commits/between", async (req: Request, res: Response) => {
   const { base, compare } = req.query;
-  const commits = await getCommitsBetweenBranches(
+  const commits = await getCommitsBetweenRevisions(
     res.locals.repoPath,
     base?.toString() ?? "",
     compare?.toString() ?? ""

@@ -30,7 +30,7 @@ async function findOne(id: PullRequest["_id"]): Promise<PullRequest | null> {
 async function findOneOrThrow(id: PullRequest["_id"]): Promise<PullRequest> {
   const pullRequest = await pullRequestsRepo.crud.findOne(id);
   if (!pullRequest) {
-    logger.warn(`Pull request not found - PullRequestId[${id}]`);
+    logger.warn("Pull request not found", { pullRequestId: id });
     throw new MissingEntityException("PullRequest with given id does not exist.");
   }
   return pullRequest;
@@ -43,7 +43,7 @@ async function findByRepositoryId(repositoryId: Repository["_id"]): Promise<Pull
 async function findByRepositoryIdAndLocalId(repositoryId: Repository["_id"], localId: number): Promise<PullRequest> {
   const pullRequest = await pullRequestsRepo.findByRepositoryIdAndLocalId(repositoryId, localId);
   if (!pullRequest) {
-    logger.warn(`Pull request not found - RepoId[${repositoryId}], LocalId[#P${localId}]`);
+    logger.warn("Pull request not found", { repoId: repositoryId, localId: `#P${localId}` });
     throw new MissingEntityException("PullRequest with given id does not exist.");
   }
   return pullRequest;
@@ -75,7 +75,7 @@ async function createPullRequest({ events, repositoryId }: PullRequestCreate): P
     repositoryId,
     localId,
   })) as PullRequest;
-  logger.info(`Pull request is created - RepoId[${repositoryId}], LocalId[#P${localId}]`);
+  logger.info("Pull request is created", { repoId: repositoryId, localId: `#P${localId}` });
 
   return await updateEventsFor(createdPullRequest, events);
 }
@@ -91,7 +91,7 @@ async function updateEventsFor(pullRequest: PullRequest, events: BaseEvent[]) {
     await handleEvent(pullRequest, event);
   }
   const updatedPullRequest = await pullRequestsRepo.crud.update(pullRequest._id, pullRequest);
-  logger.info(`Pull request is updated - RepoId[${pullRequest.repositoryId}], LocalId[#P${pullRequest.localId}]`);
+  logger.info("Pull request is updated", { repoId: pullRequest.repositoryId, localId: `#P${pullRequest.localId}` });
   return updatedPullRequest;
 }
 
@@ -154,7 +154,7 @@ async function validateEventFor(pullRequest: PullRequest, event: BaseEvent): Pro
       const { base, compare } = prEvent;
       const commits = await commitService.getCommitsBetweenBranches(owner, name, base, compare);
       if (!commits || !commits.length) {
-        logger.warn(`No changes between branches - Base[${base}], Compare[${compare}], Repo[${owner}/${name}]`);
+        logger.warn("No changes between branches", { base, compare, repo: `${owner}/${name}` });
         throw new BadLogicException("Cannot set those branches because there aren't any changes.");
       }
     }

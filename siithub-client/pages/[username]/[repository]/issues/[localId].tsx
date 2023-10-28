@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import { IssuePage } from "../../../../features/issues/IssuePage";
 import { IssueContextProvider } from "../../../../features/issues/IssueContext";
 
-const Labels = () => {
+const Issue = () => {
   const router = useRouter();
   const { localId } = router.query;
 
@@ -13,4 +13,4 @@ const Labels = () => {
   );
 };
 
-export default Labels;
+export default Issue;

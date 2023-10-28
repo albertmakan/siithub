@@ -30,7 +30,7 @@ export const PullRequestCard: FC<PullRequestsCardProps> = ({ pullRequest }) => {
         >
           {pullRequest.csm.title}
         </Link>{" "}
-        <span className="text-lg text-gray-600">#{pullRequest.localId}</span>
+        <span className="text-lg text-gray-600">#P{pullRequest.localId}</span>
       </div>
       <div className="flex space-x-2">
         <div>

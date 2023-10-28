@@ -66,8 +66,11 @@ export const DescribeIssueForm: FC = () => {
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="bg-white px-4 py-5 sm:p-6 mb-1">
         <div className="grid grid-cols-6 gap-6">
-          <div className="col-span-6">
+          <div className="col-span-5">
             <InputField label="Title" formElement={describeIssueForm("title")} errorMessage={errors?.title?.message} />
+          </div>
+          <div className="col-span-1 pt-10">
+            {issue._id && <span className="text-2xl ml-2 text-gray-400">#I{issue.localId}</span>}
           </div>
 
           <div className="col-span-6">

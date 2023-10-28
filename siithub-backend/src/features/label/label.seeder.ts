@@ -54,10 +54,10 @@ async function seedDefaultLabels(repositoryId: Repository["_id"]) {
     try {
       createdLabels.push((await labelService.create(label)) as Label);
     } catch (error) {
-      logger.error(`Failed to add default label - RepoId[${repositoryId}] Label[${label.name}]`);
+      logger.error("Failed to add default label", { repoId: repositoryId, label: label.name });
     }
   }
-  logger.info(`Default labels are added (${createdLabels.length}/${labels.length}) - RepoId[${repositoryId}]`);
+  logger.info("Default labels are added", { repoId: repositoryId });
 
   return createdLabels;
 }

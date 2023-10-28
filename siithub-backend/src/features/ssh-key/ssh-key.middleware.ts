@@ -15,7 +15,7 @@ async function authorizeSshKeyOwner(req: Request, _: Response, next: NextFunctio
   const user = await userService.findByUsername(sshKey?.owner || req.body.owner);
 
   if (userId.toString() !== user?._id.toString()) {
-    logger.error(`Not authorized to set up someone else's keys - UserId[${userId}], OwnerId[${user?._id}]`);
+    logger.error("Not authorized to set up someone else's keys", { userId, ownerId: user?._id });
     throw new ForbiddenException("You are not authorized to set up someone else's keys.");
   }
 

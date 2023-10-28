@@ -12,6 +12,7 @@ export const logger = createLogger({
       logGroupName: process.env.LOG_GROUP,
       logStreamName: "log-stream",
       uploadRate: 10000,
+      messageFormatter: (log) => JSON.stringify(log),
     }),
   ],
 });

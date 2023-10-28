@@ -1,14 +1,14 @@
 import { type BaseEntity } from "../../db/base.repo.utils";
 import { type Branch } from "../branches/branches.models";
 
+export type CounterType = "milestone" | "issue" | "stars" | "pull-request" | "forks";
+
 export type Repository = {
   name: string;
   description?: string;
   type: "public" | "private";
   owner: string;
-  counters: {
-    [thing: string]: number;
-  };
+  counters: Record<CounterType, number>;
   forkedFrom?: Repository["_id"];
   defaultBranch?: Branch;
 } & BaseEntity;
@@ -23,5 +23,3 @@ export type RepositoryForkCreate = {
   repoOwner: string;
   only1Branch?: string;
 };
-
-export type CounterType = "milestone" | "issue" | "stars" | "pull-request" | "forks";

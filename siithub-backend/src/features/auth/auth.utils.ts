@@ -14,12 +14,12 @@ function getUserIdFromRequest(req: Request, types?: UserType[]): ObjectId {
   const autorization = req.headers["authorization"] || "";
   const token = autorization && autorization.split(" ")[1];
   if (!token) {
-    logger.warn(`Missing authorization token`);
+    logger.warn("Missing authorization token");
     throw new ForbiddenException("You are missing the authorization token.");
   }
   const payload = parseJWT(token);
   if (!payload?.id || (types?.length && !types.includes(payload.type))) {
-    logger.warn(`Not authorized - UserId[${payload?.id}], Types[${types}]`);
+    logger.warn("Not authorized", { userId: payload?.id, types });
     throw new ForbiddenException("You are not authorized to perform this action.");
   }
   return new ObjectId(payload.id);

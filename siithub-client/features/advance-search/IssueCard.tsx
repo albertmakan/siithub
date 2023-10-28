@@ -31,7 +31,7 @@ export const IssueCard: FC<IssueCardProps> = ({ issue }) => {
         >
           {issue.csm.title}
         </Link>
-        <span className="text-lg text-gray-600">#{issue.localId}</span>
+        <span className="text-lg text-gray-600">#I{issue.localId}</span>
       </div>
       <div>
         <HashtagLink>{parse(issue.csm.description ?? "")}</HashtagLink>

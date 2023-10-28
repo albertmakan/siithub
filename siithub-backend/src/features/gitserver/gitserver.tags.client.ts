@@ -6,7 +6,7 @@ async function createTag(username: string, repoName: string, tagName: string, ta
   const response = await gitServerHttpClient.post(`/api/repo/${username}/${repoName}/tags`, { tagName, target });
 
   if (response.status !== 200) {
-    logger.error(`Failed to create tag - Target[${target}], Tag[${tagName}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to create tag", { target, tag: tagName, repo: `${username}/${repoName}` });
     throw new BadLogicException("Error while creating a new tag.");
   }
   return response.data;
@@ -16,7 +16,7 @@ async function deleteTag(username: string, repoName: string, tagName: string): P
   const response = await gitServerHttpClient.delete(`/api/repo/${username}/${repoName}/tags/${tagName}`);
 
   if (response.status !== 200) {
-    logger.error(`Failed to delete tag - Tag[${tagName}], Repo[${username}/${repoName}]`);
+    logger.error("Failed to delete tag", { tag: tagName, repo: `${username}/${repoName}` });
     throw new BadLogicException("Error while deleting an existing tag.");
   }
   return response.data;

@@ -1,9 +1,5 @@
 import { type BaseRepo, BaseRepoFactory } from "../../db/base.repo.utils";
-import {
-  type Repository,
-  type RepositoryCreate,
-  type RepositoryUpdate,
-} from "./repository.model";
+import type { Repository, RepositoryCreate, RepositoryUpdate } from "./repository.model";
 
 const collectionName = "repository";
 
@@ -17,9 +13,7 @@ export type RepositoryRepo = {
 };
 
 const repositoryRepo: RepositoryRepo = {
-  crud: BaseRepoFactory<Repository, RepositoryCreate, RepositoryUpdate>(
-    collectionName
-  ),
+  crud: BaseRepoFactory<Repository, RepositoryCreate, RepositoryUpdate>(collectionName),
   findByOwnerAndName,
 };
 
