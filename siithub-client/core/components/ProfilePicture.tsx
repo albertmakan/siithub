@@ -16,6 +16,7 @@ function hashCode(name: string) {
 }
 
 function getColorAndPixels(username: string) {
+  if (!username) return { color: white, pixels: Array.from({ length: 15 }, () => false) };
   const color = colors[username.charCodeAt(0) % colors.length];
   const n = (username.charCodeAt(username.length - 1) % 4) + 6;
   const hash = hashCode(username);

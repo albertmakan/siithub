@@ -34,9 +34,9 @@ type TagSchemaType = z.infer<typeof tagSchema>;
 
 export const TagForm: FC = () => {
   const { repository } = useRepositoryContext();
-  const { owner, name, defaultBranch, _id } = repository as Repository;
+  const { defaultBranch, _id } = repository as Repository;
   const { setResult } = useResult("tags");
-  const { branches } = useBranches(owner, name);
+  const { branches } = useBranches(_id);
 
   const {
     register: createTagForm,

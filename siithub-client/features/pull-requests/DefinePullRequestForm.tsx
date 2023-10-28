@@ -1,6 +1,5 @@
 import { type FC, useEffect, useState } from "react";
 import { useRepositoryContext } from "../repository/RepositoryContext";
-import { type Repository } from "../repository/repository.service";
 import { useBranches } from "../branches/useBranches";
 import Select from "react-select";
 import { ArrowLongLeftIcon } from "@heroicons/react/24/solid";
@@ -34,9 +33,8 @@ export const DefinePullRequestForm: FC = () => {
   const { user } = useAuthContext();
   const executedBy = user?._id ?? "";
 
-  const { repository } = useRepositoryContext();
-  const { owner, name } = repository as Repository;
-  const { branches } = useBranches(owner, name);
+  const repoId = useRepositoryContext().repository?._id;
+  const { branches } = useBranches(repoId ?? "");
   const defaultBranch = useRepositoryContext().repository?.defaultBranch;
   const { pullRequest, pullRequestDispatcher, isEdit } = usePullRequestContext();
 
