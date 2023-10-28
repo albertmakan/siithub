@@ -10,10 +10,14 @@ type RepositoryViewProps = {
 export const RepositoryView: FC<RepositoryViewProps> = ({ username, repo, isEmpty }) => {
   if (isEmpty)
     return (
-      <div>
-        <p className="text-2xl">This repository is empty</p>
-        <CloneButton />
-      </div>
+      <>
+        <div className="flex justify-end">
+          <CloneButton />
+        </div>
+        <div>
+          <p className="text-2xl text-center">This repository is empty</p>
+        </div>
+      </>
     );
   return <div>Loading...</div>;
 };

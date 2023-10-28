@@ -25,9 +25,13 @@ export const CloneButton: FC = () => {
           Clone
         </Menu.Button>
       </div>
-      <Menu.Items className="absolute right-0 z-10 mt-2 rounded-md bg-white p-5 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-        <div className="flex rounded-lg">
-          <input value={sshUrl} readOnly className="rounded-l-lg border-blue-500 border-2 w-96" />
+      <Menu.Items className="absolute right-0 z-10 mt-1 rounded-md bg-white p-5 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none w-96">
+        <div className="flex rounded-lg w-full">
+          <input
+            value={sshUrl}
+            readOnly
+            className="text-xs font-semibold rounded-l-lg border-blue-500 border-2 w-full"
+          />
           <button
             onClick={() =>
               navigator.clipboard.writeText(sshUrl).then(() => notification.success("Copied to clipboard"))

@@ -16,7 +16,16 @@ export const ChooseMilestonesField: FC<ChooseMilestonesFieldProps> = ({
 }) => {
   const { milestones } = useMilestones(repositoryId);
 
-  const milestoneOptions = milestones?.map((m) => ({ value: m._id, label: m.title })) ?? [];
+  const milestoneOptions =
+    milestones?.map((m) => ({
+      value: m._id,
+      label: (
+        <span>
+          <span>{m.title}</span>
+          <span className="text-gray-400 ml-2">#M{m.localId}</span>
+        </span>
+      ),
+    })) ?? [];
   const defaultValue = milestoneOptions.filter((m) => selectedMilestones?.includes(m.value));
 
   return (

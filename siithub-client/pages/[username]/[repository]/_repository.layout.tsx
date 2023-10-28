@@ -9,9 +9,9 @@ import { TagIcon } from "@heroicons/react/24/outline";
 import { TicketIcon } from "@heroicons/react/24/outline";
 import { Cog8ToothIcon } from "@heroicons/react/24/outline";
 import { RepositoryContextProvider } from "../../../features/repository/RepositoryContext";
-import { RepositoryMenu } from "../../../features/repository/RepositoryMenu";
+import { RepositoryMenu, RepositoryMenuItem } from "../../../features/repository/RepositoryMenu";
 
-function getLinks(router: NextRouter, username: string, repository: string) {
+function getLinks(router: NextRouter, username: string, repository: string): RepositoryMenuItem[] {
   return [
     {
       title: "Code",
@@ -27,7 +27,7 @@ function getLinks(router: NextRouter, username: string, repository: string) {
       title: "Issues",
       icon: <TicketIcon className="h-4 w-4 mr-2" />,
       path: "/[username]/[repository]/issues",
-      hasChildrens: true,
+      hasChildren: true,
       onClick: async () => {
         await router.push(`/${username}/${repository}/issues`);
       },
@@ -36,7 +36,7 @@ function getLinks(router: NextRouter, username: string, repository: string) {
       title: "Pull Requests",
       icon: <TicketIcon className="h-4 w-4 mr-2" />,
       path: "/[username]/[repository]/pull-requests",
-      hasChildrens: true,
+      hasChildren: true,
       onClick: async () => {
         await router.push(`/${username}/${repository}/pull-requests`);
       },
@@ -45,7 +45,7 @@ function getLinks(router: NextRouter, username: string, repository: string) {
       title: "Milestones",
       icon: <CalendarIcon className="h-4 w-4 mr-2" />,
       path: "/[username]/[repository]/milestones",
-      hasChildrens: true,
+      hasChildren: true,
       onClick: async () => {
         await router.push(`/${username}/${repository}/milestones`);
       },
@@ -69,7 +69,8 @@ function getLinks(router: NextRouter, username: string, repository: string) {
     {
       title: "Insights",
       icon: <PresentationChartLineIcon className="h-4 w-4 mr-2" />,
-      path: "/[username]/[repository]/graphs/[graph]",
+      path: "/[username]/[repository]/graphs",
+      hasChildren: true,
       onClick: async () => {
         await router.push(`/${username}/${repository}/graphs/pulse`);
       },
@@ -78,7 +79,7 @@ function getLinks(router: NextRouter, username: string, repository: string) {
       title: "Settings",
       icon: <Cog8ToothIcon className="h-4 w-4 mr-2" />,
       path: "/[username]/[repository]/settings",
-      hasChildrens: true,
+      hasChildren: true,
       onClick: async () => {
         await router.push(`/${username}/${repository}/settings`);
       },
@@ -102,7 +103,7 @@ export const RepositoryLayout: FC<PropsWithChildren> = ({ children }) => {
         <RepositoryHeader />
         <RepositoryMenu links={links} />
 
-        <div className="mt-10 w-full">{children}</div>
+        <div className="mt-5 w-full">{children}</div>
       </RepositoryContextProvider>
     </>
   );

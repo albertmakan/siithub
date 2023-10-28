@@ -55,7 +55,7 @@ export function onLogin({ user, token }: any) {
   setToken(token);
 
   setAxiosInterceptors(axios, () => {
-    _authDispatcher(onLogout());
+    _authDispatcher(onLogout(true));
   });
 
   return {
@@ -64,13 +64,11 @@ export function onLogin({ user, token }: any) {
   };
 }
 
-export function onLogout() {
+export function onLogout(back = false) {
   removeToken();
-  window.location.href = "/";
+  window.location.href = back ? `/auth/?backRoute=${window.location.pathname}` : `/auth`;
 
-  return {
-    type: "logout",
-  };
+  return { type: "logout" };
 }
 
 export const useAuthContext = () => useContext(AuthContext);

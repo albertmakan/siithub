@@ -14,24 +14,25 @@ type GraphType = keyof typeof graphTypes;
 
 export const RepositoryGraphsLayout: FC<PropsWithChildren> = ({ children }) => {
   const router = useRouter();
-  const { repository, username, graph } = router.query;
+  const { repository, username } = router.query;
+  const graph = router.pathname.split("/").at(-1);
 
   return (
-    <div className="flex items-center justify-center w-full p-2">
-      <div className="flex gap-5">
-        <div className="flex flex-col w-[312px] h-fit border rounded-md">
-          {Object.keys(graphTypes).map((graphType) => (
-            <Link
-              key={graphType}
-              className={`p-3 flex hover:bg-slate-50 ${graph === graphType ? "border-l-2 border-orange-500" : ""}`}
-              href={`/${username}/${repository}/graphs/${graphType}`}
-            >
-              {graphTypes[graphType as GraphType]}
-            </Link>
-          ))}
-        </div>
-        <div className="flex flex-col gap-5 flex-1 items-center min-w-[812px] max-w-[1024px]">{children}</div>
+    <div className="md:flex gap-5">
+      <div className="flex flex-col h-fit border rounded-md mb-5">
+        {Object.keys(graphTypes).map((graphType) => (
+          <Link
+            key={graphType}
+            className={`px-3 py-2 hover:bg-slate-50 ${
+              graph === graphType ? "border-l-2 border-orange-500 bg-gray-200" : ""
+            }`}
+            href={`/${username}/${repository}/graphs/${graphType}`}
+          >
+            {graphTypes[graphType as GraphType]}
+          </Link>
+        ))}
       </div>
+      <div className="flex flex-col gap-5 flex-1 items-center">{children}</div>
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { type FC } from "react";
 import { type Repository } from "../repository/repository.service";
 import Select from "react-select";
 import { useCollaborators } from "../collaborators/useCollaborators";
+import { ProfilePicture } from "../../core/components/ProfilePicture";
 
 type ChooseAssigneesFieldProps = {
   repositoryId: Repository["_id"];
@@ -16,7 +17,15 @@ export const ChooseAssigneesField: FC<ChooseAssigneesFieldProps> = ({
 }) => {
   const { collaborators } = useCollaborators(repositoryId, "");
 
-  const assigneesOptions = collaborators.map((c) => ({ value: c.user._id, label: c.user.name }));
+  const assigneesOptions = collaborators.map((c) => ({
+    value: c.user._id,
+    label: (
+      <span className="flex items-center">
+        <ProfilePicture user={c.user} size={25} />
+        <span className="ml-3">{c.user.name}</span>
+      </span>
+    ),
+  }));
   const defaultValue = assigneesOptions.filter((a) => selectedAssignees?.includes(a.value));
 
   return (

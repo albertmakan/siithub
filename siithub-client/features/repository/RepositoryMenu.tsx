@@ -7,7 +7,7 @@ export type RepositoryMenuItem = {
   path: string;
   isMultimenu?: boolean;
   menus?: string[];
-  hasChildrens?: boolean;
+  hasChildren?: boolean;
   onClick: () => any;
 };
 
@@ -19,10 +19,10 @@ export const RepositoryMenu: FC<RepositoryMenuProps> = ({ links }) => {
   const router = useRouter();
 
   const isActive = useCallback(
-    ({ path, hasChildrens, isMultimenu, menus }: RepositoryMenuItem) => {
+    ({ path, hasChildren, isMultimenu, menus }: RepositoryMenuItem) => {
       if (!router) return false;
 
-      if (hasChildrens) return router.pathname.startsWith(path);
+      if (hasChildren) return router.pathname.startsWith(path);
 
       if (isMultimenu) return !!menus?.find((m) => router.pathname.startsWith(path + m)) || router.pathname === path;
 
@@ -32,26 +32,20 @@ export const RepositoryMenu: FC<RepositoryMenuProps> = ({ links }) => {
   );
 
   return (
-    <>
-      <div className="bg-gray-700 mt-2">
-        <div className="py-1 px-2 flex items-baseline space-x-4 ">
-          {links?.map((link: RepositoryMenuItem) => {
-            return (
-              <p
-                key={link.title}
-                onClick={link.onClick}
-                className={
-                  "flex items-center bg-gray-900 text-white cursor-pointer px-3 py-2 rounded-md text-sm font-medium hover:border-indigo-300 hover:border-b-4 " +
-                  (isActive(link) ? "border-blue-600 border-b-4" : "")
-                }
-              >
-                {link.icon}
-                <span className="ml-3">{link.title}</span>
-              </p>
-            );
-          })}
-        </div>
-      </div>
-    </>
+    <div className="bg-gray-700 p-1 mt-2 flex flex-wrap">
+      {links.map((link) => (
+        <span
+          key={link.title}
+          onClick={link.onClick}
+          className={
+            "flex items-center bg-gray-900 text-white cursor-pointer px-3 py-2 m-1 rounded-md text-sm font-medium hover:border-indigo-300 hover:border-b-4 " +
+            (isActive(link) ? "border-blue-600 border-b-4" : "")
+          }
+        >
+          {link.icon}
+          <span className="ml-2">{link.title}</span>
+        </span>
+      ))}
+    </div>
   );
 };

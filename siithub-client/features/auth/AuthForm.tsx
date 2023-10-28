@@ -13,30 +13,37 @@ import { authenticate, type Credentials, type AuthenticatedUser, credentialsSche
 
 export const AuthForm: FC = () => {
   const router = useRouter();
+  const { backRoute } = router.query;
+
   const notifications = useNotifications();
-  const { setResult } = useResult('auth');
+  const { setResult } = useResult("auth");
   const { authDispatcher } = useAuthContext();
 
-  const { register: authForm, handleSubmit, formState: { errors } } = useZodValidatedFrom<Credentials>(credentialsSchema);
+  const {
+    register: authForm,
+    handleSubmit,
+    formState: { errors },
+  } = useZodValidatedFrom<Credentials>(credentialsSchema);
 
   const authenticateAction = useAction<Credentials, AuthenticatedUser>(authenticate, {
     onSuccess: (authUser: AuthenticatedUser) => {
       authDispatcher(onLogin(authUser));
-      setResult({ status: ResultStatus.Ok, type: 'AUTHENTICATE' });
-      router.push(`/users/${authUser.user.username}`)
+      setResult({ status: ResultStatus.Ok, type: "AUTHENTICATE" });
+      router.push(backRoute ? `${backRoute}` : `/users/${authUser.user.username}`);
     },
     onError: (error: any) => {
       notifications.error(extractErrorMessage(error));
-      setResult({ status: ResultStatus.Error, type: 'AUTHENTICATE' });
-    }
+      setResult({ status: ResultStatus.Error, type: "AUTHENTICATE" });
+    },
   });
+
+  const githubCallbackPage = `${window.location.origin}/auth/github-callback`;
 
   return (
     <form onSubmit={handleSubmit(authenticateAction)}>
       <div className="overflow-hidden shadow sm:rounded-md">
         <div className="bg-white px-4 py-5 sm:p-6">
           <div className="grid grid-cols-6 gap-6">
-
             <div className="col-span-6">
               <InputField
                 label="Username"
@@ -53,19 +60,23 @@ export const AuthForm: FC = () => {
                 errorMessage={errors?.password?.message}
               />
             </div>
-
           </div>
 
           <div className="mt-2 text-center text-sm text-gray-600">
-            or login with <Link className="font-medium text-indigo-600 hover:text-indigo-500" href="https://github.com/login/oauth/authorize?response_type=code&client_id=fac8103c08404fb3370f&scope=user:email%20read:user&state=vrDTS-C5hFu_l8QcZJwTqWYd0d_pBcznFQ_YfuOSXfg%3D&redirect_uri=http://localhost:3000/auth/github-callback">GitHub</Link>
+            or login with{" "}
+            <Link
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+              href={`https://github.com/login/oauth/authorize?response_type=code&client_id=fac8103c08404fb3370f&scope=user:email%20read:user&state=vrDTS-C5hFu_l8QcZJwTqWYd0d_pBcznFQ_YfuOSXfg%3D&redirect_uri=${githubCallbackPage}`}
+            >
+              GitHub
+            </Link>
           </div>
         </div>
 
         <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
           <Button>Login</Button>
         </div>
-
       </div>
     </form>
   );
-}
+};

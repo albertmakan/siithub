@@ -22,9 +22,11 @@ export const StarredRepos: FC<StarredReposProps> = ({ username }) => {
   return (
     <>
       <p className="text-3xl m-3">Stars</p>
-      {repositories?.map((repo) => (
-        <RepositoryCard repository={repo} key={repo._id} />
-      ))}
+      {repositories?.length ? (
+        repositories.map((repo) => <RepositoryCard repository={repo} key={repo._id} />)
+      ) : (
+        <p className="text-xl">There are no starred repositories</p>
+      )}
     </>
   );
 };

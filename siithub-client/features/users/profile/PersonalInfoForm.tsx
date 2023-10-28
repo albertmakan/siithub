@@ -61,7 +61,7 @@ export const PersonalInfoForm: FC<{ user: User }> = ({ user }) => {
               <AreaField label="Bio" formElement={profileForm("bio")} rows={5} errorMessage={errors?.bio?.message} />
             </div>
           </div>
-          <div className="w-1/4 pl-8">
+          <div className="pl-8">
             {url ? <CirclularImage url={url} size={200} /> : <ProfilePicture user={user} size={200} />}
             <input type="file" accept="image/*" onChange={onFileChange} />
           </div>

@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { type FC, useEffect } from "react";
+import { type FC } from "react";
 import { onLogin, useAuthContext } from "../../core/contexts/Auth";
 import { ResultStatus, useResult } from "../../core/contexts/Result";
 import { useAction } from "../../core/hooks/useAction";
@@ -11,6 +11,8 @@ let sent = false;
 
 export const AuthGithubCallbackPage: FC = () => {
   const router = useRouter();
+  const { backRoute } = router.query;
+
   const notifications = useNotifications();
   const { setResult } = useResult("auth");
   const { authDispatcher } = useAuthContext();
@@ -19,7 +21,7 @@ export const AuthGithubCallbackPage: FC = () => {
     onSuccess: (authUser: AuthenticatedUser) => {
       authDispatcher(onLogin(authUser));
       setResult({ status: ResultStatus.Ok, type: "AUTHENTICATE" });
-      router.push("/");
+      router.push(backRoute ? `${backRoute}` : `/users/${authUser.user.username}`);
     },
     onError: (error: any) => {
       if (error.statusCode !== 404) {
@@ -44,10 +46,8 @@ export const AuthGithubCallbackPage: FC = () => {
   }
 
   return (
-    <>
-      <div>
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Please, have a patience.</h2>
-      </div>
-    </>
+    <div>
+      <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Please, have a patience.</h2>
+    </div>
   );
 };

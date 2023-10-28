@@ -1,5 +1,4 @@
 import { type FC, useState } from "react";
-import { InputField } from "../../core/components/InputField";
 import Select from "react-select";
 import { type Repository } from "../repository/repository.service";
 import { ChooseAssigneesField } from "../common/ChooseAssigneesField";
@@ -7,6 +6,7 @@ import { PullRequestState, type PullRequestsQuery } from "./pullRequestActions";
 import { ChooseLabelsField } from "../common/ChooseLabelsField";
 import { ChooseMilestonesField } from "../common/ChooseMilestonesField";
 import { useCollaborators } from "../collaborators/useCollaborators";
+import { ProfilePicture } from "../../core/components/ProfilePicture";
 
 const avaiableStates = [
   {
@@ -46,7 +46,15 @@ export const PullRequestsSearchForm: FC<PullRequestsSearchFormProps> = ({
   const { collaborators } = useCollaborators(repositoryId, "");
   const userOptions = [
     { value: "", label: "Any" },
-    ...collaborators.map((c) => ({ value: c.user._id, label: c.user.name })),
+    ...collaborators.map((c) => ({
+      value: c.user._id,
+      label: (
+        <span className="flex items-center">
+          <ProfilePicture user={c.user} size={25} />
+          <span className="ml-3">{c.user.name}</span>
+        </span>
+      ),
+    })),
   ];
 
   const onDataChange = (data: Partial<PullRequestsQuery>) => {
@@ -57,11 +65,12 @@ export const PullRequestsSearchForm: FC<PullRequestsSearchFormProps> = ({
 
   return (
     <>
-      <div className="mt-10 grid grid-cols-12 gap-6">
+      <div className="mt-3 grid grid-cols-12 gap-6">
         <div className="col-span-9">
-          <InputField
-            label="Title"
-            formElement={{ value: params.title ?? "", onChange: (e: any) => onDataChange({ title: e.target.value }) }}
+          <label className="block text-sm font-medium text-gray-700">Title</label>
+          <input
+            className="mt-1 w-full rounded-md border border-gray-300"
+            onChange={(e) => onDataChange({ title: e.target.value })}
           />
         </div>
         <div className="col-span-3">
@@ -79,7 +88,7 @@ export const PullRequestsSearchForm: FC<PullRequestsSearchFormProps> = ({
         </div>
       </div>
 
-      <div className="mt-10 grid grid-cols-12 gap-6">
+      <div className="mt-3 grid grid-cols-12 gap-6">
         <div className="col-span-1">
           <label className="block text-sm font-medium text-gray-700">State</label>
 
@@ -100,7 +109,7 @@ export const PullRequestsSearchForm: FC<PullRequestsSearchFormProps> = ({
           <Select
             isMulti={false}
             name="author"
-            defaultValue={{ value: "", label: "Any" }}
+            defaultValue={userOptions[0]}
             options={userOptions}
             className="mt-1 basic-select"
             classNamePrefix="select"
