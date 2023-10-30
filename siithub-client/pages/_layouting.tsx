@@ -2,13 +2,13 @@ import { type FC, type PropsWithChildren } from "react";
 import { SettingsLayout } from "./settings/_settings.layout";
 import { ProfileLayout } from "./users/[username]/_profile.layout";
 import { useRouter } from "next/router";
-import RepositoryLayout from "./[username]/[repository]/_repository.layout";
-import RepositorySettingsLayout from "./[username]/[repository]/settings/_repository-settings.layout";
-import RepositoryTreeLayout from "./[username]/[repository]/tree/_repository-tree.layout";
-import RepositoryBlobLayout from "./[username]/[repository]/blob/_repository-blob.layout";
-import PullRequestsEditLayout from "./[username]/[repository]/pull-requests/[localId]/_pull-requests-edit.layout";
+import RepositoryLayout from "./r/[username]/[repository]/_repository.layout";
+import RepositorySettingsLayout from "./r/[username]/[repository]/settings/_repository-settings.layout";
+import RepositoryTreeLayout from "./r/[username]/[repository]/tree/_repository-tree.layout";
+import RepositoryBlobLayout from "./r/[username]/[repository]/blob/_repository-blob.layout";
+import PullRequestsEditLayout from "./r/[username]/[repository]/pull-requests/[localId]/_pull-requests-edit.layout";
 import AdvanceSearchLayout from "./advance-search/_advance-search.layout";
-import RepositoryGraphsLayout from "./[username]/[repository]/graphs/_repository-graphs.layout";
+import RepositoryGraphsLayout from "./r/[username]/[repository]/graphs/_repository-graphs.layout";
 
 type NestedLayout = {
   path: string;
@@ -39,7 +39,7 @@ const registeredLayouts: NestedLayout[] = [
     component: AdvanceSearchLayout,
   },
   {
-    path: "/[username]/[repository]",
+    path: "/r/[username]/[repository]",
     pathMatch: "startsWith",
     component: RepositoryLayout,
     children: [

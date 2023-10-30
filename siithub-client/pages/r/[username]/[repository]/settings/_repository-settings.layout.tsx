@@ -8,7 +8,7 @@ function getLinks(router: NextRouter, username: string, repository: string) {
     {
       title: "General",
       icon: <Cog8ToothIcon className="h-4 w-4 mr-2" />,
-      path: "/[username]/[repository]/settings",
+      path: "/r/[username]/[repository]/settings",
       onClick: async () => {
         await router.push(`/r/${username}/${repository}/settings`);
       },
@@ -16,7 +16,7 @@ function getLinks(router: NextRouter, username: string, repository: string) {
     {
       title: "Collaborators",
       icon: <UsersIcon className="h-6 w-6 text-gray-500" />,
-      path: "/[username]/[repository]/settings/collaborators",
+      path: "/r/[username]/[repository]/settings/collaborators",
       onClick: async () => {
         await router.push(`/r/${username}/${repository}/settings/collaborators`);
       },

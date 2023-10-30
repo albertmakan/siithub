@@ -39,7 +39,7 @@ export const AuthenticatedLayout: FC<PropsWithChildren> = ({ children }) => {
       ? router.pathname.replace("/advance-search/", "")
       : "";
 
-    if (router.pathname.startsWith("/[username]/[repository]")) {
+    if (router.pathname.startsWith("/r/[username]/[repository]")) {
       const { username: owner, repository: repositoryName } = router.query as any;
 
       getRepository(owner, repositoryName)

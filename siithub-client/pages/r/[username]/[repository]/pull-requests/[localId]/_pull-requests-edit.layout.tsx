@@ -13,15 +13,15 @@ import { PullRequestHeader } from "../../../../../../features/pull-requests/Pull
 const links: MenuItem[] = [
   {
     title: "Conversations",
-    path: "/[username]/[repository]/pull-requests/[localId]",
+    path: "/r/[username]/[repository]/pull-requests/[localId]",
   },
   {
     title: "Commits",
-    path: "/[username]/[repository]/pull-requests/[localId]/commits",
+    path: "/r/[username]/[repository]/pull-requests/[localId]/commits",
   },
   {
     title: "Changed files",
-    path: "/[username]/[repository]/pull-requests/[localId]/changes",
+    path: "/r/[username]/[repository]/pull-requests/[localId]/changes",
   },
 ];
 

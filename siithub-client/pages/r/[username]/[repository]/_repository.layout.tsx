@@ -16,7 +16,7 @@ function getLinks(router: NextRouter, username: string, repository: string): Rep
     {
       title: "Code",
       icon: <CodeBracketIcon className="h-4 w-4 mr-2" />,
-      path: "/[username]/[repository]",
+      path: "/r/[username]/[repository]",
       isMultimenu: true,
       menus: ["/tree", "/blob", "/branches", "/commits", "/commit", "/tags"],
       onClick: async () => {
@@ -26,7 +26,7 @@ function getLinks(router: NextRouter, username: string, repository: string): Rep
     {
       title: "Issues",
       icon: <TicketIcon className="h-4 w-4 mr-2" />,
-      path: "/[username]/[repository]/issues",
+      path: "/r/[username]/[repository]/issues",
       hasChildren: true,
       onClick: async () => {
         await router.push(`/r/${username}/${repository}/issues`);
@@ -35,7 +35,7 @@ function getLinks(router: NextRouter, username: string, repository: string): Rep
     {
       title: "Pull Requests",
       icon: <TicketIcon className="h-4 w-4 mr-2" />,
-      path: "/[username]/[repository]/pull-requests",
+      path: "/r/[username]/[repository]/pull-requests",
       hasChildren: true,
       onClick: async () => {
         await router.push(`/r/${username}/${repository}/pull-requests`);
@@ -44,7 +44,7 @@ function getLinks(router: NextRouter, username: string, repository: string): Rep
     {
       title: "Milestones",
       icon: <CalendarIcon className="h-4 w-4 mr-2" />,
-      path: "/[username]/[repository]/milestones",
+      path: "/r/[username]/[repository]/milestones",
       hasChildren: true,
       onClick: async () => {
         await router.push(`/r/${username}/${repository}/milestones`);
@@ -53,7 +53,7 @@ function getLinks(router: NextRouter, username: string, repository: string): Rep
     {
       title: "Labels",
       icon: <TagIcon className="h-4 w-4 mr-2" />,
-      path: "/[username]/[repository]/labels",
+      path: "/r/[username]/[repository]/labels",
       onClick: async () => {
         await router.push(`/r/${username}/${repository}/labels`);
       },
@@ -61,7 +61,7 @@ function getLinks(router: NextRouter, username: string, repository: string): Rep
     {
       title: "Stars",
       icon: <StarIcon className="h-4 w-4 mr-2" />,
-      path: "/[username]/[repository]/stargazers",
+      path: "/r/[username]/[repository]/stargazers",
       onClick: async () => {
         await router.push(`/r/${username}/${repository}/stargazers`);
       },
@@ -69,7 +69,7 @@ function getLinks(router: NextRouter, username: string, repository: string): Rep
     {
       title: "Insights",
       icon: <PresentationChartLineIcon className="h-4 w-4 mr-2" />,
-      path: "/[username]/[repository]/graphs",
+      path: "/r/[username]/[repository]/graphs",
       hasChildren: true,
       onClick: async () => {
         await router.push(`/r/${username}/${repository}/graphs/pulse`);
@@ -78,7 +78,7 @@ function getLinks(router: NextRouter, username: string, repository: string): Rep
     {
       title: "Settings",
       icon: <Cog8ToothIcon className="h-4 w-4 mr-2" />,
-      path: "/[username]/[repository]/settings",
+      path: "/r/[username]/[repository]/settings",
       hasChildren: true,
       onClick: async () => {
         await router.push(`/r/${username}/${repository}/settings`);
