@@ -60,7 +60,7 @@ export const MilestonesPage: FC = () => {
     <>
       <div className="px-4 py-3 text-right sm:px-6">
         <Button>
-          <Link href={`/${owner}/${name}/milestones/new`}>New milestone</Link>
+          <Link href={`/r/${owner}/${name}/milestones/new`}>New milestone</Link>
         </Button>
       </div>
 
@@ -90,7 +90,7 @@ export const MilestonesPage: FC = () => {
                 <div key={milestone._id} className="bg-white border-b p-4 flex">
                   <div className="w-1/2 m-3">
                     <Link
-                      href={`/${owner}/${name}/milestones/${milestone.localId}`}
+                      href={`/r/${owner}/${name}/milestones/${milestone.localId}`}
                       className="text-2xl font-semibold cursor-pointer hover:text-blue-500"
                     >
                       {milestone.title}
@@ -115,7 +115,7 @@ export const MilestonesPage: FC = () => {
                     </p>
                     <div className="flex">
                       <Link
-                        href={`/${owner}/${name}/milestones/${milestone.localId}/edit`}
+                        href={`/r/${owner}/${name}/milestones/${milestone.localId}/edit`}
                         className="text-base font-semibold text-blue-400 mr-2"
                       >
                         Edit

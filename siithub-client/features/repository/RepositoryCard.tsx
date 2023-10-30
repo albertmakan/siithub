@@ -23,7 +23,7 @@ export const RepositoryCard: FC<RepositoryCardProps> = ({ repository, withUser =
         )}
         <Link
           className="text-xl font-semibold text-blue-500 hover:underline"
-          href={`/${repository.owner}/${repository.name}`}
+          href={`/r/${repository.owner}/${repository.name}`}
         >
           {repository.name}
         </Link>
@@ -36,7 +36,7 @@ export const RepositoryCard: FC<RepositoryCardProps> = ({ repository, withUser =
           forked from{" "}
           <Link
             className="font-semibold text-blue-500 hover:underline "
-            href={`/${repository.forkedFromRepo.owner}/${repository.forkedFromRepo.name}`}
+            href={`/r/${repository.forkedFromRepo.owner}/${repository.forkedFromRepo.name}`}
           >
             {repository.forkedFromRepo.owner}/{repository.forkedFromRepo.name}
           </Link>

@@ -50,7 +50,7 @@ export const CreateForkForm: FC = () => {
         setCopying(false);
         notifications.success("You have successfully created a new fork.");
         setResult({ status: ResultStatus.Ok, type: "CREATE_FORK" });
-        router.push(`/${myUsername}/${getValues().name}`);
+        router.push(`/r/${myUsername}/${getValues().name}`);
       },
       onError: (error: any) => {
         setCopying(false);
@@ -78,7 +78,7 @@ export const CreateForkForm: FC = () => {
       {fork ? (
         <div>
           No more forks can be created. Your existing fork:{" "}
-          <Link className="font-semibold text-blue-500 hover:underline " href={`/${fork.owner}/${fork.name}`}>
+          <Link className="font-semibold text-blue-500 hover:underline " href={`/r/${fork.owner}/${fork.name}`}>
             {fork.owner}/{fork.name}
           </Link>
         </div>

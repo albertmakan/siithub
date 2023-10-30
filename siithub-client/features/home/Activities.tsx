@@ -49,7 +49,7 @@ const StarredActivityComponent: FC<ActivityComponentProps> = ({ activity }) => {
         has starred repo{" "}
         <Link
           className="text-blue-500 hover:underline"
-          href={`/${starredActivity.repo.owner}/${starredActivity.repo.name}`}
+          href={`/r/${starredActivity.repo.owner}/${starredActivity.repo.name}`}
         >
           {starredActivity.repo.owner}/{starredActivity.repo.name}
         </Link>
@@ -69,7 +69,7 @@ const NewIssueActivityComponent: FC<ActivityComponentProps> = ({ activity }) => 
         has created a new issue{" "}
         <Link
           className="text-blue-500 hover:underline"
-          href={`/${activity.repo.owner}/${activity.repo.name}/issues/${newIssueActivity.localId}`}
+          href={`/r/${activity.repo.owner}/${activity.repo.name}/issues/${newIssueActivity.localId}`}
         >
           {newIssueActivity.title}
         </Link>{" "}
@@ -93,7 +93,7 @@ const NewCommentActivityComponent: FC<ActivityComponentProps> = ({ activity }) =
         has posted a new comment on the{" "}
         <Link
           className="text-blue-500 hover:underline"
-          href={`/${activity.repo.owner}/${activity.repo.name}/issues/${newCommentActivity.localId}`}
+          href={`/r/${activity.repo.owner}/${activity.repo.name}/issues/${newCommentActivity.localId}`}
         >
           {newCommentActivity.title}
         </Link>{" "}
@@ -117,7 +117,7 @@ const NewPullRequestActivityComponent: FC<ActivityComponentProps> = ({ activity 
         has created a new pull request{" "}
         <Link
           className="text-blue-500 hover:underline"
-          href={`/${activity.repo.owner}/${activity.repo.name}/pull-requests/${newPullRequestActivity.localId}`}
+          href={`/r/${activity.repo.owner}/${activity.repo.name}/pull-requests/${newPullRequestActivity.localId}`}
         >
           {newPullRequestActivity.title}
         </Link>{" "}

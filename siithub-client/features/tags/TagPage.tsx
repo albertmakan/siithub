@@ -16,7 +16,7 @@ export const TagPage: FC = () => {
     if (!result) return;
 
     if (result.type === "CREATE_TAG" && result.status === ResultStatus.Ok) {
-      router.push(`/${owner}/${name}/tags`);
+      router.push(`/r/${owner}/${name}/tags`);
     }
     setResult(undefined);
   }, [result]);

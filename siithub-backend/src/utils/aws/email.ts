@@ -16,7 +16,7 @@ export const sendInvitationMail = async (user: User, repo: Repository) => {
             owner: repo.owner,
             ownerLink: `${process.env.CLIENT_URL}/users/${repo.owner}`,
             repository: repo.name,
-            invitationLink: `${process.env.CLIENT_URL}/${repo.owner}/${repo.name}/invitation`,
+            invitationLink: `${process.env.CLIENT_URL}/r/${repo.owner}/${repo.name}/invitation`,
             user: user.username,
             userEmail: user.email,
           }),

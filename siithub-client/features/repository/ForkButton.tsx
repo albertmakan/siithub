@@ -32,7 +32,7 @@ export const ForkButton: FC<ForkButtonProps> = ({ repo, username, count }) => {
     );
   return (
     <button className="rounded-md border p-2 ml-2" disabled={!myUsername}>
-      <Link href={`/${username}/${repo}/fork`} className="inline-flex">
+      <Link href={`/r/${username}/${repo}/fork`} className="inline-flex">
         <ForkIcon className="mt-1" />
         <span className="ml-3 font-medium">Fork</span>
         <span className="ml-3 bg-gray-300 border rounded-full px-2 font-semibold">{count}</span>

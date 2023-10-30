@@ -15,7 +15,7 @@ export const IssueCard: FC<IssueCardProps> = ({ issue }) => {
   return (
     <div className="border-2 p-3">
       <div>
-        <Link className="text-sm text-gray-500 hover:underline" href={`/${owner}/${name}`}>
+        <Link className="text-sm text-gray-500 hover:underline" href={`/r/${owner}/${name}`}>
           <div className="flex space-x-1">
             <BookOpenIcon className="h-5 w-5 text-green-600" />
             <span>
@@ -27,7 +27,7 @@ export const IssueCard: FC<IssueCardProps> = ({ issue }) => {
       <div className="flex space-x-1">
         <Link
           className="text-lg font-semibold  text-blue-500 hover:underline"
-          href={`/${owner}/${name}/issues/${issue.localId}`}
+          href={`/r/${owner}/${name}/issues/${issue.localId}`}
         >
           {issue.csm.title}
         </Link>

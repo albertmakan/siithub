@@ -18,7 +18,7 @@ export const PullRequestsPage: FC = () => {
   const { pullRequests } = useSearchPullRequests(existingParams, repositoryId);
   const { key, refresh } = useRefresh("pr_search_form");
 
-  const navigateToNewPullRequest = () => router.push(`/${owner}/${name}/pull-requests/new`);
+  const navigateToNewPullRequest = () => router.push(`/r/${owner}/${name}/pull-requests/new`);
 
   const clearParams = () => {
     setExistingParams({});

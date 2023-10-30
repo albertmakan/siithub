@@ -100,7 +100,7 @@ export const PullRequestHistory: FC = () => {
         const milestone = milestones?.find((m) => m._id === event.milestoneId);
         return (
           <>
-            added the <Link href={`/${owner}/${name}/milestones/${milestone?.localId}`}>{milestone?.title}</Link>{" "}
+            added the <Link href={`/r/${owner}/${name}/milestones/${milestone?.localId}`}>{milestone?.title}</Link>{" "}
             milestone
           </>
         );
@@ -109,7 +109,7 @@ export const PullRequestHistory: FC = () => {
         const milestone = milestones?.find((m) => m._id === event.milestoneId);
         return (
           <>
-            removed the <Link href={`/${owner}/${name}/milestones/${milestone?.localId}`}>{milestone?.title}</Link>{" "}
+            removed the <Link href={`/r/${owner}/${name}/milestones/${milestone?.localId}`}>{milestone?.title}</Link>{" "}
             milestone
           </>
         );
@@ -171,7 +171,7 @@ export const PullRequestHistory: FC = () => {
 
   const CommitRow: FC<{ commit: Commit }> = ({ commit }) => (
     <>
-      commited <HashtagLink href={`/${owner}/${name}/commit/${commit.sha}`}>{commit.message}</HashtagLink>
+      commited <HashtagLink href={`/r/${owner}/${name}/commit/${commit.sha}`}>{commit.message}</HashtagLink>
     </>
   );
 

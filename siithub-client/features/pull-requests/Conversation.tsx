@@ -202,7 +202,7 @@ export const ConversationCard: FC<ConversationProps> = ({ conversation }) => {
                     <div>
                       <a
                         className="hover:underline"
-                        href={`/${owner}/${name}/blob/${pullRequest.csm.compare}/${fileName}`}
+                        href={`/r/${owner}/${name}/blob/${pullRequest.csm.compare}/${fileName}`}
                       >
                         {fileName}
                       </a>

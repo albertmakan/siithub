@@ -38,7 +38,7 @@ export const DirectoryTable: FC<DirectoryTableProps> = ({ branch, treePath }) =>
   const pathToParent = () => {
     const p = treePath.split("/");
     p.pop();
-    return `/${owner}/${name}/tree/${encodeURIComponent(branch)}/${p.join("/")}`;
+    return `/r/${owner}/${name}/tree/${encodeURIComponent(branch)}/${p.join("/")}`;
   };
 
   if (error) return <NotFound />;
@@ -77,7 +77,7 @@ export const DirectoryTable: FC<DirectoryTableProps> = ({ branch, treePath }) =>
                   </td>
                   <td className="p-3 hover:text-blue-400 hover:underline w-2/6">
                     <Link
-                      href={`/${owner}/${name}/${e.isFolder ? "tree" : "blob"}/${encodeURIComponent(branch)}/${
+                      href={`/r/${owner}/${name}/${e.isFolder ? "tree" : "blob"}/${encodeURIComponent(branch)}/${
                         treePath ? treePath + "/" : ""
                       }${e.name}`}
                     >
@@ -85,7 +85,7 @@ export const DirectoryTable: FC<DirectoryTableProps> = ({ branch, treePath }) =>
                     </Link>
                   </td>
                   <td className="p-3 text-gray-400 w-3/6">
-                    <HashtagLink href={`/${owner}/${name}/commit/${e.commit.sha}`}>
+                    <HashtagLink href={`/r/${owner}/${name}/commit/${e.commit.sha}`}>
                       {truncate(e?.commit?.message ?? "", 72)}
                     </HashtagLink>
                   </td>

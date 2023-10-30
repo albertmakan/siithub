@@ -10,7 +10,7 @@ type FilePathProps = {
 };
 
 export const FilePath: FC<FilePathProps> = ({ username, repoName, branch, filePath, forCommits }) => {
-  let path = `/${username}/${repoName}/${forCommits ? "commits" : "tree"}/${encodeURIComponent(branch)}`;
+  let path = `/r/${username}/${repoName}/${forCommits ? "commits" : "tree"}/${encodeURIComponent(branch)}`;
   return (
     <>
       <Link href={path} className="text-blue-500 hover:underline font-semibold m-1">

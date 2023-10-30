@@ -33,7 +33,7 @@ export const IssuesTable: FC<{ issues: Issue[] }> = ({ issues }) => {
   const { labels } = useLabels(repositoryId);
 
   const router = useRouter();
-  const navigateToIssueEdit = (localId: number) => router.push(`/${owner}/${name}/issues/${localId}`);
+  const navigateToIssueEdit = (localId: number) => router.push(`/r/${owner}/${name}/issues/${localId}`);
 
   return (
     <div className="overflow-x-auto relative shadow-md sm:rounded-lg">

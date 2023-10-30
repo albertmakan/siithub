@@ -14,7 +14,7 @@ export const PullRequestCard: FC<PullRequestsCardProps> = ({ pullRequest }) => {
   return (
     <div className="border-2 p-3">
       <div>
-        <Link className="text-sm text-gray-500 hover:underline" href={`/${owner}/${name}`}>
+        <Link className="text-sm text-gray-500 hover:underline" href={`/r/${owner}/${name}`}>
           <div className="flex space-x-1">
             <BookOpenIcon className="h-5 w-5 text-green-600" />
             <span>
@@ -26,7 +26,7 @@ export const PullRequestCard: FC<PullRequestsCardProps> = ({ pullRequest }) => {
       <div>
         <Link
           className="text-lg font-semibold  text-blue-500 hover:underline"
-          href={`/${owner}/${name}/pull-requests/${pullRequest.localId}`}
+          href={`/r/${owner}/${name}/pull-requests/${pullRequest.localId}`}
         >
           {pullRequest.csm.title}
         </Link>{" "}

@@ -15,7 +15,7 @@ import { type Repository } from "../repository/repository.service";
 export const MilestoneEdit: FC<{ localId: number }> = ({ localId }) => {
   const { repository } = useRepositoryContext();
   const { owner, name, _id } = repository as Repository;
-  const backRoute = `/${owner}/${name}/milestones`;
+  const backRoute = `/r/${owner}/${name}/milestones`;
 
   const { result, setResult } = useResult("milestones");
   const { milestone, error } = useMilestone(_id, localId, [result]);

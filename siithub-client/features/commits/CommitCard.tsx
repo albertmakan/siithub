@@ -14,7 +14,7 @@ export const CommitCard: FC<CommitCardProps> = ({ commit, username, repoName }) 
     <div className="flex items-center bg-white border-2 border-gray-200 text-md">
       <div className="w-5/6 p-2">
         <div className="hover:text-blue-400 hover:underline mb-1">
-          <HashtagLink href={`/${username}/${repoName}/commit/${commit.sha}`}>
+          <HashtagLink href={`/r/${username}/${repoName}/commit/${commit.sha}`}>
             {truncate(commit.message, 100)}
           </HashtagLink>
         </div>
@@ -31,11 +31,11 @@ export const CommitCard: FC<CommitCardProps> = ({ commit, username, repoName }) 
         </span>
       </div>
       <div className="w-1/12 text-blue-400 text-sm p-2">
-        <Link href={`/${username}/${repoName}/commit/${commit.sha}`}>{commit.sha.substring(0, 6)}</Link>
+        <Link href={`/r/${username}/${repoName}/commit/${commit.sha}`}>{commit.sha.substring(0, 6)}</Link>
       </div>
       <div className="w-1/12 text-gray-400 p-2">
         <button>
-          <Link href={`/${username}/${repoName}/tree/${commit.sha}`}>
+          <Link href={`/r/${username}/${repoName}/tree/${commit.sha}`}>
             <CodeBracketIcon className="h-5 w-5" />
           </Link>
         </button>

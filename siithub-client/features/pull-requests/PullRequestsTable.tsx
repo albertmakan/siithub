@@ -37,7 +37,7 @@ export const PullRequestsTable: FC<{ pullRequests: PullRequest[] }> = ({ pullReq
   const { labels } = useLabels(repositoryId);
 
   const router = useRouter();
-  const navigateToPullRequestEdit = (localId: number) => router.push(`/${owner}/${name}/pull-requests/${localId}`);
+  const navigateToPullRequestEdit = (localId: number) => router.push(`/r/${owner}/${name}/pull-requests/${localId}`);
 
   return (
     <div className="overflow-x-auto relative shadow-md sm:rounded-lg">

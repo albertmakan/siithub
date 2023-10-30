@@ -56,11 +56,11 @@ export const BranchesMenu: FC<{ count?: boolean }> = ({ count }) => {
 
       {count && (
         <div className="flex space-x-2">
-          <Link href={`/${owner}/${name}/branches`} className="flex hover:text-blue-800">
+          <Link href={`/r/${owner}/${name}/branches`} className="flex hover:text-blue-800">
             <BranchesIcon className="mt-1 mr-1" />
             {branches.length} branches
           </Link>
-          <Link href={`/${owner}/${name}/tags`} className="flex hover:text-blue-800">
+          <Link href={`/r/${owner}/${name}/tags`} className="flex hover:text-blue-800">
             <TagIcon className="mt-1 mr-1" />
             {tagsCount} tags
           </Link>

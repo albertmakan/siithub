@@ -94,10 +94,16 @@ async function createUser(user: UserCreate, verify = false): Promise<User | null
   return createdUser;
 }
 
-async function updateProfile(id: User["_id"], profileUpdate: UserUpdate): Promise<User | null> {
+async function updateProfile(id: User["_id"], profileUpdate: UserUpdate, verify = false): Promise<User | null> {
   const user = await findOneOrThrow(id);
   const { name, bio, email } = profileUpdate;
   const updatedUser = await userRepo.crud.update(id, { name, bio, email });
+
+  if (verify && updatedUser && updatedUser.email !== user.email) {
+    verifyEmail(updatedUser.email);
+    logger.info("Verify email sent", { email: user.email });
+  }
+
   logger.info("User profile is updated", { username: user.username });
   return updatedUser;
 }
@@ -137,7 +143,7 @@ export type UserService = {
   findManyByEmails(emails: string[]): Promise<User[]>;
   findManyByIds(ids: User["_id"][], filters?: Filter<User>): Promise<User[]>;
   create(user: UserCreate, verify?: boolean): Promise<User | null>;
-  updateProfile(id: User["_id"], profileUpdate: UserUpdate): Promise<User | null>;
+  updateProfile(id: User["_id"], profileUpdate: UserUpdate, verify?: boolean): Promise<User | null>;
   updatePassword(id: User["_id"], passwordUpdate: { oldPassword: string; newPassword: string }): Promise<User | null>;
   updateProfilePicture(id: User["_id"], pictureKey: string): Promise<User | null>;
 };

@@ -31,7 +31,7 @@ export const RepositoryHeader: FC<RepositoryHeaderProps> = ({}) => {
             {username}
           </Link>
           <span className="text-2xl font-semibold  text-blue-500 ml-1 mr-1">/</span>
-          <Link className="text-2xl font-semibold  text-blue-500 hover:underline" href={`/${username}/${repo}`}>
+          <Link className="text-2xl font-semibold  text-blue-500 hover:underline" href={`/r/${username}/${repo}`}>
             {repo}
           </Link>
           <span className="ml-3 font-medium leading-6 rounded-full px-2 mr-10 bg-gray-300 border">
@@ -47,7 +47,7 @@ export const RepositoryHeader: FC<RepositoryHeaderProps> = ({}) => {
           forked from{" "}
           <Link
             className="font-semibold text-blue-500 hover:underline "
-            href={`/${forkedFromRepo.owner}/${forkedFromRepo.name}`}
+            href={`/r/${forkedFromRepo.owner}/${forkedFromRepo.name}`}
           >
             {forkedFromRepo.owner}/{forkedFromRepo.name}
           </Link>

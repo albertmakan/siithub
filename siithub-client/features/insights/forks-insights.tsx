@@ -16,7 +16,7 @@ export const ForksInsights: FC = () => {
           {owner}
         </Link>
         <span className="mx-1">/</span>
-        <Link className="hover:text-blue-500 hover:underline" href={`/${owner}/${name}`}>
+        <Link className="hover:text-blue-500 hover:underline" href={`/r/${owner}/${name}`}>
           {name}
         </Link>
       </div>
@@ -29,7 +29,7 @@ export const ForksInsights: FC = () => {
             {fork.owner}
           </Link>
           <span className="text-sm font-semibold text-blue-500 mx-1">/</span>
-          <Link className="text-sm font-semibold text-blue-500 hover:underline" href={`/${fork.owner}/${fork.name}`}>
+          <Link className="text-sm font-semibold text-blue-500 hover:underline" href={`/r/${fork.owner}/${fork.name}`}>
             {fork.name}
           </Link>
         </div>

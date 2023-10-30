@@ -22,7 +22,7 @@ import { type Repository } from "../repository/repository.service";
 export const MilestoneForm: FC<{ existingMilestone?: Milestone }> = ({ existingMilestone }) => {
   const { repository } = useRepositoryContext();
   const { owner, name, _id } = repository as Repository;
-  const backRoute = `/${owner}/${name}/milestones`;
+  const backRoute = `/r/${owner}/${name}/milestones`;
 
   const notifications = useNotifications();
   const router = useRouter();

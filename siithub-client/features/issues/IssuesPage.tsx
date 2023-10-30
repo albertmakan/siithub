@@ -18,7 +18,7 @@ export const IssuesPage: FC = () => {
   const { issues } = useSearchIssues(existingParams, repositoryId);
   const { key, refresh } = useRefresh("iss_search_form");
 
-  const navigateToNewIssue = () => router.push(`/${owner}/${name}/issues/new`);
+  const navigateToNewIssue = () => router.push(`/r/${owner}/${name}/issues/new`);
 
   const clearParams = () => {
     setExistingParams({});

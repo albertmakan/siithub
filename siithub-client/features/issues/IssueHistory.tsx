@@ -65,7 +65,7 @@ export const IssueHistory: FC = () => {
         const milestone = milestones?.find((m) => m._id === event.milestoneId);
         return (
           <>
-            added the <Link href={`/${owner}/${name}/milestones/${milestone?.localId}`}>{milestone?.title}</Link>{" "}
+            added the <Link href={`/r/${owner}/${name}/milestones/${milestone?.localId}`}>{milestone?.title}</Link>{" "}
             milestone
           </>
         );
@@ -74,7 +74,7 @@ export const IssueHistory: FC = () => {
         const milestone = milestones?.find((m) => m._id === event.milestoneId);
         return (
           <>
-            removed the <Link href={`/${owner}/${name}/milestones/${milestone?.localId}`}>{milestone?.title}</Link>{" "}
+            removed the <Link href={`/r/${owner}/${name}/milestones/${milestone?.localId}`}>{milestone?.title}</Link>{" "}
             milestone
           </>
         );
@@ -127,7 +127,7 @@ export const IssueHistory: FC = () => {
           <>
             added a commit that referenced this issue{" "}
             <div className="text-sm ml-3">
-              <HashtagLink href={`/${owner}/${name}/commit/${event.sha}`}>{event.message}</HashtagLink>
+              <HashtagLink href={`/r/${owner}/${name}/commit/${event.sha}`}>{event.message}</HashtagLink>
             </div>
           </>
         );

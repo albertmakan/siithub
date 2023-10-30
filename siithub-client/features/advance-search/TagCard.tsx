@@ -40,7 +40,7 @@ export const TagCard: FC<TagCardProps> = ({ tag }) => {
       </div>
       <div className="w-2/12 text-blue-400 text-sm p-2 flex">
         <CommitIcon className="mt-1 mr-1" />
-        <Link href={`/${tag.repository.owner}/${tag.repository.name}/tree/${tag.commitSha}`}>
+        <Link href={`/r/${tag.repository.owner}/${tag.repository.name}/tree/${tag.commitSha}`}>
           {tag.commitSha.substring(0, 6)}
         </Link>
       </div>

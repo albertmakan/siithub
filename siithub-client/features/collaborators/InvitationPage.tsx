@@ -28,7 +28,7 @@ export const InvitationPage: FC = () => {
   const accept = useAction(verifyCollaborator(repoId), {
     onSuccess: () => {
       setResult({ status: ResultStatus.Ok, type: "ACCEPT_INVITE" });
-      router.push(`/${owner}/${name}`);
+      router.push(`/r/${owner}/${name}`);
     },
     onError: () => {},
   });

@@ -41,14 +41,16 @@ const FileContribInfo: FC<FileContribInfoProps> = ({ username, repoName, branch,
               <span className="mr-2 ml-2">{info.author.name}</span>
             )}
           </span>
-          <HashtagLink href={`/${username}/${repoName}/commit/${info.sha}`}>{truncate(info.message, 100)}</HashtagLink>
+          <HashtagLink href={`/r/${username}/${repoName}/commit/${info.sha}`}>
+            {truncate(info.message, 100)}
+          </HashtagLink>
         </div>
         <div className="text-right col-span-3">
           Latest commit {info.sha.substring(0, 6)} {moment.unix(info.date).fromNow()}
         </div>
         <div className="text-right col-span-1">
           <Link
-            href={`/${username}/${repoName}/commits/${encodeURIComponent(branch)}/${blobPath}`}
+            href={`/r/${username}/${repoName}/commits/${encodeURIComponent(branch)}/${blobPath}`}
             className="hover:text-blue-400 font-bold flex ml-4"
           >
             <CommitsIcon className="mt-1 mr-1" />

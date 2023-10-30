@@ -2,13 +2,14 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { Children, ReactElement, type FC, type ReactNode, cloneElement } from "react";
 
+const things = { I: "issues", M: "milestones", P: "pull-requests" } as const;
+const hashtagRegExp = /#([MIP])(\d+)/g;
+
 type HashtagLinkProps = { children: ReactNode; href?: string };
 
 export const HashtagLink: FC<HashtagLinkProps> = ({ children, href }) => {
   const router = useRouter();
   const { repository, username } = router.query;
-  const things = { I: "issues", M: "milestones", P: "pull-requests" };
-  const re = RegExp("#[MIP]\\d+", "g");
 
   const wrap = (text: string) =>
     href ? (
@@ -31,24 +32,24 @@ export const HashtagLink: FC<HashtagLinkProps> = ({ children, href }) => {
           }
           return child;
         }
-        let hashtags: { text: string; start: number; end: number }[] = [];
+        const hashtags: RegExpExecArray[] = [];
         let result;
-        while ((result = re.exec(child)) !== null)
-          hashtags.push({ text: result[0], start: re.lastIndex - result[0].length, end: re.lastIndex });
+        while ((result = hashtagRegExp.exec(child)) !== null) hashtags.push(result);
         let index = 0;
-        let newChildren = [];
-        for (let tag of hashtags) {
-          newChildren.push(wrap(child.slice(index, tag.start)));
+        const newChildren = [];
+        for (let hashtag of hashtags) {
+          const [text, thing, id] = hashtag;
+          newChildren.push(wrap(child.slice(index, hashtag.index)));
           newChildren.push(
             <Link
-              href={`/${username}/${repository}/${things[tag.text.charAt(1) as "I" | "M" | "P"]}/${tag.text.slice(2)}`}
-              key={index}
+              href={`/r/${username}/${repository}/${things[thing as "I" | "M" | "P"]}/${id}`}
+              key={hashtag.index}
               className="text-blue-400 hover:underline"
             >
-              {tag.text}
+              {text}
             </Link>
           );
-          index = tag.end;
+          index = hashtag.index + text.length;
         }
         newChildren.push(wrap(child.slice(index)));
         return newChildren;

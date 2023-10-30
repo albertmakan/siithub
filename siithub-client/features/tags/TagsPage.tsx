@@ -99,7 +99,7 @@ export const TagsPage: FC = () => {
 
         <div className="flex-1 text-right mt-1">
           <Button>
-            <Link href={`/${owner}/${repoName}/tags/new`}>New tag</Link>
+            <Link href={`/r/${owner}/${repoName}/tags/new`}>New tag</Link>
           </Button>
         </div>
       </div>

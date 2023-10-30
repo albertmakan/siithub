@@ -56,7 +56,7 @@ export const MilestonePage: FC<{ localId: number }> = ({ localId }) => {
 
       <div className="px-4 py-3 text-right sm:px-6">
         <Button>
-          <Link href={`/${owner}/${name}/milestones/${localId}/edit`}>Edit milestone</Link>
+          <Link href={`/r/${owner}/${name}/milestones/${localId}/edit`}>Edit milestone</Link>
         </Button>
       </div>
       <div className="flex bg-white border-b p-4">
