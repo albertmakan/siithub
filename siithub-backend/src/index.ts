@@ -16,7 +16,7 @@ const errorHandler = (error: Error, request: Request, response: Response, next: 
 };
 
 app
-  .use(cors())
+  .use(cors({ origin: process.env.CLIENT_URL }))
   .use(express.json({ limit: "10mb" }))
   .use(express.urlencoded({ limit: "10mb" }))
   .use("/api", apiRoutes)

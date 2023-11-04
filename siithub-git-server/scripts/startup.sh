@@ -28,8 +28,6 @@ for user_dir in /home/*; do
   done
 done
 
-echo "export ACCESS_KEY=$ACCESS_KEY" > "aws-env.sh"
-echo "export SECRET_ACCESS_KEY=$SECRET_ACCESS_KEY" >> "aws-env.sh"
 echo "export REGION=$REGION" >> "aws-env.sh"
 echo "export QUEUE_URL=$QUEUE_URL" >> "aws-env.sh"
 

@@ -8,8 +8,6 @@ services:
       - "3022:22"
     environment:
       PORT: 80
-      ACCESS_KEY: ${ACCESS_KEY}
-      SECRET_ACCESS_KEY: ${SECRET_ACCESS_KEY}
       REGION: ${REGION}
       QUEUE_URL: ${QUEUE_URL}
     networks:
@@ -43,8 +41,6 @@ services:
       MONGODB_USERNAME: ${MONGODB_USERNAME}
       MONGODB_PASSWORD: ${MONGODB_PASSWORD}
       MONGODB_DATABASE: ${MONGODB_DATABASE}
-      ACCESS_KEY: ${ACCESS_KEY}
-      SECRET_ACCESS_KEY: ${SECRET_ACCESS_KEY}
       REGION: ${REGION}
       QUEUE_URL: ${QUEUE_URL}
       LOG_GROUP: ${LOG_GROUP}
