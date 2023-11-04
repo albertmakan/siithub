@@ -3,7 +3,7 @@ import { DirectoryTable } from "../../../../../../features/tree/DirectoryTable";
 
 const Tree = () => {
   const router = useRouter();
-  const { branch, path } = router.query;
+  const { branch, path = [] } = router.query;
 
   if (!branch) return <></>;
 
