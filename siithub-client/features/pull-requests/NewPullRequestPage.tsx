@@ -15,7 +15,8 @@ export const NewPullRequestPage: FC = () => {
 
   useEffect(() => {
     pullRequestDispatcher(setPullRequest({ ...initialPullRequest, repositoryId }));
-  }, [repositoryId, pullRequestDispatcher]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [repositoryId]);
 
   const { commits, isLoading } = useCommitsBetweenBranches(
     repositoryId,

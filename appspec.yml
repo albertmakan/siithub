@@ -12,10 +12,6 @@ hooks:
     - location: siithub-devops/ec2/scripts/before_install.sh
       timeout: 300
       runas: ubuntu
-  Install:
-    - location: siithub-devops/ec2/scripts/install.sh
-      timeout: 300
-      runas: ubuntu
   AfterInstall:
     - location: siithub-devops/ec2/scripts/after_install.sh
       timeout: 300
