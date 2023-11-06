@@ -40,7 +40,7 @@ async function addCollaborator(collaborator: CollaboratorAdd, sendMail = false):
     try {
       await sendInvitationMail(user, repository);
     } catch (error) {
-      logger.error("Failed to send invitation mail", { user: user.username, email: user.email });
+      logger.error("Failed to send invitation mail", { user: user.username, email: user.email, error });
       throw new BadLogicException("Failed to send invitation mail.");
     }
     logger.info("Invitation mail sent", { user: user.username, email: user.email });
@@ -73,6 +73,7 @@ async function verifyCollaborator(repositoryId: Repository["_id"], userId: User[
     logger.error("Failed to add collaborator on gitserver", {
       user: user.username,
       repo: `${repository.owner}/${repository.name}`,
+      error,
     });
     throw new BadLogicException("Failed to add collaborator");
   }
@@ -130,6 +131,7 @@ async function removeCollaborator(
     logger.error("Failed to remove collaborator on gitserver", {
       user: userToRemove.username,
       repo: `${repository.owner}/${repository.name}`,
+      error,
     });
     throw new BadLogicException("Failed to remove collaborator");
   }

@@ -28,7 +28,7 @@ for user_dir in /home/*; do
   done
 done
 
-echo "export REGION=$REGION" >> "aws-env.sh"
+echo "export REGION=$REGION" > "aws-env.sh"
 echo "export QUEUE_URL=$QUEUE_URL" >> "aws-env.sh"
 
 sh -c rc-status

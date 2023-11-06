@@ -7,6 +7,7 @@ import { ErrorHandler } from "./error-handling/error-handler";
 import { sqsConsumer } from "./utils/aws/queue";
 import cors from "cors";
 import { logger } from "./utils/aws/logger";
+import { updatateEmailTemplate } from "./utils/aws/email";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app
 app.listen(config.port, () => {
   getConnection();
   sqsConsumer.start();
+  updatateEmailTemplate();
   console.log(`⚡️[server]: Server is running at https://localhost:${config.port}`);
   logger.info("Server restarted");
 });
