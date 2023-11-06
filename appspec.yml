@@ -8,11 +8,19 @@ hooks:
     - location: siithub-devops/ec2/scripts/application_stop.sh
       timeout: 300
       runas: ubuntu
-  ApplicationStart:
-    - location: siithub-devops/ec2/scripts/application_start.sh
-      timeout: 300
-      runas: ubuntu
   BeforeInstall:
     - location: siithub-devops/ec2/scripts/before_install.sh
+      timeout: 300
+      runas: ubuntu
+  Install:
+    - location: siithub-devops/ec2/scripts/install.sh
+      timeout: 300
+      runas: ubuntu
+  AfterInstall:
+    - location: siithub-devops/ec2/scripts/after_install.sh
+      timeout: 300
+      runas: ubuntu
+  ApplicationStart:
+    - location: siithub-devops/ec2/scripts/application_start.sh
       timeout: 300
       runas: ubuntu

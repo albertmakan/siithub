@@ -1,5 +1,5 @@
-import { AxiosInstance } from 'axios';
-import { getToken } from './token';
+import { AxiosInstance } from "axios";
+import { getToken } from "./token";
 
 const interceptors: { [key: string]: any } = {};
 
@@ -9,38 +9,40 @@ export function setAxiosInterceptors(axiosInstance: AxiosInstance, onLogout: () 
 }
 
 export function setAuthorizationHeaderInterceptor(axiosInstance: AxiosInstance) {
-  const interceptorName = 'authHeader';
+  const interceptorName = "authHeader";
 
-  if(interceptors[interceptorName]) {
+  if (interceptors[interceptorName]) {
     axiosInstance.interceptors.request.eject(interceptors[interceptorName]);
   }
 
   interceptors[interceptorName] = axiosInstance.interceptors.request.use((config: any) => {
-    const token = getToken() || '';
+    const token = getToken() || "";
 
-		if (token) {
-      config.headers.Authorization = 'Bearer ' + token;
-		}
-		
+    if (token) {
+      config.headers.Authorization = "Bearer " + token;
+    }
+
     return config;
   });
 }
 
 export function setUnauthorizedRequestInterceptor(axiosInstance: AxiosInstance, onLogout: () => any = () => {}) {
-  const interceptorName = 'unauthRequest';
+  const interceptorName = "unauthRequest";
 
-  if(interceptors[interceptorName]) {
+  if (interceptors[interceptorName]) {
     axiosInstance.interceptors.response.eject(interceptors[interceptorName]);
   }
 
-  interceptors[interceptorName] = axiosInstance.interceptors.response.use(function (response) {
-		return response;
-	}, function (error) {
-		if ([401, 403].includes(error.response.status) && getToken()) {
-			onLogout();
-			console.log("Should logout here");
-		} else {
-			return Promise.reject(error);
-		}
-	});
+  interceptors[interceptorName] = axiosInstance.interceptors.response.use(
+    function (response) {
+      return response;
+    },
+    function (error) {
+      if (error.response.status === 401 && getToken()) {
+        onLogout();
+      } else {
+        return Promise.reject(error);
+      }
+    }
+  );
 }

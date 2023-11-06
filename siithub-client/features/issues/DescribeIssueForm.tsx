@@ -46,12 +46,14 @@ export const DescribeIssueForm: FC = () => {
 
   useEffect(() => {
     issueDispatcher(updateData({ title, description }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title, description]);
 
   useEffect(() => {
     if (!isEdit || initiallySet) return;
     reset(issue?.csm);
     setInitiallySet(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [issue.csm.title, issue.csm.description, isEdit, initiallySet]);
 
   const onSubmit = () => {

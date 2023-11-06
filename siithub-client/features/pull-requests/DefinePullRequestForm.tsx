@@ -57,11 +57,13 @@ export const DefinePullRequestForm: FC = () => {
 
   useEffect(() => {
     pullRequestDispatcher(updateData({ title, base, compare }));
-  }, [title, base, compare, pullRequestDispatcher]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, base, compare]);
 
   useEffect(() => {
     !isEdit && defaultBranch && setValue("base", defaultBranch);
-  }, [defaultBranch, isEdit, setValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultBranch]);
 
   if (!defaultBranch || !branches?.length) return <></>;
 
