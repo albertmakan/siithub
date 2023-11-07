@@ -24,7 +24,7 @@ export const TagCard: FC<TagCardProps> = ({ tag, owner, name, onTagRemove }) => 
       <div className="col-span-3 mt-3 space-y-1">
         <div className="text-lg font-medium">{moment(tag.timeStamp).fromNow()}</div>
         <div className="flex space-x-1">
-          <ProfilePicture user={user} size={18} />
+          {user && <ProfilePicture user={user} size={18} />}
           <Link href={`/users/${user?.username}`}>{user?.username}</Link>
         </div>
         <div className="flex space-x-1">

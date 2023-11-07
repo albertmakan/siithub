@@ -2,17 +2,14 @@ import axios from "axios";
 import { useQuery } from "react-query";
 import { type Repository } from "../repository/repository.service";
 
-type Commit = {
-  message: string;
-  sha: string;
-  date: number;
-  author: string;
-};
-
 type TreeEntry = {
   name: string;
   isFolder: boolean;
-  commit: Commit;
+  commit: {
+    message: string;
+    sha: string;
+    date: number;
+  };
 };
 
 export function useTree(repositoryId: Repository["_id"], branch: string, treePath: string, dependencies: any[] = []) {

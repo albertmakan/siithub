@@ -46,7 +46,7 @@ export const InvitationPage: FC = () => {
   return (
     <div>
       <div className="flex justify-center items-center">
-        <ProfilePicture user={user} size={50} />
+        {user && <ProfilePicture user={user} size={50} />}
         <span className="text-4xl text-gray-400 mx-5">+</span>
         <ProfilePicture user={me} size={50} />
       </div>

@@ -1,29 +1,28 @@
-import { execCmd } from "../cmd.utils";
+import { execCmd, execCmds } from "../cmd.utils";
 import { quote } from "shell-quote";
 
 export async function getTree(repoPath: string, branch: string, treePath: string) {
   try {
     const lsTree = await execCmd(`git ls-tree ${quote([branch])}${treePath ? ":" + quote([treePath]) : ""}`, repoPath);
-    const getLatestCommit = async (path: string) => {
-      const log = await execCmd(
-        `git log -n 1 --pretty=format:"%an%n%ae%n%at%n%H%n%s" ${quote([branch])} -- ${quote([
-          (treePath ? treePath + "/" : "") + path,
-        ])}`,
+    const entries = lsTree
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => {
+        const [info, name] = line.split("\t");
+        const [_mode, type, _objName] = info.split(" ");
+        return { name, isFolder: type === "tree" };
+      });
+    const cmd = `git log -n 1 --pretty=format:"%at%n%H%n%s%n%n" ${quote([branch])}`;
+    const latestCommitsLog = (
+      await execCmds(
+        entries.map((e) => `${cmd} -- ${quote([(treePath ? treePath + "/" : "") + e.name])}`),
         repoPath
-      );
-      const [name, email, date, sha, message] = log.split("\n");
-      return { author: { name, email }, date: +date, sha, message };
-    };
-    return await Promise.all(
-      lsTree
-        .split("\n")
-        .filter(Boolean)
-        .map(async (line) => {
-          const [info, name] = line.split("\t");
-          const [_mode, type, _objName] = info.split(" ");
-          return { name, isFolder: type === "tree", commit: await getLatestCommit(name) };
-        })
-    );
+      )
+    ).split("\n\n");
+    return entries.map((entry, i) => {
+      const [date, sha, message] = latestCommitsLog[i].split("\n");
+      return { ...entry, commit: { date: +date, sha, message } };
+    });
   } catch (err) {
     console.error(err);
     return null;
