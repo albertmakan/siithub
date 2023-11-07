@@ -37,6 +37,8 @@ export type PullRequestCSM = {
   assignees?: User["_id"][];
   comments?: PullRequestComment[];
   conversations?: PullRequestConversation[];
+  baseSHA?: string;
+  compareSHA?: string;
 };
 
 type PullRequest = {

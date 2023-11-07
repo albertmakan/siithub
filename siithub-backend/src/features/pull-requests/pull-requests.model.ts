@@ -63,6 +63,8 @@ export type PullRequestCSM = {
   assignees?: User["_id"][];
   comments?: PullRequestComment[];
   conversations?: PullRequestConversation[];
+  baseSHA?: string;
+  compareSHA?: string;
 };
 
 export type PullRequest = AggregateRoot<PullRequestCSM> & {

@@ -50,10 +50,9 @@ export const PullRequestFileChangesPage: FC = () => {
   const [changes, setChanges] = useState<any>([]);
   const [visibilities, setVisibilities] = useState<{ [file: string]: boolean }>({});
 
-  const { commit } = useCommitsDiffBetweenBranches(repositoryId, pullRequest.csm.base, pullRequest.csm.compare, [
-    pullRequest.csm.base,
-    pullRequest.csm.compare,
-  ]);
+  const base = pullRequest.csm.baseSHA || pullRequest.csm.base;
+  const compare = pullRequest.csm.compareSHA || pullRequest.csm.compare;
+  const { commit } = useCommitsDiffBetweenBranches(repositoryId, base, compare, [base, compare]);
 
   useEffect(() => {
     const changes = commit?.diff?.map((change) => {

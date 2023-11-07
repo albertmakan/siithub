@@ -51,8 +51,7 @@ export async function getCommitCount(repoPath: string, branch: string) {
 
 export async function getCommitsDiffBetweenBranches(repoPath: string, base: string, compare: string) {
   try {
-    const parentCommit = await getCommitsSha(repoPath, base);
-    const commit = await getCommitsSha(repoPath, compare);
+    const [parentCommit, commit] = await getCommitsSha(repoPath, base, compare);
     if (!parentCommit || !commit) return null;
     return await getDiffData(repoPath, commit, parentCommit);
   } catch {
@@ -62,7 +61,7 @@ export async function getCommitsDiffBetweenBranches(repoPath: string, base: stri
 
 export async function getCommit(repoPath: string, sha: string) {
   try {
-    const commit = await getCommitsSha(repoPath, sha);
+    const [commit] = await getCommitsSha(repoPath, sha);
     if (!commit) return null;
     return await getDiffData(repoPath, commit);
   } catch {
@@ -146,23 +145,28 @@ export async function getLatestCommitAndContributors(repoPath: string, branch: s
   }
 }
 
-export async function getCommitsSha(repoPath: string, revision: string) {
+export async function getCommitsSha(repoPath: string, ...revisions: string[]) {
   try {
-    return (await execCmd(`git rev-parse ${quote([revision])}^{commit}`, repoPath)).trim();
+    return (await execCmd(`git rev-parse ${revisions.map((r) => quote([r]) + "^{commit}").join(" ")}`, repoPath))
+      .trim()
+      .split("\n");
   } catch {
-    return null;
+    return [];
   }
 }
 
 export async function mergeCommits(repoPath: string, base: string, compare: string) {
   try {
-    const newTree = await execCmd(`git merge-tree --write-tree ${quote([base, compare])}`, repoPath);
-    const newCommit = await execCmd(
-      `git commit-tree ${quote([newTree])} -p ${quote([base])} -p ${quote([compare])}`,
-      repoPath
-    );
-    await execCmd(`git update-ref ${quote([base, newCommit])}`, repoPath);
-    return { base, newCommit };
+    const [compareSHA, baseSHA] = await getCommitsSha(repoPath, compare, base);
+    if (!compareSHA || !baseSHA) return null;
+
+    const newTree = (await execCmd(`git merge-tree --write-tree ${baseSHA} ${compareSHA}`, repoPath)).trim();
+    const m = `Merge branch ${compareSHA} into ${baseSHA}`;
+    const newCommit = (
+      await execCmd(`git commit-tree ${quote([newTree])} -p ${baseSHA} -p ${compareSHA} -m "${m}"`, repoPath)
+    ).trim();
+    await execCmd(`git update-ref ${quote([`refs/heads/${base}`, newCommit])}`, repoPath);
+    return { baseSHA, compareSHA };
   } catch (error) {
     console.error("Error:", error);
     return null;

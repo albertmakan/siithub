@@ -103,10 +103,17 @@ async function handleEvent(pullRequest: PullRequest, event: BaseEvent): Promise<
   event.timeStamp = new Date();
   event.by = new ObjectId(event.by?.toString());
 
+  if (event.type === "PullRequestCanceledEvent") {
+    const { owner, name } = await repositoryService.findOneOrThrow(pullRequest.repositoryId);
+    const { base, compare } = pullRequest.csm;
+    const [baseSHA, compareSHA] = await commitService.getCommitsSha(owner, name, base, compare);
+    pullRequest.csm.baseSHA = baseSHA;
+    pullRequest.csm.compareSHA = compareSHA;
+  }
   if (event.type === "PullRequestMergedEvent") {
     const { owner, name } = await repositoryService.findOneOrThrow(pullRequest.repositoryId);
     const { base, compare } = pullRequest.csm;
-    const mergeResult: any = await commitService.mergeCommits(owner, name, base, compare);
+    const mergeResult = await commitService.mergeCommits(owner, name, base, compare);
     if (!mergeResult) {
       throw new BadLogicException("Unable to merge pull request becase of merge conflicts.");
     }
@@ -120,6 +127,8 @@ async function handleEvent(pullRequest: PullRequest, event: BaseEvent): Promise<
       timeStamp: new Date(),
       by: new ObjectId(event.by?.toString()),
     };
+    pullRequest.csm.baseSHA = mergeResult.baseSHA;
+    pullRequest.csm.compareSHA = mergeResult.compareSHA;
 
     handleFor(pullRequest, prUpdatedEvent);
   }

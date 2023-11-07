@@ -32,8 +32,8 @@ async function getCommit(username: string, repoName: string, sha: string) {
   return (await resolveAuthors([commit]))[0];
 }
 
-async function getCommitsSha(username: string, repoName: string, branch: string) {
-  return await gitServerClient.getCommitsSha(username, repoName, branch);
+async function getCommitsSha(username: string, repoName: string, ...branches: string[]) {
+  return await gitServerClient.getCommitsSha(username, repoName, ...branches);
 }
 
 async function mergeCommits(username: string, repoName: string, base: string, compare: string): Promise<any> {
@@ -76,7 +76,7 @@ export type CommitService = {
   getCommitsWithDiff(username: string, repoName: string, branch: string): Promise<CommitWithDiff[]>;
   getCommitCount(username: string, repoName: string, branch: string): Promise<{ count: number }>;
   getCommit(username: string, repoName: string, sha: string): Promise<Commit>;
-  getCommitsSha(username: string, repoName: string, branch: string): Promise<any>;
+  getCommitsSha(username: string, repoName: string, ...branches: string[]): Promise<string[]>;
   mergeCommits(username: string, repoName: string, base: string, compare: string): Promise<any>;
   getFileHistoryCommits(username: string, repoName: string, branch: string, filePath: string): Promise<Commit[]>;
   getFileInfo(username: string, repoName: string, branch: string, filePath: string): Promise<LastCommitAndContrib>;

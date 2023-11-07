@@ -28,6 +28,9 @@ for user_dir in /home/*; do
   done
 done
 
+git config --global user.email "siithub.aws.noreply@gmail.com"
+git config --global user.name "SiitHub"
+
 echo "export REGION=$REGION" > "aws-env.sh"
 echo "export QUEUE_URL=$QUEUE_URL" >> "aws-env.sh"
 

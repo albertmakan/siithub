@@ -10,10 +10,9 @@ export const PullRequestCommitsPage: FC = () => {
   const { repository } = useRepositoryContext();
   const { owner, name, _id } = repository as Repository;
 
-  const { commits } = useCommitsBetweenBranches(_id, pullRequest.csm.base, pullRequest.csm.compare, [
-    pullRequest.csm.base,
-    pullRequest.csm.compare,
-  ]);
+  const base = pullRequest.csm.baseSHA || pullRequest.csm.base;
+  const compare = pullRequest.csm.compareSHA || pullRequest.csm.compare;
+  const { commits } = useCommitsBetweenBranches(_id, base, compare, [base, compare]);
 
   return <>{commits?.length ? <CommitsHistory username={owner} repoName={name} commits={commits} /> : <></>}</>;
 };

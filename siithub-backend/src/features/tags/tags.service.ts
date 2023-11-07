@@ -45,7 +45,7 @@ async function createTag(createTag: TagCreate): Promise<Tag | null> {
   await userService.findOneOrThrow(createTag.author);
 
   const tag = createTag as Tag;
-  const sha = await gitServerClient.getCommitsSha(owner, name, createTag.branch);
+  const [sha] = await gitServerClient.getCommitsSha(owner, name, createTag.branch);
   if (!sha) {
     logger.warn("Cannot create tag on branch", { branch: createTag.branch, repo: `${owner}/${name}` });
     throw new BadLogicException("There is no branch with commits.");

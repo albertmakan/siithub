@@ -52,7 +52,9 @@ export const PullRequestHistory: FC = () => {
     }, {}) ?? {}),
   };
 
-  const { commits } = useCommitsBetweenBranches(repositoryId, pullRequest.csm.base, pullRequest.csm.compare);
+  const base = pullRequest.csm.baseSHA || pullRequest.csm.base;
+  const compare = pullRequest.csm.compareSHA || pullRequest.csm.compare;
+  const { commits } = useCommitsBetweenBranches(repositoryId, base, compare, [base, compare]);
 
   const events = useMemo(() => pullRequest?.events.filter((e) => eventsToTake.includes(e.type)), [pullRequest?.events]);
 

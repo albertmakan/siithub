@@ -130,14 +130,15 @@ async function getCommit(username: string, repoName: string, sha: string) {
   }
 }
 
-async function getCommitsSha(username: string, repoName: string, branch: string) {
+async function getCommitsSha(username: string, repoName: string, ...revs: string[]) {
   try {
-    const response = await gitServerHttpClient.get(
-      `/api/repo/${username}/${repoName}/commit/sha/${encodeURIComponent(branch)}`
-    );
+    const response = await gitServerHttpClient.get(`/api/repo/${username}/${repoName}/commit/sha`, {
+      params: { revs },
+      paramsSerializer: { indexes: null },
+    });
     return response.data;
   } catch (err) {
-    logger.error("Failed to get commit-sha", { rev: branch, repo: `${username}/${repoName}` });
+    logger.error("Failed to get commit-sha", { revs, repo: `${username}/${repoName}` });
     throw new MissingEntityException("Sha not found");
   }
 }
@@ -221,7 +222,7 @@ export type GitServerClient = GitServerCollaboratorsClient &
     getCommitsWithDiff(username: string, repoName: string, branch: string): Promise<any>;
     getCommitCount(username: string, repoName: string, branch: string): Promise<any>;
     getCommit(username: string, repoName: string, sha: string): Promise<any>;
-    getCommitsSha(username: string, repoName: string, branch: string): Promise<any>;
+    getCommitsSha(username: string, repoName: string, ...revs: string[]): Promise<string[]>;
     mergeCommits(username: string, repoName: string, base: string, compare: string): Promise<any>;
     getFileHistoryCommits(username: string, repoName: string, branch: string, filePath: string): Promise<any>;
     getBlob(

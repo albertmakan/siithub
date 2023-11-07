@@ -177,10 +177,10 @@ router.get("/commit/:sha/", async (req: Request, res: Response) => {
   res.send(commit);
 });
 
-router.get("/commit/sha/:branch", async (req: Request, res: Response) => {
-  const { branch } = req.params;
-  const sha = await getCommitsSha(res.locals.repoPath, branch);
-  if (!sha) {
+router.get("/commit/sha", async (req: Request, res: Response) => {
+  const revs = req.query.revs as string[];
+  const sha = await getCommitsSha(res.locals.repoPath, ...revs);
+  if (!sha.length) {
     res.status(404).send({ m: "Sha does not exist" });
     return;
   }
