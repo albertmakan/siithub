@@ -19,7 +19,7 @@ async function getCommitsDiffBetweenBranches(username: string, repoName: string,
 }
 
 async function getCommitsWithDiff(username: string, repoName: string, branch: string) {
-  const commits: CommitWithDiff[] = await gitServerClient.getCommitsWithDiff(username, repoName, branch);
+  const commits: CommitWithDiff[] = await gitServerClient.getCommits(username, repoName, branch, true);
   return (await resolveAuthors(commits)) as CommitWithDiff[];
 }
 

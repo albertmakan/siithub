@@ -146,6 +146,7 @@ export async function getLatestCommitAndContributors(repoPath: string, branch: s
 }
 
 export async function getCommitsSha(repoPath: string, ...revisions: string[]) {
+  if (!revisions.length) return revisions;
   try {
     return (await execCmd(`git rev-parse ${revisions.map((r) => quote([r]) + "^{commit}").join(" ")}`, repoPath))
       .trim()
@@ -161,7 +162,7 @@ export async function mergeCommits(repoPath: string, base: string, compare: stri
     if (!compareSHA || !baseSHA) return null;
 
     const newTree = (await execCmd(`git merge-tree --write-tree ${baseSHA} ${compareSHA}`, repoPath)).trim();
-    const m = `Merge branch ${compareSHA} into ${baseSHA}`;
+    const m = `Merge branch ${quote([compare, "into", base])}`;
     const newCommit = (
       await execCmd(`git commit-tree ${quote([newTree])} -p ${baseSHA} -p ${compareSHA} -m "${m}"`, repoPath)
     ).trim();

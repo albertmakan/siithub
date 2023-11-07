@@ -99,8 +99,8 @@ router.delete("/branches/:branchName", async (req: Request, res: Response) => {
   res.send(deletedBranch);
 });
 
-router.get("/commits/between", async (req: Request, res: Response) => {
-  const { base, compare } = req.query;
+router.get("/commits/between/:base/:compare", async (req: Request, res: Response) => {
+  const { base, compare } = req.params;
   const commits = await getCommitsBetweenRevisions(
     res.locals.repoPath,
     base?.toString() ?? "",
@@ -113,8 +113,8 @@ router.get("/commits/between", async (req: Request, res: Response) => {
   res.send(commits);
 });
 
-router.get("/commits/diff/between", async (req: Request, res: Response) => {
-  const { base, compare } = req.query;
+router.get("/commits/diff/:base/:compare", async (req: Request, res: Response) => {
+  const { base, compare } = req.params;
   const commits = await getCommitsDiffBetweenBranches(
     res.locals.repoPath,
     base?.toString() ?? "",
@@ -127,9 +127,10 @@ router.get("/commits/diff/between", async (req: Request, res: Response) => {
   res.send(commits);
 });
 
-router.get("/commits/:branch/", async (req: Request, res: Response) => {
+router.get("/commits/history/:branch/", async (req: Request, res: Response) => {
+  const { withStats } = req.query;
   const { branch } = req.params;
-  const commits = await getCommits(res.locals.repoPath, branch);
+  const commits = await getCommits(res.locals.repoPath, branch, withStats === "true");
   if (!commits) {
     res.status(404).send({ m: "commits not found" });
     return;
@@ -137,17 +138,7 @@ router.get("/commits/:branch/", async (req: Request, res: Response) => {
   res.send(commits);
 });
 
-router.get("/commits/:branch/with-diff", async (req: Request, res: Response) => {
-  const { branch } = req.params;
-  const commits = await getCommits(res.locals.repoPath, branch, true);
-  if (!commits) {
-    res.status(404).send({ m: "commits not found" });
-    return;
-  }
-  res.send(commits);
-});
-
-router.get("/commits/:branch/:filePath", async (req: Request, res: Response) => {
+router.get("/commits/history/:branch/:filePath", async (req: Request, res: Response) => {
   const { branch, filePath } = req.params;
   const commits = await getFileHistoryCommits(res.locals.repoPath, branch, filePath);
   if (!commits) {
@@ -157,7 +148,7 @@ router.get("/commits/:branch/:filePath", async (req: Request, res: Response) => 
   res.send(commits);
 });
 
-router.get("/commit-count/:branch/", async (req: Request, res: Response) => {
+router.get("/commits/count/:branch/", async (req: Request, res: Response) => {
   const { branch } = req.params;
   const count = await getCommitCount(res.locals.repoPath, branch);
   if (!count) {
@@ -167,7 +158,7 @@ router.get("/commit-count/:branch/", async (req: Request, res: Response) => {
   res.send({ count });
 });
 
-router.get("/commit/:sha/", async (req: Request, res: Response) => {
+router.get("/commits/:sha/", async (req: Request, res: Response) => {
   const { sha } = req.params;
   const commit = await getCommit(res.locals.repoPath, sha);
   if (!commit) {
@@ -177,7 +168,7 @@ router.get("/commit/:sha/", async (req: Request, res: Response) => {
   res.send(commit);
 });
 
-router.get("/commit/sha", async (req: Request, res: Response) => {
+router.get("/commit-sha", async (req: Request, res: Response) => {
   const revs = req.query.revs as string[];
   const sha = await getCommitsSha(res.locals.repoPath, ...revs);
   if (!sha.length) {

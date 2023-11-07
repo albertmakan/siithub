@@ -59,23 +59,24 @@ async function getTree(username: string, repoName: string, branch: string, treeP
   }
 }
 
-async function getCommits(username: string, repoName: string, branch: string) {
+async function getCommits(username: string, repoName: string, branch: string, withStats = false) {
   try {
     const response = await gitServerHttpClient.get(
-      `/api/repo/${username}/${repoName}/commits/${encodeURIComponent(branch)}`
+      `/api/repo/${username}/${repoName}/commits/history/${encodeURIComponent(branch)}`,
+      { params: { withStats } }
     );
     return response.data;
   } catch (err) {
-    logger.error("Failed to get commits", { rev: branch, repo: `${username}/${repoName}` });
+    logger.error("Failed to get commits", { rev: branch, repo: `${username}/${repoName}`, withStats });
     throw new MissingEntityException("Commits not found");
   }
 }
 
 async function getCommitsBetweenBranches(username: string, repoName: string, base: string, compare: string) {
   try {
-    const response = await gitServerHttpClient.get(`/api/repo/${username}/${repoName}/commits/between`, {
-      params: { base, compare },
-    });
+    const response = await gitServerHttpClient.get(
+      `/api/repo/${username}/${repoName}/commits/between/${base}/${compare}`
+    );
     return response.data;
   } catch (err) {
     logger.error("Failed to get commits", { base, compare, repo: `${username}/${repoName}` });
@@ -85,23 +86,10 @@ async function getCommitsBetweenBranches(username: string, repoName: string, bas
 
 async function getCommitsDiffBetweenBranches(username: string, repoName: string, base: string, compare: string) {
   try {
-    const response = await gitServerHttpClient.get(`/api/repo/${username}/${repoName}/commits/diff/between`, {
-      params: { base, compare },
-    });
+    const response = await gitServerHttpClient.get(`/api/repo/${username}/${repoName}/commits/diff/${base}/${compare}`);
     return response.data;
   } catch (err) {
     logger.error("Failed to get diff", { base, compare, repo: `${username}/${repoName}` });
-    throw new MissingEntityException("Commits not found");
-  }
-}
-async function getCommitsWithDiff(username: string, repoName: string, branch: string) {
-  try {
-    const response = await gitServerHttpClient.get(
-      `/api/repo/${username}/${repoName}/commits/${encodeURIComponent(branch)}/with-diff`
-    );
-    return response.data;
-  } catch (err) {
-    logger.error("Failed to get commits with stats", { rev: branch, repo: `${username}/${repoName}` });
     throw new MissingEntityException("Commits not found");
   }
 }
@@ -109,7 +97,7 @@ async function getCommitsWithDiff(username: string, repoName: string, branch: st
 async function getCommitCount(username: string, repoName: string, branch: string) {
   try {
     const response = await gitServerHttpClient.get(
-      `/api/repo/${username}/${repoName}/commit-count/${encodeURIComponent(branch)}`
+      `/api/repo/${username}/${repoName}/commits/count/${encodeURIComponent(branch)}`
     );
     return response.data;
   } catch (err) {
@@ -121,7 +109,7 @@ async function getCommitCount(username: string, repoName: string, branch: string
 async function getCommit(username: string, repoName: string, sha: string) {
   try {
     const response = await gitServerHttpClient.get(
-      `/api/repo/${username}/${repoName}/commit/${encodeURIComponent(sha)}`
+      `/api/repo/${username}/${repoName}/commits/${encodeURIComponent(sha)}`
     );
     return response.data;
   } catch (err) {
@@ -132,9 +120,8 @@ async function getCommit(username: string, repoName: string, sha: string) {
 
 async function getCommitsSha(username: string, repoName: string, ...revs: string[]) {
   try {
-    const response = await gitServerHttpClient.get(`/api/repo/${username}/${repoName}/commit/sha`, {
+    const response = await gitServerHttpClient.get(`/api/repo/${username}/${repoName}/commit-sha`, {
       params: { revs },
-      paramsSerializer: { indexes: null },
     });
     return response.data;
   } catch (err) {
@@ -160,7 +147,7 @@ async function mergeCommits(username: string, repoName: string, base: string, co
 async function getFileHistoryCommits(username: string, repoName: string, branch: string, filePath: string) {
   try {
     const response = await gitServerHttpClient.get(
-      `/api/repo/${username}/${repoName}/commits/${encodeURIComponent(branch)}/${encodeURIComponent(filePath)}`
+      `/api/repo/${username}/${repoName}/commits/history/${encodeURIComponent(branch)}/${encodeURIComponent(filePath)}`
     );
     return response.data;
   } catch (err) {
@@ -216,10 +203,9 @@ export type GitServerClient = GitServerCollaboratorsClient &
     updateSshKey(username: string, oldKey: string, key: string): Promise<any>;
     removeSshKey(username: string, key: string): Promise<any>;
     getTree(username: string, repoName: string, branch: string, treePath: string): Promise<any>;
-    getCommits(username: string, repoName: string, branch: string): Promise<any>;
+    getCommits(username: string, repoName: string, branch: string, withStats?: boolean): Promise<any>;
     getCommitsBetweenBranches(username: string, repoName: string, base: string, compare: string): Promise<any>;
     getCommitsDiffBetweenBranches(username: string, repoName: string, base: string, compare: string): Promise<any>;
-    getCommitsWithDiff(username: string, repoName: string, branch: string): Promise<any>;
     getCommitCount(username: string, repoName: string, branch: string): Promise<any>;
     getCommit(username: string, repoName: string, sha: string): Promise<any>;
     getCommitsSha(username: string, repoName: string, ...revs: string[]): Promise<string[]>;
@@ -248,7 +234,6 @@ const gitServerClient: GitServerClient = {
   getCommits,
   getCommitsBetweenBranches,
   getCommitsDiffBetweenBranches,
-  getCommitsWithDiff,
   getCommitCount,
   getCommit,
   getCommitsSha,
