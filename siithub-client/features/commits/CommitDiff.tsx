@@ -6,6 +6,9 @@ import { truncate } from "../../core/utils/string";
 import Link from "next/link";
 import { Spinner } from "../../core/components/Spinner";
 import { useRepositoryContext } from "../repository/RepositoryContext";
+import { ProfilePicture } from "../../core/components/ProfilePicture";
+import moment from "moment";
+import { Repository } from "../repository/repository.service";
 
 type CommitDiffViewerProps = {
   commit: CommitWithDiff;
@@ -62,13 +65,35 @@ export const CommitDiffViewer: FC<CommitDiffViewerProps> = ({ commit }) => {
 };
 
 export const CommitDiff: FC<{ sha: string }> = ({ sha }) => {
-  const repoId = useRepositoryContext().repository?._id ?? "";
+  const { repository } = useRepositoryContext();
+  const { _id, owner, name } = repository as Repository;
 
-  const { commit, error, isLoading } = useCommit(repoId, sha);
+  const { commit, error, isLoading } = useCommit(_id, sha);
 
   if (error) return <NotFound />;
 
   if (isLoading) return <Spinner size={20} />;
 
-  return <CommitDiffViewer commit={commit} />;
+  return (
+    <>
+      <div className="rounded-lg mb-3 border-2 p-3">
+        <button className="float-right m-2 p-2 border rounded-lg">
+          <Link href={`/r/${owner}/${name}/tree/${commit.sha}`}>Browse files</Link>
+        </button>
+        <h2>{commit.message || "?"}</h2>
+        <span className="flex text-sm mt-2">
+          {commit.author?.username ? (
+            <>
+              <ProfilePicture user={commit.author} size={20} />
+              <span className="mx-2">{commit.author.username}</span>
+            </>
+          ) : (
+            <span className="mx-2">{commit.author?.name}</span>
+          )}
+          committed on {moment.unix(commit.date).format("MMM D, YYYY")}
+        </span>
+      </div>
+      <CommitDiffViewer commit={commit} />
+    </>
+  );
 };

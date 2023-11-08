@@ -87,7 +87,7 @@ export function useCommitCount(repositoryId: Repository["_id"], branch: string, 
   };
 }
 
-export type CommitWithDiff = {
+export type CommitWithDiff = Commit & {
   diff: {
     old: { path: string; content?: string };
     new: { path: string; content?: string };

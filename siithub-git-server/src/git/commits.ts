@@ -3,10 +3,13 @@ import { execCmd } from "../cmd.utils";
 import { parseContributor, parseGitStats } from "../string.utils";
 import { getFileSize } from "./blob.utils";
 
+const FORMAT = '--pretty=format:"%an%n%ae%n%at%n%H%n%s"';
+const FORMAT_NL = '--pretty=format:"%an%n%ae%n%at%n%H%n%s%n"';
+
 export async function getCommits(repoPath: string, branch: string, withStats = false) {
   const cmd = withStats
-    ? `git log --shortstat --pretty=format:"%an%n%ae%n%at%n%H%n%s" ${quote([branch])}`
-    : `git log --pretty=format:"%an%n%ae%n%at%n%H%n%s%n" ${quote([branch])}`;
+    ? `git log --shortstat ${FORMAT} ${quote([branch])}`
+    : `git log ${FORMAT_NL} ${quote([branch])}`;
   try {
     const log = await execCmd(cmd, repoPath);
     return log.split("\n\n").map((commit) => {
@@ -27,9 +30,7 @@ export async function getCommits(repoPath: string, branch: string, withStats = f
 export async function getCommitsBetweenRevisions(repoPath: string, base: string, compare: string, reverse = false) {
   try {
     const log = await execCmd(
-      `git log ${reverse ? "--reverse" : ""} --pretty=format:"%an%n%ae%n%at%n%H%n%s%n" ${
-        base ? quote([base]) + ".." : ""
-      }${quote([compare])}`,
+      `git log ${reverse ? "--reverse" : ""} ${FORMAT_NL} ${base ? quote([base]) + ".." : ""}${quote([compare])}`,
       repoPath
     );
     return log.split("\n\n").map((commit) => {
@@ -72,8 +73,17 @@ export async function getCommit(repoPath: string, sha: string) {
 async function getDiffData(repoPath: string, commit: string, parentCommit?: string) {
   const numstatCommand = parentCommit
     ? `git diff --numstat -z ${quote([parentCommit])}..${quote([commit])}`
-    : `git show --pretty=format:"" --numstat -z ${quote([commit])}`;
-  const numstatList = await execCmd(numstatCommand, repoPath);
+    : `git show --numstat -z ${FORMAT} ${quote([commit])}`;
+  const cmdResult = (await execCmd(numstatCommand, repoPath)).split("\n");
+  let commitInfo,
+    numstatList = "";
+  if (!parentCommit) {
+    const [name, email, date, sha, message, numstat] = cmdResult;
+    commitInfo = { author: { name, email }, date: +date, sha, message };
+    numstatList = numstat;
+  } else {
+    numstatList = cmdResult[0];
+  }
   const reg = /(\d+|-)\t(\d+|-)\t(?:\0(.+?)\0)?(.+?)\0/gy;
   const statRecord: { [fileName: string]: { total_additions: number; total_deletions: number } } = {};
   let match;
@@ -110,15 +120,12 @@ async function getDiffData(repoPath: string, commit: string, parentCommit?: stri
       patch.new.content = await execCmd(`git show ${quote([commit])}:${quote([patch.new.path])}`, repoPath);
   }
 
-  return { diff: patches };
+  return { diff: patches, ...commitInfo };
 }
 
 export async function getFileHistoryCommits(repoPath: string, branch: string, filePath: string) {
   try {
-    const log = await execCmd(
-      `git log --pretty=format:"%an%n%ae%n%at%n%H%n%s%n" ${quote([branch])} -- ${quote([filePath])}`,
-      repoPath
-    );
+    const log = await execCmd(`git log ${FORMAT_NL} ${quote([branch])} -- ${quote([filePath])}`, repoPath);
     return log.split("\n\n").map((commit) => {
       const [name, email, date, sha, message] = commit.split("\n");
       return { author: { name, email }, date: +date, sha, message };
@@ -131,7 +138,7 @@ export async function getFileHistoryCommits(repoPath: string, branch: string, fi
 export async function getLatestCommitAndContributors(repoPath: string, branch: string, blobPath: string) {
   try {
     const latestCommitLog = await execCmd(
-      `git log -n 1 --pretty=format:"%an%n%ae%n%at%n%H%n%s" ${quote([branch])} -- ${quote([blobPath])}`,
+      `git log -n 1 ${FORMAT} ${quote([branch])} -- ${quote([blobPath])}`,
       repoPath
     );
     const [name, email, date, sha, message] = latestCommitLog.split("\n");

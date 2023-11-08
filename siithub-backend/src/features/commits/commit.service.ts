@@ -14,8 +14,7 @@ async function getCommitsBetweenBranches(username: string, repoName: string, bas
 }
 
 async function getCommitsDiffBetweenBranches(username: string, repoName: string, base: string, compare: string) {
-  const commit: Commit = await gitServerClient.getCommitsDiffBetweenBranches(username, repoName, base, compare);
-  return (await resolveAuthors([commit]))[0];
+  return await gitServerClient.getCommitsDiffBetweenBranches(username, repoName, base, compare);
 }
 
 async function getCommitsWithDiff(username: string, repoName: string, branch: string) {
@@ -57,7 +56,7 @@ async function getFileInfo(username: string, repoName: string, branch: string, f
 async function resolveAuthors(commits: Commit[]) {
   const contributorsEmails = commits
     .map((c) => c.author?.email)
-    .filter((value, index, array) => array.indexOf(value) === index);
+    .filter((value, index, array) => !!value && array.indexOf(value) === index);
   const users = (await userService.findManyByEmails(contributorsEmails)).reduce(
     (acc: { [email: string]: User }, user: User) => {
       acc[user.email] = user;
