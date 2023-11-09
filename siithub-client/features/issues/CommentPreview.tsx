@@ -103,7 +103,7 @@ export const CommentPreview: FC<CommentPreviewProps> = ({ comment }) => {
       </div>
 
       <div hidden={!showPreviewDiv}>
-        <div className="mt-10">
+        <div className="mt-5">
           {comment.state === CommentState.Existing ? (
             <span>
               <PencilSquareIcon className="inline-block h-5 w-5 text-indigo-500 mr-2" onClick={toggleDivVisibility} />

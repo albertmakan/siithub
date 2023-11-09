@@ -36,13 +36,12 @@ const CommentCard: FC<CommentCardProps> = ({ comment }) => {
   return (
     <div className="p-4">
       <div className="flex space-x-2">
-        <span className="flex -left-3 justify-center items-center w-6 h-6 bg-blue-200 rounded-full ring-8 ring-white">
-          <ProfilePicture user={user} size={40} />
+        <span className="flex -left-3 justify-center items-center bg-blue-200 rounded-full ring-8 ring-white">
+          <ProfilePicture user={user} size={25} />
         </span>
         <span>
           {user?.name} {moment(commentCreated.timeStamp).fromNow()}
         </span>
-        <span></span>
       </div>
       <div className="ml-8">
         <CommentPreview comment={comment} stylingOptions={{ buttonsContainer: "mt-1" }} />
@@ -56,11 +55,11 @@ const PlaceholderWriteComment = () => {
 
   return (
     <div className="flex space-x-2 p-2 justify-center items-center">
-      <span className="flex -left-3 justify-center items-center w-6 h-6 bg-blue-200 rounded-full ring-6">
-        {user && <ProfilePicture user={user} size={32} />}
+      <span className="flex -left-3 justify-center items-center bg-blue-200 rounded-full ring-6">
+        {user && <ProfilePicture user={user} size={25} />}
       </span>
       <input
-        className={"mt-1 w-[95%] border rounded-md border-gray-300 shadow-sm pl-2"}
+        className={"mt-1 w-full border rounded-md border-gray-300 shadow-sm pl-2"}
         value={"Write comment..."}
         readOnly={true}
       />
@@ -99,7 +98,7 @@ export const Conversation: FC<ConversationProps> = ({ conversation }) => {
 const LineHighligher = ({ changes }: any) => {
   const getClasses = () => {
     if (changes.isDelete) {
-      return "bg-red-500";
+      return "bg-red-200";
     }
 
     if (changes.isNormal) {
@@ -107,7 +106,7 @@ const LineHighligher = ({ changes }: any) => {
     }
 
     if (changes.isInsert) {
-      return "bg-green-500";
+      return "bg-green-200";
     }
   };
 
@@ -127,7 +126,7 @@ const LineHighligher = ({ changes }: any) => {
     }
   };
   return (
-    <div className={"pl-2 w-100% border shadow-sm  " + getClasses()}>
+    <div className={"pl-2 w-full border shadow-sm  " + getClasses()}>
       {getNumber()} | {changes.content}
     </div>
   );
@@ -196,7 +195,7 @@ export const ConversationCard: FC<ConversationProps> = ({ conversation }) => {
         <div className={"bg-white mb-1 pb-2"}>
           <div className="bg-gray-200 hover:bg-gray-100 cursor-pointer" onClick={toggleVisibility}>
             <div className="border-b border-gray-200 flex">
-              <div className="px-3 py-3 w-100 flex-1">
+              <div className="px-3 py-3 w-full flex-1">
                 <div className="grid grid-cols-12">
                   <div className="col-span-10">
                     <div>

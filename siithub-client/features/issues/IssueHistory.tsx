@@ -143,11 +143,11 @@ export const IssueHistory: FC = () => {
         .map((event, i) => {
           const user = participants[event.by];
           return (
-            <li key={i} className="mb-10 ml-6">
-              <span className="flex absolute -left-3 justify-center items-center bg-blue-200 rounded-full ring-8 ring-white">
+            <li key={i} className="mb-3 ml-6">
+              <span className="absolute -left-5 mt-2">
                 <ProfilePicture user={user} size={30} />
               </span>
-              <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+              <div className="p-2 bg-white rounded-lg border border-gray-200 shadow-sm">
                 <div className="grid grid-cols-12">
                   <div className="col-span-10 text-left ">
                     <b>{user.username}</b> <EventText event={event} />

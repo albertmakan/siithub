@@ -24,7 +24,7 @@ type StylingOptions = {
 };
 
 const initialStylingOptions: StylingOptions = {
-  buttonsContainer: "mt-10",
+  buttonsContainer: "mt-5",
 };
 
 type CommentPreviewProps = {

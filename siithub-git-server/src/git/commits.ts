@@ -3,8 +3,8 @@ import { execCmd } from "../cmd.utils";
 import { parseContributor, parseGitStats } from "../string.utils";
 import { getFileSize } from "./blob.utils";
 
-const FORMAT = '--pretty=format:"%an%n%ae%n%at%n%H%n%s"';
-const FORMAT_NL = '--pretty=format:"%an%n%ae%n%at%n%H%n%s%n"';
+export const FORMAT = '--format="%an%n%ae%n%at%n%H%n%s"';
+export const FORMAT_NL = '--format="%an%n%ae%n%at%n%H%n%s%n"';
 
 export async function getCommits(repoPath: string, branch: string, withStats = false) {
   const cmd = withStats
@@ -27,12 +27,9 @@ export async function getCommits(repoPath: string, branch: string, withStats = f
   }
 }
 
-export async function getCommitsBetweenRevisions(repoPath: string, base: string, compare: string, reverse = false) {
+export async function getCommitsBetweenRevisions(repoPath: string, base: string, compare: string) {
   try {
-    const log = await execCmd(
-      `git log ${reverse ? "--reverse" : ""} ${FORMAT_NL} ${base ? quote([base]) + ".." : ""}${quote([compare])}`,
-      repoPath
-    );
+    const log = await execCmd(`git log ${FORMAT_NL} ${base ? quote([base]) + ".." : ""}${quote([compare])}`, repoPath);
     return log.split("\n\n").map((commit) => {
       const [name, email, date, sha, message] = commit.split("\n");
       return { author: { name, email }, date: +date, sha, message };
