@@ -15,9 +15,9 @@ export const PullRequestPage: FC = () => {
 
   return (
     <>
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-8">
-          <div className="overflow-hidden shadow sm:rounded-md mb-10">
+      <div className="grid grid-cols-3 gap-6">
+        <div className="col-span-2">
+          <div className="overflow-hidden shadow sm:rounded-md mb-5">
             <div className="bg-white px-4 py-5 sm:p-6 mb-1">
               <DefinePullRequestForm />
             </div>

@@ -61,18 +61,16 @@ export const PullRequestsEditLayout: FC<PropsWithChildren> = ({ children }) => {
   };
 
   return (
-    <>
-      <PullRequestContextProvider>
-        <PullRequestFetcher>
-          <div className="mb-3">
-            <PullRequestHeader />
-          </div>
+    <PullRequestContextProvider>
+      <PullRequestFetcher>
+        <div className="mb-3">
+          <PullRequestHeader />
+        </div>
 
-          <HorizontalMenu links={links} onItemClick={changePath} />
-          <div className="mt-10">{children}</div>
-        </PullRequestFetcher>
-      </PullRequestContextProvider>
-    </>
+        <HorizontalMenu links={links} onItemClick={changePath} />
+        <div className="mt-5">{children}</div>
+      </PullRequestFetcher>
+    </PullRequestContextProvider>
   );
 };
 

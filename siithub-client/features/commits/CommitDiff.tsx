@@ -8,13 +8,13 @@ import { Spinner } from "../../core/components/Spinner";
 import { useRepositoryContext } from "../repository/RepositoryContext";
 import { ProfilePicture } from "../../core/components/ProfilePicture";
 import moment from "moment";
-import { Repository } from "../repository/repository.service";
+import { type Repository } from "../repository/repository.service";
 
 type CommitDiffViewerProps = {
   commit: CommitWithDiff;
 };
 
-export const CommitDiffViewer: FC<CommitDiffViewerProps> = ({ commit }) => {
+export const DiffSummary: FC<CommitDiffViewerProps> = ({ commit }) => {
   const additions = useMemo(
     () => commit.diff.reduce((acc, val) => acc + (val?.stats?.total_additions || 0), 0),
     [commit]
@@ -23,14 +23,19 @@ export const CommitDiffViewer: FC<CommitDiffViewerProps> = ({ commit }) => {
     () => commit.diff.reduce((acc, val) => acc + (val?.stats?.total_deletions || 0), 0),
     [commit]
   );
+  return (
+    <div className="m-2">
+      Showing <span className="font-bold">{commit.diff.length}</span> changed file{commit.diff.length !== 1 && "s"} with{" "}
+      <span className="text-green-500 font-bold">{additions}</span> addition{additions !== 1 && "s"} and{" "}
+      <span className="text-red-500 font-bold">{deletions}</span> deletion{deletions !== 1 && "s"}.
+    </div>
+  );
+};
 
+export const CommitDiffViewer: FC<CommitDiffViewerProps> = ({ commit }) => {
   return (
     <>
-      <div className="m-2">
-        Showing <span className="font-bold">{commit.diff.length}</span> changed files with{" "}
-        <span className="text-green-500 font-bold">{additions}</span> additions and{" "}
-        <span className="text-red-500 font-bold">{deletions}</span> deletions.
-      </div>
+      <DiffSummary commit={commit} />
       {commit.diff.map((diff, i) => {
         return (
           <div
@@ -72,7 +77,7 @@ export const CommitDiff: FC<{ sha: string }> = ({ sha }) => {
 
   if (error) return <NotFound />;
 
-  if (isLoading) return <Spinner size={20} />;
+  if (isLoading) return <Spinner />;
 
   return (
     <>

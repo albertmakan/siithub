@@ -4,7 +4,7 @@ import { type PullRequest, PullRequestState } from "./pullRequestActions";
 
 type PRIconProps = { pullRequest: PullRequest; color?: string };
 
-export const PRIcon: FC<PRIconProps> = ({ pullRequest, color = "black" }) => {
+export const PRIcon: FC<PRIconProps> = ({ pullRequest, color }) => {
   if (!pullRequest.csm.isClosed) {
     return <PrOpenIcon color={color} />;
   }

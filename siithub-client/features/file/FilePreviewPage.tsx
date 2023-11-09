@@ -123,11 +123,11 @@ export const FilePreviewPage: FC<{ branch: string; blobPath: string }> = ({ bran
       <div className="w-full border-2 border-gray-200">
         {isLoading ? (
           <>
-            <div className="flex bg-white border-b p-4">
-              <Spinner size={4} />
+            <div className="flex bg-white border-b p-4 justify-center">
+              <Spinner size={40} />
             </div>
             <div className="flex items-center justify-center bg-white border-b p-4">
-              <Spinner size={16} />
+              <Spinner />
             </div>
           </>
         ) : (

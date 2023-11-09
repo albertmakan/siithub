@@ -7,11 +7,13 @@ import { ProfilePicture } from "../../core/components/ProfilePicture";
 import { truncate } from "../../core/utils/string";
 import { type Commit } from "./useCommits";
 
-type CommitCardProps = { commit: Commit; username: string; repoName: string };
+type CommitCardProps = { commit: Commit; username: string; repoName: string; isFirst: boolean };
 
-export const CommitCard: FC<CommitCardProps> = ({ commit, username, repoName }) => {
+export const CommitCard: FC<CommitCardProps> = ({ commit, username, repoName, isFirst }) => {
   return (
-    <div className="flex items-center bg-white border-2 border-gray-200 text-md">
+    <div
+      className={"flex items-center bg-white border-b-2 border-x-2 text-md rounded-lg " + (isFirst ? "border-t-2" : "")}
+    >
       <div className="w-5/6 p-2">
         <div className="hover:text-blue-400 hover:underline mb-1">
           <HashtagLink href={`/r/${username}/${repoName}/commit/${commit.sha}`}>
@@ -34,7 +36,7 @@ export const CommitCard: FC<CommitCardProps> = ({ commit, username, repoName }) 
         <Link href={`/r/${username}/${repoName}/commit/${commit.sha}`}>{commit.sha.substring(0, 6)}</Link>
       </div>
       <div className="w-1/12 text-gray-400 p-2">
-        <button>
+        <button className="mt-2">
           <Link href={`/r/${username}/${repoName}/tree/${commit.sha}`}>
             <CodeBracketIcon className="h-5 w-5" />
           </Link>

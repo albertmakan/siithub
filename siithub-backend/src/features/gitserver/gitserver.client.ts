@@ -75,7 +75,7 @@ async function getCommits(username: string, repoName: string, branch: string, wi
 async function getCommitsBetweenBranches(username: string, repoName: string, base: string, compare: string) {
   try {
     const response = await gitServerHttpClient.get(
-      `/api/repo/${username}/${repoName}/commits/between/${base}/${compare}`
+      `/api/repo/${username}/${repoName}/commits/between/${encodeURIComponent(base)}/${encodeURIComponent(compare)}`
     );
     return response.data;
   } catch (err) {
@@ -86,7 +86,9 @@ async function getCommitsBetweenBranches(username: string, repoName: string, bas
 
 async function getCommitsDiffBetweenBranches(username: string, repoName: string, base: string, compare: string) {
   try {
-    const response = await gitServerHttpClient.get(`/api/repo/${username}/${repoName}/commits/diff/${base}/${compare}`);
+    const response = await gitServerHttpClient.get(
+      `/api/repo/${username}/${repoName}/commits/diff/${encodeURIComponent(base)}/${encodeURIComponent(compare)}`
+    );
     return response.data;
   } catch (err) {
     logger.error("Failed to get diff", { base, compare, repo: `${username}/${repoName}` });

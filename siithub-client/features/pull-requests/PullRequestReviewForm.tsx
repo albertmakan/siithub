@@ -26,17 +26,14 @@ const ReviewForm: FC<ReviewFormProps> = ({ type }) => {
   };
 
   return (
-    <>
-      <div className="grid grid-cols-12">
-        <div className="col-span-12 mb-12 mt-4">
-          <ReactQuill style={{ height: 150 }} value={review} onChange={(review) => setReview(review)}></ReactQuill>
-        </div>
-
-        <div className="col-span-12 text-right mt-4">
-          <Button onClick={submitReview}>Submit</Button>
-        </div>
+    <div>
+      <div className="mb-12 mt-4">
+        <ReactQuill style={{ height: 150 }} value={review} onChange={(review) => setReview(review)}></ReactQuill>
       </div>
-    </>
+      <div className="text-right mt-4">
+        <Button onClick={submitReview}>Submit</Button>
+      </div>
+    </div>
   );
 };
 
@@ -68,8 +65,8 @@ export const PullRequestReviewForm: FC = () => {
       </Modal>
 
       {assignees.includes(currentUserId) && (
-        <div className="grid grid-cols-12 w-100 py-3 ">
-          <div className="col-span-12 text-right space-x-2">
+        <div className="py-3 ">
+          <div className="text-right space-x-2">
             <Button onClick={approve}>Approve</Button>
             <Button onClick={requireChanges}>Require Changes</Button>
           </div>

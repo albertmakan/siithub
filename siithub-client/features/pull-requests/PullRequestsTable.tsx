@@ -1,4 +1,4 @@
-import { useCallback, type FC } from "react";
+import { type FC } from "react";
 import { type Repository } from "../repository/repository.service";
 import { PullRequestState, type PullRequest } from "./pullRequestActions";
 import { useRepositoryContext } from "../repository/RepositoryContext";
@@ -18,7 +18,7 @@ const AdditionalText = ({ pullRequest }: { pullRequest: PullRequest }) => {
 
   return pullRequest.csm.isClosed ? (
     <>
-      #P{pullRequest.localId} was {pullRequest.csm.state === PullRequestState.Merged ? "merged" : "canceled"}
+      #P{pullRequest.localId} was {pullRequest.csm.state === PullRequestState.Merged ? "merged" : "canceled"}{" "}
       {moment(prCreated?.timeStamp).fromNow()} by {pullRequest.participants[prClosed?.by]?.username}
     </>
   ) : (

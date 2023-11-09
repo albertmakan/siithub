@@ -14,5 +14,14 @@ export const PullRequestCommitsPage: FC = () => {
   const compare = pullRequest.csm.compareSHA || pullRequest.csm.compare;
   const { commits } = useCommitsBetweenBranches(_id, base, compare, [base, compare]);
 
-  return <>{commits?.length ? <CommitsHistory username={owner} repoName={name} commits={commits} /> : <></>}</>;
+  if (!commits?.length) return <></>;
+
+  return (
+    <>
+      <h2>
+        {commits.length} commit{commits.length !== 1 && "s"}
+      </h2>
+      <CommitsHistory username={owner} repoName={name} commits={commits} />
+    </>
+  );
 };

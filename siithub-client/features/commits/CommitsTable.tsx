@@ -17,20 +17,16 @@ type CommitsHistoryProps = {
 
 export const CommitsHistory: FC<CommitsHistoryProps> = ({ username, repoName, commits }) => {
   let currentDate = "";
-
   return (
     <>
       {commits?.map((commit) => {
         const date = moment.unix(commit.date).format("MMM D, YYYY");
-
         const isNewDate = date !== currentDate;
         if (isNewDate) currentDate = date;
         return (
           <Fragment key={commit.sha}>
-            {isNewDate && (
-              <div className="p-3 font-semibold">{`Commits on ${moment.unix(commit.date).format("MMM D, YYYY")}`}</div>
-            )}
-            <CommitCard commit={commit} username={username} repoName={repoName} />
+            {isNewDate && <div className="p-3 font-semibold">{`Commits on ${date}`}</div>}
+            <CommitCard commit={commit} username={username} repoName={repoName} isFirst={isNewDate} />
           </Fragment>
         );
       })}
@@ -51,30 +47,28 @@ export const CommitsTable: FC<CommitsTableProps> = ({ branch, filePath }) => {
   if (error) return <NotFound />;
 
   return (
-    <>
-      <div className="overflow-x-auto relative sm:rounded-lg">
-        <div className="mb-3 flex">
-          {filePath ? (
-            <p className="text-lg items-center">
-              History for{" "}
-              <FilePath username={owner} repoName={name} branch={branch} filePath={filePath} forCommits={true} />
-            </p>
-          ) : (
-            <BranchesMenu />
-          )}
-        </div>
-        <div className="">
-          {isLoading ? (
-            <div className="bg-white border-2 border-gray-200 text-md">
-              <div className="flex min-h-full items-center justify-center">
-                <Spinner size={20} />
-              </div>
-            </div>
-          ) : (
-            <CommitsHistory username={owner} repoName={name} commits={commits} />
-          )}
-        </div>
+    <div className="overflow-x-auto relative">
+      <div className="mb-3 flex">
+        {filePath ? (
+          <p className="text-lg items-center">
+            History for{" "}
+            <FilePath username={owner} repoName={name} branch={branch} filePath={filePath} forCommits={true} />
+          </p>
+        ) : (
+          <BranchesMenu />
+        )}
       </div>
-    </>
+      <div>
+        {isLoading ? (
+          <div className="bg-white border-2 border-gray-200 text-md">
+            <div className="flex min-h-full items-center justify-center">
+              <Spinner />
+            </div>
+          </div>
+        ) : (
+          <CommitsHistory username={owner} repoName={name} commits={commits} />
+        )}
+      </div>
+    </div>
   );
 };

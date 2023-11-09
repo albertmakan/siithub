@@ -1,6 +1,6 @@
 import { type FC, useEffect, useState, Fragment } from "react";
 import { addConversation, usePullRequestContext } from "./PullRequestContext";
-import { useCommitsDiffBetweenBranches } from "../commits/useCommits";
+import { CommitWithDiff, useCommitsDiffBetweenBranches } from "../commits/useCommits";
 import { useRepositoryContext } from "../repository/RepositoryContext";
 import { getLang } from "../../core/utils/languages";
 import { CollapseIcon, CollapsedIcon, PlusIcon } from "./Icons";
@@ -18,6 +18,7 @@ import * as refractor from "refractor";
 
 import "react-diff-view/style/index.css";
 import "prism-themes/themes/prism-vs.css";
+import { DiffSummary } from "../commits/CommitDiff";
 
 const EMPTY_HUNKS: any = [];
 
@@ -47,7 +48,7 @@ export const PullRequestFileChangesPage: FC = () => {
   const { pullRequest, pullRequestDispatcher } = usePullRequestContext();
   const repositoryId = useRepositoryContext().repository?._id ?? "";
 
-  const [changes, setChanges] = useState<any>([]);
+  const [changes, setChanges] = useState<{ change: CommitWithDiff["diff"][0]; diff: any }[]>([]);
   const [visibilities, setVisibilities] = useState<{ [file: string]: boolean }>({});
 
   const base = pullRequest.csm.baseSHA || pullRequest.csm.base;
@@ -94,9 +95,10 @@ export const PullRequestFileChangesPage: FC = () => {
   return (
     <>
       <div>
+        {commit && <DiffSummary commit={commit} />}
         <PullRequestReviewForm />
 
-        {changes?.map((changeWithDiff: any, i: number) => {
+        {changes?.map((changeWithDiff, i) => {
           const { change, diff } = changeWithDiff;
           const { type, hunks } = diff;
           const fileName = change?.old?.path || change?.new?.path;
