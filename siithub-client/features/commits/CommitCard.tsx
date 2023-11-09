@@ -7,9 +7,9 @@ import { ProfilePicture } from "../../core/components/ProfilePicture";
 import { truncate } from "../../core/utils/string";
 import { type Commit } from "./useCommits";
 
-type CommitCardProps = { commit: Commit; username: string; repoName: string; isFirst: boolean };
+type CommitCardProps = { commit: Commit; username: string; repoName: string; isFirst?: boolean };
 
-export const CommitCard: FC<CommitCardProps> = ({ commit, username, repoName, isFirst }) => {
+export const CommitCard: FC<CommitCardProps> = ({ commit, username, repoName, isFirst = true }) => {
   return (
     <div
       className={"flex items-center bg-white border-b-2 border-x-2 text-md rounded-lg " + (isFirst ? "border-t-2" : "")}
