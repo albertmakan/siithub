@@ -21,9 +21,10 @@ async function processChanges() {
   const cmd = isNewBranch
     ? `git rev-list ${FORMAT_NL} --reverse ${newrev} --not --exclude=${quote([branch.slice(11)])} --branches=*`
     : `git rev-list ${FORMAT_NL} --reverse ${oldrev}..${newrev}`;
-  const log = await execCmd(cmd, cwd);
+  const log = (await execCmd(cmd, cwd)).split("\n\n");
+  if (!log.at(-1)) log.pop();
 
-  const commits = log.split("\n\n").map((commit) => {
+  const commits = log.map((commit) => {
     const [, name, email, date, sha, message] = commit.split("\n");
     return { author: { name, email }, date: +date, sha, message };
   });

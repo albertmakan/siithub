@@ -3,8 +3,9 @@ import { execCmd } from "../cmd.utils";
 
 export async function getBranches(repoPath: string) {
   try {
-    const branches = await execCmd(`git branch --format="%(refname:short)"`, repoPath);
-    return branches.split("\n").filter(Boolean);
+    const branches = (await execCmd(`git branch --format="%(refname:short)"`, repoPath)).split("\n");
+    if (!branches.at(-1)) branches.pop();
+    return branches;
   } catch {
     return null;
   }

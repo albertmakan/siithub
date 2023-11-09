@@ -3,8 +3,8 @@ import { execCmd } from "../cmd.utils";
 import { parseContributor, parseGitStats } from "../string.utils";
 import { getFileSize } from "./blob.utils";
 
-export const FORMAT = '--format="%an%n%ae%n%at%n%H%n%s"';
-export const FORMAT_NL = '--format="%an%n%ae%n%at%n%H%n%s%n"';
+export const FORMAT = '--pretty=format:"%an%n%ae%n%at%n%H%n%s"';
+export const FORMAT_NL = '--pretty=format:"%an%n%ae%n%at%n%H%n%s%n"';
 
 export async function getCommits(repoPath: string, branch: string, withStats = false) {
   const cmd = withStats
@@ -91,19 +91,17 @@ async function getDiffData(repoPath: string, commit: string, parentCommit?: stri
   const diffListCommand = parentCommit
     ? `git diff --name-status ${quote([parentCommit])}..${quote([commit])}`
     : `git show --pretty=format:"" --name-status ${quote([commit])}`;
-  const diffList = await execCmd(diffListCommand, repoPath);
-  const patches = diffList
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => {
-      const [change, fileName, renamedTo] = line.split("\t");
-      return {
-        old: change.startsWith("A") ? undefined : { path: fileName, content: "" },
-        new: change.startsWith("D") ? undefined : { path: renamedTo || fileName, content: "" },
-        stats: statRecord[renamedTo || fileName],
-        large: false,
-      };
-    });
+  const diffList = (await execCmd(diffListCommand, repoPath)).split("\n");
+  if (!diffList.at(-1)) diffList.pop();
+  const patches = diffList.map((line) => {
+    const [change, fileName, renamedTo] = line.split("\t");
+    return {
+      old: change.startsWith("A") ? undefined : { path: fileName, content: "" },
+      new: change.startsWith("D") ? undefined : { path: renamedTo || fileName, content: "" },
+      stats: statRecord[renamedTo || fileName],
+      large: false,
+    };
+  });
   parentCommit ||= commit + "~";
   for (const patch of patches) {
     const oldSize = patch.old ? await getFileSize(repoPath, parentCommit, patch.old.path) : 0;
