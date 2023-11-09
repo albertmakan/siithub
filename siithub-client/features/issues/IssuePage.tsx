@@ -34,8 +34,8 @@ export const IssuePage: FC<IssuePageProps> = ({ existingIssueId = undefined }) =
 
   return (
     <>
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-8">
+      <div className="grid grid-cols-3 gap-6">
+        <div className="col-span-2">
           <div className="overflow-hidden shadow sm:rounded-md mb-10">
             <DescribeIssueForm />
           </div>
@@ -48,16 +48,16 @@ export const IssuePage: FC<IssuePageProps> = ({ existingIssueId = undefined }) =
             </div>
           )}
         </div>
-        <div className="col-span-4">
-          <div className="bg-white py-6">
+        <div className="col-span-1">
+          <div className="py-3">
             <LabelsForm />
           </div>
-
-          <div className="bg-white pb-6">
+          <div className=" py-3">
             <MilestonesForm />
           </div>
-
-          <AssigneesForm />
+          <div className="py-3">
+            <AssigneesForm />
+          </div>
         </div>
       </div>
     </>

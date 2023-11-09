@@ -67,7 +67,7 @@ export const LabelsTable: FC<LabelsTableProps> = ({ labels }) => {
                   <a
                     href="#"
                     onClick={() => setSelectedLabel(label)}
-                    className="ml-2 font-medium text-blue-600 hover:underline text-right"
+                    className="ml-2 font-medium text-blue-500 hover:underline text-right"
                   >
                     Edit
                   </a>
@@ -77,7 +77,7 @@ export const LabelsTable: FC<LabelsTableProps> = ({ labels }) => {
                       setSelectedLabel(undefined);
                       deleteLabelAction(label);
                     }}
-                    className="ml-4 font-medium text-blue-600 hover:underline text right"
+                    className="ml-4 font-medium text-red-500 hover:underline text right"
                   >
                     Delete
                   </a>

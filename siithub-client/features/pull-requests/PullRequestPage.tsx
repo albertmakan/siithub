@@ -17,7 +17,7 @@ export const PullRequestPage: FC = () => {
     <>
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2">
-          <div className="overflow-hidden shadow sm:rounded-md mb-5">
+          <div className="overflow-hidden shadow sm:rounded-md mb-10">
             <div className="bg-white px-4 py-5 sm:p-6 mb-1">
               <DefinePullRequestForm />
             </div>
@@ -36,16 +36,16 @@ export const PullRequestPage: FC = () => {
           </div>
         </div>
 
-        <div className="col-span-4">
-          <div className="bg-white py-6">
+        <div className="col-span-1">
+          <div className="py-3">
             <LabelsForm />
           </div>
-
-          <div className="bg-white pb-6">
+          <div className=" py-3">
             <MilestonesForm />
           </div>
-
-          <AssigneesForm />
+          <div className="py-3">
+            <AssigneesForm />
+          </div>
         </div>
       </div>
     </>

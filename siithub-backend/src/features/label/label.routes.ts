@@ -33,8 +33,7 @@ labelRoutes.get("/search", isAllowedToAccessRepo(true), async (req: Request, res
 });
 
 labelRoutes.get("/:id", isAllowedToAccessRepo(true), labelHasToBelongToRepo, async (req: Request, res: Response) => {
-  const id = idSchema.parse(req.params.id);
-  res.send(await labelService.findOneOrThrow(id));
+  res.send(res.locals.label);
 });
 
 labelRoutes.post("/", isAllowedToAccessRepo(), async (req: Request, res: Response) => {
