@@ -46,7 +46,7 @@ export function useCommitsBetweenBranches(
 ) {
   const { data, error, isLoading } = useQuery(
     [`commits_between_${repositoryId}/${base}/${compare}`, ...dependencies],
-    () => axios.get(`${basePath(repositoryId)}/between/${base}/${compare}`),
+    () => axios.get(`${basePath(repositoryId)}/between/${encodeURIComponent(base)}/${encodeURIComponent(compare)}`),
     { enabled: !!base && !!compare }
   );
   return {
@@ -64,7 +64,7 @@ export function useCommitsDiffBetweenBranches(
 ) {
   const { data, error, isLoading } = useQuery(
     [`commits_diff_between_${repositoryId}/${base}/${compare}`, ...dependencies],
-    () => axios.get(`${basePath(repositoryId)}/diff/${base}/${compare}`),
+    () => axios.get(`${basePath(repositoryId)}/diff/${encodeURIComponent(base)}/${encodeURIComponent(compare)}`),
     { enabled: !!base && !!compare }
   );
   return {
